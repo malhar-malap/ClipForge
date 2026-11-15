@@ -3,7 +3,7 @@ so nothing leaves this machine), and only the owner is told."""
 import json, os, sys, tempfile
 from pathlib import Path
 os.environ["PEAKCUT_DATA"] = tempfile.mkdtemp(prefix="pc-upd-")
-os.environ.update(PEAKCUT_UPDATE_CHECK="1", DATABASE_URL="", PEAKCUT_ACCOUNTS="0", PEAKCUT_PUBLIC_URL="http://127.0.0.1:8765", PEAKCUT_AI_KEY="", PEAKCUT_AI_MODELS="")
+os.environ.update(PEAKCUT_UPDATE_CHECK="1", PEAKCUT_UPDATE_REPO="example/clipforge", DATABASE_URL="", PEAKCUT_ACCOUNTS="0", PEAKCUT_PUBLIC_URL="http://127.0.0.1:8765", PEAKCUT_AI_KEY="", PEAKCUT_AI_MODELS="")
 sys.path.insert(0, ".")
 from fastapi.testclient import TestClient
 from studio import config, db, server, updates
@@ -48,7 +48,7 @@ def fake_get(url, timeout=None, headers=None, params=None):
     return gh["compare"] or R(403, {"message": "rate limit"})
 updates.httpx.get = fake_get
 here = updates.RUNNING
-check("the version PeakCut started on is remembered", len(here), 40)
+check("the version ClipForge started on is remembered", len(here), 40)
 NEWER, NEWEST = "1" * 40, "2" * 40
 two = R(200, {"ahead_by": 2, "commits": [
     {"sha": "aaaaaaa1", "commit": {"message": "Connect TikTok in one click\n\nlong text", "committer": {"date": "2026-11-15T10:00:00Z"}}},
@@ -61,7 +61,7 @@ check("it goes to the address git itself uses, not the API", asked[0], f"https:/
 
 asked.clear(); gh.update(top=NEWER, compare=two)
 got = updates.check(force=True)
-check("a new commit is noticed while PeakCut is running, with no restart", (got["behind"], got["latest"], got["current"], got["restart"]), (2, "1111111", here[:7], False))
+check("a new commit is noticed while ClipForge is running, with no restart", (got["behind"], got["latest"], got["current"], got["restart"]), (2, "1111111", here[:7], False))
 check("newest change first, one line each, with its date", [(n["title"], n["date"]) for n in got["notes"]],
       [("Captions always in English", "2026-11-16"), ("Connect TikTok in one click", "2026-11-15")])
 asked.clear()
