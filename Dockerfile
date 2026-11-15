@@ -2,7 +2,7 @@
 FROM python:3.11-slim
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg ca-certificates bzip2 fonts-noto-core fonts-noto-cjk \
+ && apt-get install -y --no-install-recommends ffmpeg ca-certificates bzip2 fonts-noto-core fonts-noto-cjk libgomp1 \
  && rm -rf /var/lib/apt/lists/*
 # yt-dlp needs a JavaScript runtime for YouTube
 COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
@@ -12,6 +12,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY studio studio
 COPY web web
+# never run as root inside the container: a separate, unprivileged user owns the app's data
+RUN useradd --create-home --uid 10001 clipforge && mkdir -p /data && chown -R clipforge:clipforge /data /app
+USER clipforge
 
 ENV PEAKCUT_DATA=/data \
     PEAKCUT_HOST=0.0.0.0 \
