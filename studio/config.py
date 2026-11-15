@@ -197,6 +197,29 @@ def ai_ready() -> bool:
     return ai.ready()
 
 
+# ---------------------------------------------------------------- ClipForge plans and payments (see billing.py)
+# Off by default, so a self-hosted copy works like before: everyone can download everything. On the hosted
+# ClipForge site set CLIPFORGE_BILLING=1 (with accounts on): previews stay free, downloads need a plan.
+BILLING = env("CLIPFORGE_BILLING", "0") == "1"
+PREVIEWS_PER_DAY = int(env("CLIPFORGE_PREVIEWS_PER_DAY", "2"))         # videos a signed-in user without a plan may preview
+PREVIEW_MAX_MINUTES = float(env("CLIPFORGE_PREVIEW_MAX_MINUTES", "60"))  # ...each up to this long
+PREVIEW_CLIPS = int(env("CLIPFORGE_PREVIEW_CLIPS", "3"))                 # clips that play in a preview; the rest are locked
+RAZORPAY_KEY_ID = env("RAZORPAY_KEY_ID", "").strip()
+
+
+def razorpay_secret() -> str:
+    return _secret("RAZORPAY_KEY_SECRET", "RAZORPAY_KEY_SECRET_FILE", r"\S{8,}")
+
+
+def razorpay_webhook_secret() -> str:
+    return _secret("RAZORPAY_WEBHOOK_SECRET", "RAZORPAY_WEBHOOK_SECRET_FILE", r"\S{8,}")
+
+
+def master_key() -> str:
+    """The key that encrypts users' own AI keys (BYOK). Set CLIPFORGE_SECRET_KEY (or _FILE) on a server."""
+    return _secret("CLIPFORGE_SECRET_KEY", "CLIPFORGE_SECRET_KEY_FILE", r"[A-Za-z0-9_\-=]{32,}")
+
+
 # ---------------------------------------------------------------- account emails (see mailer.py)
 SMTP_HOST = env("PEAKCUT_SMTP_HOST", "")
 SMTP_PORT = int(env("PEAKCUT_SMTP_PORT", "587"))

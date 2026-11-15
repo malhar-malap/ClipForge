@@ -23,6 +23,7 @@ from . import admin as admins
 from . import account, load
 from . import (accounts, ai, alerts, auth, config, creators, ctx, db, jobs, live, media, posting,
                profiles, render, safe, transcribe, usage)
+from . import billing, keystore
 
 from . import tools as _tools  # noqa: E402
 
@@ -36,13 +37,13 @@ def _quiet(fn):
 
 app = FastAPI(title="PeakCut", docs_url=None, redoc_url=None, openapi_url=None)
 WEB = config.ROOT / "web"
-OPEN = ("/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
+OPEN = ("/api/billing/webhook", "/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
          "/privacy": "legal.html", "/terms": "legal.html", "/acceptable-use": "legal.html"}
 VIDEO_TYPES = {".mp4", ".mov", ".mkv", ".webm", ".m4v", ".ts", ".flv"}
-CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; "
-       "frame-src https://player.twitch.tv https://www.youtube-nocookie.com https://player.kick.com; "
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' https://lumberjack.razorpay.com; "
+       "frame-src https://player.twitch.tv https://www.youtube-nocookie.com https://player.kick.com https://api.razorpay.com; "
        "frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com")
 
 
@@ -156,7 +157,7 @@ class Gate:
             # decided before a single byte of the file is accepted: verified, has a free slot, has disk space
             def allowed():
                 with ctx.as_user(user.id):
-                    _need_verified(); _job_slots(); _quota()                     # noqa: E702
+                    _need_verified(); _job_slots(); _quota(); _preview_slot()    # noqa: E702
             try:
                 await run_in_threadpool(allowed)
             except HTTPException as e:
@@ -301,6 +302,13 @@ def _admin(request: Request):
     if not u or not u.is_admin or u.disabled:
         raise HTTPException(404)
     return u
+
+
+def _preview_slot():
+    """ClipForge: a user without a plan may only start a video while they have free previews left today."""
+    uid = ctx.uid()
+    if billing.on() and not billing.is_paid(uid) and billing.previews_left(uid) <= 0:
+        raise HTTPException(402, f"You've used today's {config.PREVIEWS_PER_DAY} free previews. Choose a plan, or come back tomorrow.")
 
 
 def _need_verified():
@@ -574,7 +582,8 @@ def status(request: Request):
     return {"user": auth.public(me_), "update": updates.latest() if me_.is_admin else None, "accounts": config.ACCOUNTS, "disk_full": load.disk_full(), "no_ffmpeg": bool(_tools.missing()), "links": {"repo": config.REPO_URL, "follow": config.FOLLOW_URL}, "ai": usage.brief(), "unread": notices.unread(),
             "tour": not accounts.settings()["tour_done"],
             "youtube": accounts.youtube_ready(), "connect": {p: accounts.can_connect(p) for p in accounts.PLATFORM_NAMES}, "max_upload_mb": config.MAX_UPLOAD_MB, "upload_part_mb": config.UPLOAD_PART_MB, "max_batch": config.MAX_ACTIVE_JOBS_PER_USER,
-            "styles": {k: v["label"] for k, v in render.STYLES.items()}, "layouts": render.LAYOUTS}
+            "styles": {k: v["label"] for k, v in render.STYLES.items()}, "layouts": render.LAYOUTS,
+            "billing": billing.summary(me_.id)}
 
 
 # ================================================================ videos
@@ -940,6 +949,37 @@ def rerender(jid: str, cid: str, body: dict = Body(...)):
     return jobs.public(job)
 
 
+@app.post("/api/jobs/{jid}/clips/{cid}/unlock")
+def unlock_clip(jid: str, cid: str):
+    """Make a preview (or locked) clip in full quality. Needs a plan; uses the clip's minutes."""
+    job = _job_or_404(jid)
+    if not any(c["id"] == cid for c in job["clips"]):
+        raise HTTPException(404, "No such clip")
+    if job["status"] in ("queued", "running"):
+        raise HTTPException(409, "This video is still being read. Try again when it has finished.")
+    _throttle("unlock:" + ctx.uid(), 60, 600)
+    try:
+        jobs.request_unlock(jid, cid)
+    except ValueError as e:
+        raise HTTPException(402, str(e))
+    return jobs.public(job)
+
+
+@app.get("/api/jobs/{jid}/clips/{cid}/preview")
+def preview_media(jid: str, cid: str):
+    """The source video behind a preview clip, for the browser to play with its own crop and captions.
+    Never the rendered clip, and never for a locked clip."""
+    job = _job_or_404(jid)
+    clip = next((c for c in job["clips"] if c["id"] == cid), None)
+    if not clip or clip.get("status") == "locked":
+        raise HTTPException(404)
+    f = Path(clip.get("src") or job.get("source_path") or "")
+    root = Path(job["dir"]).resolve()
+    if not f.is_file() or root not in f.resolve().parents:
+        raise HTTPException(404)
+    return FileResponse(f, media_type="video/mp4", headers={"Cache-Control": "private, max-age=600"})
+
+
 @app.delete("/api/jobs/{jid}")
 def delete_job(jid: str):
     job = _job_or_404(jid)
@@ -1294,6 +1334,97 @@ def ai_test(request: Request):
         raise HTTPException(400, str(e))
     except Exception as e:  # noqa: BLE001
         raise HTTPException(502, ai.explain(e) or "The AI did not answer: " + _ai_error(e))
+
+
+# ================================================================ ClipForge: plans, payments and your own AI key
+def _billing_error(e):
+    raise HTTPException(400, str(e))
+
+
+@app.get("/api/billing")
+def billing_get():
+    return billing.summary(ctx.uid())
+
+
+@app.post("/api/billing/checkout")
+def billing_checkout(body: dict = Body(...)):
+    _throttle("checkout:" + ctx.uid(), 10, 600)
+    _need_verified()
+    try:
+        return billing.create_order(ctx.uid(), str(body.get("plan") or ""))
+    except billing.BillingError as e:
+        _billing_error(e)
+
+
+@app.post("/api/billing/verify")
+def billing_verify(body: dict = Body(...)):
+    _throttle("verify:" + ctx.uid(), 20, 600)
+    try:
+        status = billing.verify_checkout(ctx.uid(), str(body.get("razorpay_order_id") or ""),
+                                         str(body.get("razorpay_payment_id") or ""), str(body.get("razorpay_signature") or ""))
+    except billing.BillingError as e:
+        _billing_error(e)
+    ai.forget_own(ctx.uid())
+    ctx.bump()
+    return {"ok": True, "status": status, **billing.summary(ctx.uid())}
+
+
+@app.post("/api/billing/webhook")
+async def billing_webhook(request: Request):
+    body = await request.body()
+    try:
+        out = await run_in_threadpool(billing.webhook, body, request.headers.get("x-razorpay-signature", ""))
+    except (billing.BillingError, ValueError):
+        raise HTTPException(400, "Rejected.")
+    return {"ok": True, "result": out}
+
+
+@app.get("/api/me/ai")
+def my_ai_get():
+    if not billing.on():
+        raise HTTPException(404)
+    return keystore.public(ctx.uid())
+
+
+@app.put("/api/me/ai")
+def my_ai_put(body: dict = Body(...)):
+    """Creator BYOK: test the user's key with one tiny call, then save it encrypted. A BYOK plan starts here."""
+    if not billing.on():
+        raise HTTPException(404)
+    uid = ctx.uid()
+    _throttle("myaitest:" + uid, 10, 600, "Too many tries. Wait a few minutes and try again.")
+    provider = str(body.get("provider") or "").strip().lower()
+    models = body.get("models")
+    models = [m.strip() for m in (models.split(",") if isinstance(models, str) else models or []) if str(m).strip()]
+    key = str(body.get("key") or "").strip()
+    try:
+        provider, models, key = keystore.clean(provider, models, key)     # the shape first; nothing is saved yet
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    try:
+        with ai.using({"provider": provider, "models": models, "key": key}):
+            ai.test()
+    except Exception as e:  # noqa: BLE001 - a key that fails is never saved; a working one already saved stays
+        with ai.using({"provider": provider, "models": models, "key": key}):
+            why = ai.explain(e)
+        raise HTTPException(400, (why or "The key did not work with that service and model.").replace(key, "<key>"))
+    keystore.save(uid, provider, models, key, tested=True)
+    billing.key_tested(uid)
+    ai.forget_own(uid)
+    ctx.bump()
+    return {"ok": True, **keystore.public(uid), "billing": billing.summary(uid)}
+
+
+@app.delete("/api/me/ai")
+def my_ai_delete():
+    if not billing.on():
+        raise HTTPException(404)
+    uid = ctx.uid()
+    keystore.remove(uid)
+    billing.key_removed(uid)
+    ai.forget_own(uid)
+    ctx.bump()
+    return {"ok": True}
 
 
 # ================================================================ posting, accounts, settings

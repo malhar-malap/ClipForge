@@ -8,10 +8,13 @@
 
 Every service is asked for the same thing: JSON that follows a small schema. Gemini takes the schema directly.
 The others are told the schema in the prompt and asked for a JSON object, which works with any chat model."""
+import contextlib
+import contextvars
 import json
 import os
 import re
 import threading
+import time
 
 import httpx
 
@@ -56,8 +59,54 @@ def _from_dashboard() -> dict:
     return _saved["data"]
 
 
+_using = contextvars.ContextVar("clipforge_ai_using", default=None)    # settings being tried before they are saved
+_own_cache: dict = {}                                                  # user id -> (when, their own settings or None)
+
+
+@contextlib.contextmanager
+def using(settings: dict):
+    """Run AI calls with these settings (a user's key being tested), whatever is saved."""
+    token = _using.set(dict(settings, base_url=settings.get("base_url") or ""))
+    try:
+        yield
+    finally:
+        _using.reset(token)
+
+
+def _own() -> dict:
+    """ClipForge BYOK: the signed-in user's own key, when their plan says the AI runs on it. Otherwise None.
+    A BYOK user without a working key gets empty settings, so nothing silently runs on the server's key."""
+    if not config.BILLING:
+        return None
+    from . import ctx
+    uid = ctx.uid_or_none()
+    if not uid:
+        return None
+    hit = _own_cache.get(uid)
+    if hit and time.time() - hit[0] < 15:
+        return hit[1]
+    from . import billing, keystore
+    out = None
+    if billing.uses_own_key(uid):
+        s = keystore.get(uid)
+        out = {"provider": s["provider"], "models": s["models"], "base_url": "", "key": s["key"]} if s and s["tested_at"] else \
+            {"provider": "", "models": [], "base_url": "", "key": ""}
+    _own_cache[uid] = (time.time(), out)
+    return out
+
+
+def forget_own(uid):
+    _own_cache.pop(uid, None)
+
+
 def current() -> dict:
     """Provider, models, address and key: what the dashboard saved, or else what .env says."""
+    trying = _using.get()
+    if trying is not None:
+        return trying
+    own = _own()
+    if own is not None:
+        return own
     d = _from_dashboard()
     p = str(d.get("provider") or config.AI_PROVIDER or "").strip().lower()
     return {"provider": ALIASES.get(p, p),

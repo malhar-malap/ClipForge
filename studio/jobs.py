@@ -12,7 +12,7 @@ import traceback
 import uuid
 from pathlib import Path
 
-from . import brain, config, creators, ctx, load, media, render, roman, safe, transcribe, usage
+from . import billing, brain, config, creators, ctx, load, media, render, roman, safe, transcribe, usage
 
 class _FairQueue:
     """Whose video is next. Each person has their own line and the lines take turns, so someone who adds ten
@@ -295,6 +295,17 @@ def create(source: dict, options: dict, enqueue=True, creator=None, kind="video"
     job = {"id": jid, "user": ctx.uid(), "kind": kind, "creator": creator, "dir": str(d), "created": time.time(), "source": source,
            "options": opts, "status": "queued", "stage": "Waiting", "progress": 0.0,
            "title": source.get("name", ""), "uploader": "", "duration": 0, "clips": [], "error": None, "ai": {}}
+    if billing.on() and not billing.is_paid(job["user"]):
+        if kind != "video":
+            shutil.rmtree(d, ignore_errors=True)
+            raise billing.BillingError("Live clipping needs a plan. Choose one to start recording.")
+        try:
+            billing.start_preview(job["user"])             # counts against today's free previews
+        except billing.BillingError:
+            shutil.rmtree(d, ignore_errors=True)
+            raise
+        job["preview"] = True                              # clips are found and previewed, not rendered
+        opts["quality"] = 360                              # previews play small pieces; full quality comes on unlock
     with _lock:
         _jobs[jid] = job
         _by_user.setdefault(job["user"], {})[jid] = job
@@ -342,6 +353,8 @@ def delete(jid):
 def request_render(jid, cid, changes: dict):
     job = _jobs[jid]
     clip = next(c for c in job["clips"] if c["id"] == cid)
+    if clip.get("status") in PREVIEW_STATES:
+        _unlock_prep(job, clip)
     new = dict(clip)
     for k in ("start", "end"):
         if k in changes:
@@ -368,11 +381,91 @@ def request_render(jid, cid, changes: dict):
     _q.put(("clip", jid, cid))
 
 
+PREVIEW_STATES = ("preview", "locked", "found")
+
+
+def _preview_length_ok(job, duration):
+    if not job.get("preview"):
+        return
+    o = job["options"]
+    span = (o.get("range_end") or duration or 0) - (o.get("range_start") or 0)
+    if span > config.PREVIEW_MAX_MINUTES * 60:
+        raise RuntimeError(f"Free previews are for videos up to {config.PREVIEW_MAX_MINUTES:g} minutes. Choose a part of "
+                           "it under Options, or pick a plan to clip the whole video.")
+
+
+def _job_audio(job):
+    """The whole video's sound, for lining up a fetched piece: from the small copy a preview kept."""
+    d = Path(job["dir"])
+    kept = d / "audio.opus"
+    if not kept.is_file():
+        raise RuntimeError("This preview's sound is gone, so the clip can't be fetched again. Start the video again.")
+    wav = d / "unlock.wav"
+    media.extract_audio(kept, wav)
+    try:
+        return media.load_audio(wav)
+    finally:
+        wav.unlink(missing_ok=True)
+
+
+def _finish_preview(job, audio, words):
+    """A preview: the best few clips get a small piece to play in the browser (no render, no AI captions);
+    the rest are locked until the user has a plan."""
+    from . import vision
+    show = {c["id"] for c in sorted(job["clips"], key=lambda c: -(c.get("score") or 0))[: config.PREVIEW_CLIPS]}
+    for c in job["clips"]:
+        if c["id"] not in show:
+            c["status"] = "locked"
+            continue
+        _set(job, stage="Preparing your previews")
+        if job["source"]["type"] == "url":
+            _fetch_piece(job, c, audio)
+            if c.get("status") == "error":
+                continue
+        src = c.get("src") or job.get("source_path")
+        off = c.get("src_offset", 0.0)
+        w, h = c.get("src_w") or job.get("width") or 0, c.get("src_h") or job.get("height") or 0
+        if src and w and h and c.get("layout") in ("auto", "split", "gamefocus", "face"):
+            c["seen"] = vision.analyze(src, c["start"] - off, c["end"] - off, w, h)
+        inside = roman.words([x for x in words if c["start"] <= x["s"] < c["end"]])
+        c["pwords"] = [[x["w"], round(x["s"] - c["start"], 2), round(x["e"] - c["start"], 2)] for x in inside][:400]
+        c["status"] = "preview"
+    save(job)
+
+
+def _unlock_prep(job, clip):
+    """A preview or locked clip is about to be made in full: only with a plan; a link's piece is fetched again."""
+    ok, why = billing.can_download(job["user"])
+    if not ok:
+        raise ValueError(why)
+    if job["source"]["type"] == "url":
+        job["options"]["quality"] = DEFAULTS["quality"]
+        clip["refetch"] = True
+
+
+def request_unlock(jid, cid):
+    """Make one preview or locked clip in full quality (uses minutes from the plan)."""
+    job = _jobs[jid]
+    clip = next(c for c in job["clips"] if c["id"] == cid)
+    if clip.get("status") not in PREVIEW_STATES:
+        raise ValueError("This clip is already made.")
+    _unlock_prep(job, clip)
+    clip.update(status="queued", error=None)
+    save(job)
+    _q.put(("clip", jid, cid))
+
+
 def render_one(job, clip, words):
     d = Path(job["dir"])
     clip["status"] = "rendering"
     save(job)
     try:
+        if clip.pop("refetch", False):     # an unlocked preview clip: its piece again, in full quality
+            clip.pop("src", None)
+            _fetch_piece(job, clip, _job_audio(job))
+            if clip.get("status") == "error":
+                save(job)
+                return
         off = clip.get("src_offset", 0.0)
         src = Path(clip["src"]) if clip.get("src") else Path(job["source_path"])
         if not clip.get("src"):
@@ -393,7 +486,11 @@ def render_one(job, clip, words):
                 pass
         # the last word on it: whatever was said, nothing is drawn in Hindi or Urdu script
         near = [dict(w, s=w["s"] - off, e=w["e"] - off) for w in roman.words(raw)]
-        out = render.render_clip(src, d / "clips", clip["id"], local, near, job["width"], job["height"])
+        if billing.on() and not clip.get("charged"):
+            billing.charge(job["user"], clip["end"] - clip["start"], clip.get("title") or clip["id"])
+            clip["charged"] = True             # re-making the same clip later is free
+        out = render.render_clip(src, d / "clips", clip["id"], local, near,
+                                 clip.get("src_w") or job["width"], clip.get("src_h") or job["height"])
         clip.update(out, status="done", version=clip.get("version", 0) + 1, error=None)
         post = {k: clip[k] for k in ("title", "description", "hashtags", "hook", "start", "end", "score")}
         (d / "clips" / f"{clip['id']}.json").write_text(json.dumps(post, indent=1), encoding="utf-8")
@@ -474,7 +571,8 @@ def _fetch_piece(job, clip, full_audio):
         wav.unlink(missing_ok=True)
         meta = media.probe(piece)
         off = media.find_offset(full_audio, part, want)
-        clip.update(src=str(piece), src_offset=round(off, 2), src_end=round(off + meta["duration"], 2))
+        clip.update(src=str(piece), src_offset=round(off, 2), src_end=round(off + meta["duration"], 2),
+                    src_w=meta["width"], src_h=meta["height"])
         clip["start"], clip["end"] = max(clip["start"], clip["src_offset"]), min(clip["end"], clip["src_end"])
         job.setdefault("width", meta["width"])
         job.setdefault("height", meta["height"])
@@ -544,11 +642,12 @@ def _run_job(job):
             raise RuntimeError("This link is a live stream, so it would never finish downloading. Open the creator, "
                                "put this link under Setup, and press Start recording instead.")
         _set(job, title=meta["title"], uploader=meta["uploader"], duration=meta["duration"])
+        _preview_length_ok(job, meta["duration"])
         if not job.get("thumb") and media.save_thumb(d, url=src["url"]):
             _set(job, thumb=True)
         usage.set_context(job["creator"], meta["title"])
         span = (o["range_end"] or meta["duration"]) - (o["range_start"] or 0)
-        pieces = span > LONG_VIDEO or meta["duration"] <= 0
+        pieces = span > LONG_VIDEO or meta["duration"] <= 0 or bool(job.get("preview"))   # previews fetch only their clips
         if not pieces:  # shorter video: fetch all of it in the background while the audio is worked on
             video = fetch.submit(media.download, src["url"], d, int(o["quality"]))
         audio_file = media.download_audio(src["url"], d, lambda p: _set(job, progress=0.03 + 0.1 * p))
@@ -558,11 +657,15 @@ def _run_job(job):
         if info["duration"] > config.MAX_VIDEO_HOURS * 3600:
             raise RuntimeError(f"That video is longer than {config.MAX_VIDEO_HOURS:g} hours, which is the limit.")
         _set(job, source_path=str(audio_file), width=info["width"], height=info["height"], duration=info["duration"])
+        _preview_length_ok(job, info["duration"])
         if not job.get("thumb") and media.save_thumb(d, video=audio_file):
             _set(job, thumb=True)
     wav = d / "audio.wav"
     media.extract_audio(audio_file, wav)
     audio = media.load_audio(wav)
+    if job.get("preview") and src["type"] == "url":
+        # kept small (opus), so a clip unlocked later can be fetched in full quality and lined up exactly
+        media.run(["ffmpeg", "-y", "-v", "error", "-i", str(wav), "-c:a", "libopus", "-b:a", "24k", str(d / "audio.opus")])
     wav.unlink(missing_ok=True)
     if src["type"] == "url":
         audio_file.unlink(missing_ok=True)
@@ -701,10 +804,15 @@ def _run_job(job):
             c.update(id=f"clip{len(job['clips']) + 1:02d}", start=round(c["start"] + shift, 2),
                      end=round(c["end"] + shift, 2), style=o["style"], layout=o["layout"], status="queued", version=0)
             job["clips"].append(c)
-            futures.append((renders.submit(ctx.bind(make), c, list(words)), c))
+            if job.get("preview"):
+                c["status"] = "found"          # previews are prepared once every part has been read
+            else:
+                futures.append((renders.submit(ctx.bind(make), c, list(words)), c))
         job["ai"] = {"model": model, "tokens": tokens, "note": "", "log": notes[-5:]}
         job["done_blocks"] = bi + 1       # a restart from here on carries on with the next part
         save(job)
+    if job.get("preview"):
+        _finish_preview(job, audio, words)
     if futures:
         _set(job, stage="Finishing the clips", progress=max(job["progress"], 0.92))
     _wait_for_clips(job, futures, began, renders._max_workers)

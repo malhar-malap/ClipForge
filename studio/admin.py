@@ -6,6 +6,7 @@ change it, and no email address is special in the code. It is set by hand, on th
     python -m studio.admin list
     python -m studio.admin grant someone@example.com
     python -m studio.admin revoke someone@example.com
+    python -m studio.admin plan someone@example.com creator     (trial, creator, byok, pro: no payment needed)
 
 Admins see accounts and AI use. They do not see anyone's videos, clips or connected accounts."""
 import shutil
@@ -154,6 +155,22 @@ def _cli(argv):
         with db.engine.connect() as c:
             for r in c.execute(sa.select(db.users).order_by(db.users.c.created_at)):
                 print(f"{'admin' if r.is_admin else 'user ':5}  {'disabled' if r.disabled else '        '}  {r.email}")
+        return 0
+    if len(argv) == 3 and argv[0] == "plan":
+        from . import billing
+        with db.engine.connect() as c:
+            r = c.execute(sa.select(db.users).where(db.users.c.email == argv[1].strip().lower())).first()
+        if not r:
+            print(f"No account with the email {argv[1]}. They need to sign up first.")
+            return 1
+        try:
+            status = billing.grant(r.id, argv[2], "cli")
+        except billing.BillingError as e:
+            print(f"{e} Plans: {', '.join(billing.PLANS)}")
+            return 1
+        with db.engine.begin() as c:
+            _log(c, r.id, "plan", r.id, f"{argv[2]} granted from the server command line")
+        print(f"{argv[1]} now has the {billing.PLANS[argv[2]]['label']} plan ({status}).")
         return 0
     if len(argv) == 2 and argv[0] in ("grant", "revoke"):
         if not set_admin(argv[1], argv[0] == "grant"):
