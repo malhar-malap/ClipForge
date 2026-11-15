@@ -107,7 +107,7 @@ _by_user: dict = {}                       # user -> {job id: job}: listing one p
 _lock = threading.RLock()
 on_clip_ready: list = []   # callbacks (job, clip), run once when a clip first finishes
 
-DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "blur", "quality": 720,
+DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "auto", "quality": 1080,
             "range_start": None, "range_end": None}
 
 
@@ -356,6 +356,9 @@ def request_render(jid, cid, changes: dict):
         new["style"] = DEFAULTS["style"]
     if new.get("layout") not in render.LAYOUTS:
         new["layout"] = DEFAULTS["layout"]
+    if new["start"] != clip["start"] or new["end"] != clip["end"] or new.get("layout") != clip.get("layout"):
+        new.pop("seen", None)       # a different stretch or layout: look at the frames again
+        clip.pop("seen", None)
     clip.update(new, status="queued")
     save(job)
     _q.put(("clip", jid, cid))

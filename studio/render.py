@@ -78,7 +78,13 @@ def install_fonts():
             shutil.copyfile(f, config.FONTS_DIR / f.name)
 
 
-LAYOUTS = {"blur": "Full frame + blurred fill", "zoom": "Zoomed in + blurred fill", "crop": "Fill the screen (centre crop)"}
+LAYOUTS = {"auto": "Auto (finds the facecam or the speaker)",
+           "split": "Gaming: facecam on top, gameplay below",
+           "gamefocus": "Gaming: gameplay full screen, facecam bubble",
+           "face": "Follow the speaker's face",
+           "blur": "Full frame + blurred fill", "zoom": "Zoomed in + blurred fill", "crop": "Fill the screen (centre crop)"}
+CAM_H = 640                    # split layout: the facecam panel on top; gameplay gets the rest
+BUBBLE = 360                   # gamefocus layout: the round facecam, in pixels
 
 
 def _ts(t):
@@ -112,6 +118,12 @@ def geometry(src_w, src_h, layout):
     """Where the video sits in the 1080x1920 frame, and where hook and captions go."""
     if src_h >= src_w and layout != "crop":
         layout = "crop"  # already vertical or square: nothing to gain from a blurred fill
+    if layout == "split":
+        return layout, H, CAM_H + 120, 1450          # hook sits on the seam, captions over the gameplay
+    if layout == "gamefocus":
+        return layout, H, 300, 1100                  # captions above the bubble in the lower corner
+    if layout == "face":
+        return layout, H, 300, 1380
     if layout == "blur":
         fg_h = min(H, int(round(W * src_h / src_w / 2)) * 2)
     elif layout == "zoom":
@@ -227,7 +239,74 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     return head + "\n".join(ev) + "\n"
 
 
-def _filter(layout, fg_h):
+def _even(v) -> int:
+    """Rounded down to an even number of pixels (video sizes and offsets must be even). Never below 0."""
+    return max(0, int(v) // 2 * 2)
+
+
+def _game_window(src_w, src_h, aspect, hud):
+    """Where the gameplay crop sits, as (x, width) in source pixels, or None to show the whole width.
+    A HUD on one side pulls the window to that side; HUDs on both sides mean the whole width is shown."""
+    gw = max(2, _even(src_h * aspect))
+    if gw >= src_w:
+        return None
+    left, right = (list(hud or []) + [False, False])[:2]
+    if left and right:
+        return None
+    x = 0 if left else (src_w - gw) if right else (src_w - gw) // 2
+    return _even(x), gw
+
+
+def _panel(label_in, label_out, src_w, src_h, pw, ph, hud):
+    """Gameplay into a pw x ph panel: cropped to fill it (keeping a HUD in view), or the whole width over a blur."""
+    win = _game_window(src_w, src_h, pw / ph, hud)
+    if win:
+        x, gw = win
+        return (f"[{label_in}]crop={gw}:{_even(src_h)}:{x}:0,scale={pw}:{ph}:force_original_aspect_ratio=increase,"
+                f"crop={pw}:{ph}[{label_out}];")
+    fg_h = min(ph, _even(pw * src_h / max(1, src_w)))
+    return (f"[{label_in}]split=2[{label_out}a][{label_out}b];"
+            f"[{label_out}a]scale=270:{_even(270 * ph / pw)}:force_original_aspect_ratio=increase,"
+            f"crop=270:{_even(270 * ph / pw)},boxblur=6:2,scale={pw}:{ph},eq=brightness=-0.14:saturation=1.15[{label_out}c];"
+            f"[{label_out}b]scale={pw}:{fg_h}[{label_out}d];[{label_out}c][{label_out}d]overlay=0:(H-h)/2[{label_out}];")
+
+
+def _box_px(box, src_w, src_h):
+    x, y, w, h = box
+    pw, ph = max(2, _even(w * src_w)), max(2, _even(h * src_h))
+    px = min(max(0, _even(x * src_w)), _even(src_w - pw))
+    py = min(max(0, _even(y * src_h)), _even(src_h - ph))
+    return px, py, pw, ph
+
+
+def _filter(layout, fg_h, src_w=0, src_h=0, seen=None):
+    seen = seen or {}
+    fps = f"[0:v]fps={config.OUT_FPS}"
+    if layout == "split" and seen.get("cam"):
+        cx, cy, cw, ch = _box_px(seen["cam"], src_w, src_h)
+        return (f"{fps},split=2[c][g];[c]crop={cw}:{ch}:{cx}:{cy},scale={W}:{CAM_H}:force_original_aspect_ratio=increase,"
+                f"crop={W}:{CAM_H}[cam];" + _panel("g", "game", src_w, src_h, W, H - CAM_H, seen.get("hud"))
+                + "[cam][game]vstack=inputs=2,setsar=1[v0];")
+    if layout == "gamefocus" and seen.get("face"):
+        fx, fy, fw, fh = seen["face"]
+        side = min(src_w, src_h, max(2, int(max(fw * src_w, fh * src_h) * 2.4)))
+        bx = min(max(0, _even((fx + fw / 2) * src_w - side / 2)), _even(src_w - side))
+        by = min(max(0, _even((fy + fh / 2) * src_h - side / 2)), _even(src_h - side))
+        r = BUBBLE // 2
+        return (f"{fps},split=2[c][g];" + _panel("g", "game", src_w, src_h, W, H, seen.get("hud"))
+                + f"[c]crop={_even(side)}:{_even(side)}:{bx}:{by},scale={BUBBLE}:{BUBBLE},format=yuva420p,"
+                f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='if(lte(hypot(X-{r},Y-{r}),{r - 2}),255,0)'[bub];"
+                f"[game][bub]overlay={W - BUBBLE - 48}:{H - BUBBLE - 220}:format=auto,setsar=1[v0];")
+    if layout == "face" and (seen.get("cx") is not None or seen.get("face")):
+        cx = seen.get("cx")
+        if cx is None:
+            fx, _, fw, _ = seen["face"]
+            cx = fx + fw / 2
+        cw = min(_even(src_w), _even(src_h * W / H))
+        x = min(max(0, _even(cx * src_w - cw / 2)), _even(src_w - cw))
+        return f"{fps},crop={cw}:{_even(src_h)}:{x}:0,scale={W}:{H},setsar=1[v0];"
+    if layout in ("split", "gamefocus", "face"):
+        layout, fg_h = "blur", min(H, int(round(W * src_h / max(1, src_w) / 2)) * 2) if src_w else H
     if layout == "crop":
         return f"[0:v]fps={config.OUT_FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[v0];"
     return (f"[0:v]fps={config.OUT_FPS},split=2[a][b];"
@@ -245,7 +324,13 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
     """Writes <name>.mp4, <name>.jpg and <name>.ass into out_dir. Returns file names."""
     out_dir.mkdir(parents=True, exist_ok=True)
     start, end = clip["start"], clip["end"]
-    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, clip.get("layout", "blur"))
+    wanted = clip.get("layout", "blur")
+    seen = {}
+    if wanted in ("auto", "split", "gamefocus", "face"):
+        from . import vision
+        seen = clip.get("seen") or vision.analyze(src, start, end, src_w, src_h)
+        wanted = vision.choose_layout(wanted, seen)
+    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, wanted)
     ass = build_ass(words, start, end, clip.get("hook", ""), clip.get("style", "bounce"),
                     clip.get("highlight_words", []), hook_y, cap_y)
     # The clip is made in a short work folder and moved into place afterwards. The caption step of ffmpeg cannot
@@ -254,18 +339,21 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
     # break the filter syntax).
     work = Path(tempfile.mkdtemp(prefix="pk"))
     try:
-        return _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass)
+        out = _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass, src_w, src_h, seen)
+        out["seen"] = seen
+        return out
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
 
-def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str) -> dict:
+def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str,
+               src_w=0, src_h=0, seen=None) -> dict:
     global _qsv_ok
     (work / f"{name}.ass").write_text(ass, encoding="utf-8")
     (work / "f").mkdir()
     for f in config.FONTS_DIR.glob("*.ttf"):
         shutil.copyfile(f, work / "f" / f.name)
-    fc = _filter(layout, fg_h) + f"[v0]ass={name}.ass:fontsdir=f[v]"
+    fc = _filter(layout, fg_h, src_w, src_h, seen) + f"[v0]ass={name}.ass:fontsdir=f[v]"
     base = ["ffmpeg", "-y", "-v", "error", "-ss", f"{start:.2f}", "-t", f"{end - start:.2f}", "-i", str(src),
             "-filter_complex", fc, "-map", "[v]", "-map", "0:a:0", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11",
             "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", "-pix_fmt"]
