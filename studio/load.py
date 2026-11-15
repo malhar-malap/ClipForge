@@ -5,6 +5,7 @@ room, waits in line for a moment when it is nearly full, and is let through the 
 what keeps a rush from slowing everyone down or crashing the server."""
 import os
 import shutil
+import sys
 import threading
 import time
 
@@ -30,9 +31,24 @@ def _cpu_times():
         n = lambda f: (f.dwHighDateTime << 32) | f.dwLowDateTime          # noqa: E731
         total = n(kernel) + n(user)                                        # kernel time includes idle time
         return total - n(idle), total
+    if sys.platform == "darwin":
+        return _mac_cpu_times()
     with open("/proc/stat", encoding="ascii") as f:
         v = [int(x) for x in f.readline().split()[1:9]]
     return sum(v) - v[3] - v[4], sum(v)                                    # everything except idle and waiting on disk
+
+
+def _mac_cpu_times():
+    """macOS has no /proc: ask the kernel for its processor tick counters (user, system, idle, nice)."""
+    import ctypes
+    libc = ctypes.CDLL("/usr/lib/libSystem.dylib")
+    libc.mach_host_self.restype = ctypes.c_uint
+    ticks = (ctypes.c_uint * 4)()
+    count = ctypes.c_uint(4)
+    if libc.host_statistics(libc.mach_host_self(), 3, ctypes.byref(ticks), ctypes.byref(count)) != 0:   # 3: HOST_CPU_LOAD_INFO
+        raise OSError("host_statistics failed")
+    user, system, idle, nice = (int(t) for t in ticks)
+    return user + system + nice, user + system + idle + nice
 
 
 def _ram_free_gb() -> float:

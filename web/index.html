@@ -1381,6 +1381,10 @@ function drawAdd(variant) {
       <div class="ob"><div class="ot">Video quality</div><input type="hidden" id="o_quality" value="1080"><div class="seg" role="group" aria-label="Video quality">
         <button type="button" data-seg="o_quality" data-v="1080" aria-pressed="true">1080p<small>Sharp, matches the clip</small></button>
         <button type="button" data-seg="o_quality" data-v="720" aria-pressed="false">720p<small>Faster, a little softer</small></button></div></div>
+      <div class="ob"><div class="ot">Language spoken</div><select id="o_lang" aria-label="Language spoken">
+        <option value="auto" selected>Find it by itself</option><option value="en">English</option><option value="hi">Hindi / Hinglish</option>
+        <option value="ur">Urdu</option><option value="bn">Bengali</option><option value="ta">Tamil</option><option value="te">Telugu</option>
+        <option value="mr">Marathi</option><option value="es">Spanish</option><option value="pt">Portuguese</option><option value="ar">Arabic</option></select></div>
       <div class="ob"><div class="ot">Part of the video</div><div class="range">
         <label>From<input id="o_from" type="number" min="0" placeholder="start" aria-label="From minute">min</label>${ic("arrowr")}
         <label>To<input id="o_to" type="number" min="0" placeholder="end" aria-label="Up to minute">min</label></div></div>
@@ -1442,7 +1446,7 @@ document.addEventListener("keydown", e => {
 const targetCreator = () => creatorId() || $("#o_creator")?.value || "";
 function jobOptions() {
   const n = id => { const v = $(id).value; return v === "" ? null : Number(v); };
-  const o = {max_clips:n("#o_max"), min_len:n("#o_min"), max_len:n("#o_maxlen"), style:$("#o_style").value, layout:$("#o_layout").value, quality:n("#o_quality")};
+  const o = {max_clips:n("#o_max"), min_len:n("#o_min"), max_len:n("#o_maxlen"), style:$("#o_style").value, layout:$("#o_layout").value, quality:n("#o_quality"), language:$("#o_lang")?.value || "auto"};
   if (n("#o_from") !== null) o.range_start = n("#o_from") * 60;
   if (n("#o_to") !== null) o.range_end = n("#o_to") * 60;
   return o;

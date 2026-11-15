@@ -1,6 +1,7 @@
 """Job pipeline: get video -> audio -> transcript -> AI picks -> rendered clips. One heavy task at a time."""
 import collections
 import json
+import re
 import os
 import math
 import queue
@@ -108,7 +109,7 @@ _lock = threading.RLock()
 on_clip_ready: list = []   # callbacks (job, clip), run once when a clip first finishes
 
 DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "auto", "quality": 1080,
-            "range_start": None, "range_end": None}
+            "range_start": None, "range_end": None, "language": "auto"}
 
 
 LIMITS = {"max_clips": (1, 20), "min_len": (5, 120), "max_len": (10, 180), "quality": (360, 1080)}
@@ -127,6 +128,9 @@ def clean_options(options) -> dict:
             v = v if v in render.STYLES else DEFAULTS["style"]
         elif k == "layout":
             v = v if v in render.LAYOUTS else DEFAULTS["layout"]
+        elif k == "language":                    # "auto", or a language code such as en, hi, ur, es
+            v = str(v).strip().lower()
+            v = v if v == "auto" or re.fullmatch(r"[a-z]{2,3}", v) else "auto"
         else:                                    # range_start, range_end: seconds into the video
             v = float(v)
             if not math.isfinite(v) or v < 0:
@@ -490,6 +494,25 @@ def _covers(words: list, start: float, end: float) -> bool:
     return len(inside) >= 25 * minutes and inside[-1]["s"] >= start + 0.85 * (end - start)
 
 
+def _spoken_language(job, audio, lo, hi) -> str:
+    """The language our own transcript is written in: the one chosen under Options, or, on "auto", the one
+    Whisper hears in a 30-second sample. Without Whisper installed, English (the main model's language)."""
+    chosen = (job.get("options") or {}).get("language") or "auto"
+    if chosen != "auto":
+        return chosen
+    if job.get("lang"):                 # already worked out (a restart)
+        return job["lang"]
+    from . import whisper
+    if not whisper.available():
+        return ""
+    try:
+        _set(job, stage="Listening for the language")
+        lang, sure = whisper.detect_language(whisper.pick_sample(audio, lo, hi))
+        return lang if sure >= 0.5 else "en"
+    except Exception:  # noqa: BLE001 - no model download, an odd file: the English model, as before
+        return ""
+
+
 def _run_job(job):
     import math
     from concurrent.futures import ThreadPoolExecutor
@@ -610,6 +633,8 @@ def _run_job(job):
             yt = None
         job["transcript_from"] = "youtube" if yt else "own"
         job["lang"] = yt[1] if yt else ""          # the language spoken, when YouTube says (decides the captions)
+    if not yt:
+        job["lang"] = _spoken_language(job, audio, lo, hi)
     if resuming:
         try:
             words = json.loads((d / "words.json").read_text(encoding="utf-8"))
@@ -639,7 +664,7 @@ def _run_job(job):
                 if now_on[0] == i and p - last[0] > 0.05:      # only the part being shown moves the bar
                     last[0] = p
                     _set(job, progress=max(job["progress"], 0.14 + 0.78 * ((a_ - lo) + p * (b_ - a_)) / max(1, hi - lo)))
-            heard[i] = ahead.submit(ctx.bind(transcribe.transcribe), audio[a_:b_], tp)
+            heard[i] = ahead.submit(ctx.bind(transcribe.transcribe), audio[a_:b_], tp, job.get("lang") or "")
 
     for bi, (a, b) in enumerate(blocks):
         if bi < done_blocks:

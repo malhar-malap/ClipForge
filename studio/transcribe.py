@@ -198,9 +198,14 @@ def _decode_remote(pieces: list) -> list:
     return [(p["tokens"], p["timestamps"]) for p in got]
 
 
-def transcribe(audio: np.ndarray, on_progress=None) -> list:
+def transcribe(audio: np.ndarray, on_progress=None, lang: str = "") -> list:
     """Returns [{'w': word, 's': start_sec, 'e': end_sec}, ...] for the whole audio.
-    Speech is cut at quiet moments into 12-24 s pieces; silent pieces are skipped."""
+    Speech is cut at quiet moments into 12-24 s pieces; silent pieces are skipped.
+    A language other than English goes to Whisper (studio/whisper.py) when it is installed."""
+    if lang and not lang.lower().startswith("en"):
+        from . import whisper
+        if whisper.available():
+            return whisper.transcribe(audio, lang, on_progress)
     global _remote_down_until
     words = []
     todo = []
