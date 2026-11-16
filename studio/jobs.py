@@ -858,6 +858,15 @@ def _run_job(job):
                  "note": "The AI was unavailable, so clips were picked by loudness only." if clips and not model else ""}
     stage = "Done" if clips else "Done, but nothing clip-worthy was found"
     _set(job, status="done", stage=stage, progress=1.0, took=round(time.time() - t0))
+    if clips and time.time() - t0 > 300 and config.ACCOUNTS:     # a long one: worth an email, not just the bell
+        try:
+            from . import auth, mailer
+            u = auth.get_user(job["user"])
+            if u:
+                mailer.deliver(u.email, mailer.m_clips_ready(job.get("title") or job["source"].get("name") or "your video",
+                                                             len(clips), f"{config.PUBLIC_URL}/app/p/{job['id']}"))
+        except Exception:  # noqa: BLE001
+            pass
     try:
         from . import notices
         name = job.get("title") or job["source"].get("name") or "your video"

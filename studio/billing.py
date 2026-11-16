@@ -276,7 +276,25 @@ def _paid(order_id, payment_id, amount=None, uid=None) -> str:
         if row.status != "paid":
             c.execute(payments.update().where(payments.c.order_id == order_id)
                       .values(status="paid", payment_id=str(payment_id)[:64], paid_at=time.time()))
-        return _activate(c, row.user_id, row.plan, order_id)
+        status = _activate(c, row.user_id, row.plan, order_id)
+    if status != "already":
+        _receipt(row.user_id, row.plan, row.amount, order_id)
+    return status
+
+
+def _receipt(uid, plan, amount_paise, order_id):
+    """Email the receipt for a paid plan. A mail problem never undoes or delays the plan itself."""
+    try:
+        from . import mailer
+        with db.engine.connect() as c:
+            email = c.execute(sa.select(db.users.c.email).where(db.users.c.id == uid)).scalar()
+        p = current(uid)
+        if email and p:
+            spec = PLANS[plan]
+            mailer.deliver(email, mailer.m_receipt(spec["label"], amount_paise / 100, spec["minutes"],
+                                                   time.strftime("%d %b %Y", time.gmtime(p["ends_at"])), order_id))
+    except Exception:  # noqa: BLE001
+        pass
 
 
 def verify_checkout(uid, order_id: str, payment_id: str, signature: str) -> str:

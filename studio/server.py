@@ -1120,28 +1120,20 @@ def _channel_ok(body: dict):
 
 @app.get("/api/admin/email-preview")
 def email_preview(request: Request, kind: str = "verify"):
-    """What account emails look like, for admins."""
+    """What each account email looks like, for admins: ?kind=verify|reset|welcome|password_changed|receipt|clips_ready|test"""
     from . import mailer
     _admin(request)
-    if kind == "reset":
-        page = mailer.preview("Reset your password", "Someone asked to reset the password for this ClipForge account. If that was you, choose a new one below.",
-                              "Choose a new password", config.PUBLIC_URL + "/reset?t=example",
-                              "The link works for one hour. If you didn't ask for this, ignore this email and your password stays the same.")
-    else:
-        page = mailer.preview()
-    return HTMLResponse(page, headers={"Cache-Control": "no-store"})
+    return HTMLResponse(mailer.preview(kind), headers={"Cache-Control": "no-store"})
 
 
 @app.post("/api/admin/test-email")
 def test_email(request: Request):
-    """Send the confirm-email template to the admin, to check the email service works."""
+    """Send a test email to the admin, to check the email service works."""
     from . import mailer
     me_ = _admin(request)
     if not mailer.ready():
-        raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings to .env first.")
-    mailer.send(me_.email, "ClipForge test email", "Your emails are working",
-                "This is a test from your ClipForge server. Account emails like this one will now reach people.",
-                "Open ClipForge", config.PUBLIC_URL + "/app", "You can ignore this message.")
+        raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings and the password file first.")
+    mailer.deliver(me_.email, mailer.m_test())
     return {"sent_to": me_.email}
 
 

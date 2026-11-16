@@ -233,7 +233,16 @@ VERIFY_EMAIL = env("PEAKCUT_VERIFY_EMAIL", "0") == "1"
 
 
 def smtp_password() -> str:
-    return _secret("PEAKCUT_SMTP_PASSWORD", "PEAKCUT_SMTP_PASSWORD_FILE", r"\S{4,}")
+    """The mail password (or API key). Spaces are removed: Gmail shows app passwords as four groups of letters
+    (abcd efgh ijkl mnop) and accepts them with or without the spaces."""
+    def read():
+        if env("PEAKCUT_SMTP_PASSWORD"):
+            return env("PEAKCUT_SMTP_PASSWORD")
+        path = env("PEAKCUT_SMTP_PASSWORD_FILE")
+        if path and Path(path).exists():
+            return Path(path).read_text(encoding="utf-8", errors="ignore")
+        return ""
+    return "".join(_keep(("smtp",), read, 30).split())
 
 
 # ---------------------------------------------------------------- Google (sign in with Google, and connecting YouTube)

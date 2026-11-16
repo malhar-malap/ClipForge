@@ -135,9 +135,7 @@ def _use_link(token: str, purpose: str) -> str:
 def send_verify(u) -> bool:
     from . import mailer
     link = f"{config.PUBLIC_URL}/auth/verify?t={_make_link(u.id, 'verify', 3 * 86400)}"
-    return mailer.send(u.email, "Confirm your email for ClipForge", "Confirm your email",
-                       "Thanks for joining ClipForge. Confirm this is your email address to start clipping.",
-                       "Confirm my email", link, "The link works for 3 days. If you didn't sign up, you can ignore this email.")
+    return mailer.deliver(u.email, mailer.m_verify(link))
 
 
 def verify_link(token: str) -> str:
@@ -154,9 +152,7 @@ def forgot(email: str):
     if not u or u.disabled:
         return
     link = f"{config.PUBLIC_URL}/reset?t={_make_link(u.id, 'reset', 3600)}"
-    mailer.send(u.email, "Reset your ClipForge password", "Reset your password",
-                "Someone asked to reset the password for this ClipForge account. If that was you, choose a new one below.",
-                "Choose a new password", link, "The link works for one hour. If you didn't ask for this, ignore this email and your password stays the same.")
+    mailer.deliver(u.email, mailer.m_reset(link))
 
 
 def reset_password(token: str, new: str):
@@ -167,6 +163,7 @@ def reset_password(token: str, new: str):
         c.execute(db.sessions.delete().where(db.sessions.c.user_id == uid))   # sign out everywhere
     forget(uid)
     mark_verified(uid)          # they proved they can read that inbox
+    _changed_mail(uid)
     return get_user(uid)
 
 
@@ -195,7 +192,24 @@ def _create(email: str, name: str, password_hash=None, google_sub=None):
     config.user_dir(uid).mkdir(parents=True, exist_ok=True)
     if google_sub:
         mark_verified(uid)      # Google has already confirmed this address
+    if config.ACCOUNTS:
+        _mail(email, "m_welcome", name.strip() or email.split("@")[0])
     return get_user(uid), first
+
+
+def _mail(to, kind, *args):
+    """Send one of mailer's emails, never letting a mail problem break the account action that triggered it."""
+    try:
+        from . import mailer
+        mailer.deliver(to, getattr(mailer, kind)(*args))
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _changed_mail(uid):
+    u = get_user(uid)
+    if u and config.ACCOUNTS:
+        _mail(u.email, "m_password_changed", time.strftime("on %d %b %Y at %H:%M UTC", time.gmtime()))
 
 
 def signup(email: str, password: str, name: str = ""):
@@ -233,6 +247,7 @@ def change_password(uid: str, current: str, new: str, keep_token: str = ""):
         # sign out everywhere else, so a stolen session dies with the old password
         c.execute(db.sessions.delete().where(db.sessions.c.user_id == uid, db.sessions.c.token_hash != _h(keep_token)))
     forget(uid)
+    _changed_mail(uid)
 
 
 # ---------------------------------------------------------------- no sign-in: one built-in owner
