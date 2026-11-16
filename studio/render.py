@@ -78,13 +78,26 @@ def install_fonts():
             shutil.copyfile(f, config.FONTS_DIR / f.name)
 
 
-LAYOUTS = {"auto": "Auto (finds the facecam or the speaker)",
-           "split": "Gaming: facecam on top, gameplay below",
-           "gamefocus": "Gaming: gameplay full screen, facecam bubble",
+LAYOUTS = {"auto": "Auto (finds the facecam, the speaker or the action)",
+           "split": "Facecam on top, gameplay below",
+           "gamefocus": "Gameplay with a floating round facecam",
+           "pip": "Gameplay with a floating facecam window",
+           "game": "Gameplay only, framed on the action",
            "face": "Follow the speaker's face",
            "blur": "Full frame + blurred fill", "zoom": "Zoomed in + blurred fill", "crop": "Fill the screen (centre crop)"}
-CAM_H = 640                    # split layout: the facecam panel on top; gameplay gets the rest
-BUBBLE = 360                   # gamefocus layout: the round facecam, in pixels
+CAM_H = 640                    # split layout: the facecam panel on top (its height follows the webcam's shape)
+BUBBLE = 400                   # gamefocus layout: the round facecam, in pixels
+PIP_W = 470                    # pip layout: the floating facecam window's width
+CAP_BGS = {"none": "Outline only", "box": "Dark box behind the words", "word": "Highlight box on the spoken word"}
+
+
+def cam_height(seen, src_w, src_h) -> int:
+    """Split layout: the facecam panel keeps the webcam's own shape, between a third and nearly half the screen."""
+    cam = (seen or {}).get("cam")
+    if not cam or not src_w:
+        return CAM_H
+    ar = (cam[2] * src_w) / max(1, cam[3] * src_h)
+    return _even(min(900, max(560, W / max(0.5, ar))))
 
 
 def _ts(t):
@@ -114,15 +127,16 @@ def _groups(words, per):
     return out
 
 
-def geometry(src_w, src_h, layout):
+def geometry(src_w, src_h, layout, seen=None):
     """Where the video sits in the 1080x1920 frame, and where hook and captions go."""
     if src_h >= src_w and layout != "crop":
         layout = "crop"  # already vertical or square: nothing to gain from a blurred fill
     if layout == "split":
-        return layout, H, CAM_H + 120, 1450          # hook sits on the seam, captions over the gameplay
-    if layout == "gamefocus":
-        return layout, H, 300, 1100                  # captions above the bubble in the lower corner
-    if layout == "face":
+        ch = cam_height(seen, src_w, src_h)
+        return layout, H, ch, ch + int((H - ch) * 0.6)  # hook sits on the seam, captions over the gameplay
+    if layout in ("gamefocus", "pip"):
+        return layout, H, 300, 1180                  # captions above the floating facecam in the lower corner
+    if layout in ("face", "game"):
         return layout, H, 300, 1380
     if layout == "blur":
         fg_h = min(H, int(round(W * src_h / src_w / 2)) * 2)
@@ -134,6 +148,16 @@ def geometry(src_w, src_h, layout):
     if layout == "crop":
         return layout, fg_h, 300, 1380
     return layout, fg_h, max(230, top - 190), min(1640, top + fg_h + 180)
+
+
+def _rrect(x0, y0, x1, y1, r) -> str:
+    """An ASS drawing of a rounded rectangle."""
+    r = max(0, min(r, (x1 - x0) / 2, (y1 - y0) / 2))
+    n = lambda v: f"{v:.0f}"                                                         # noqa: E731
+    return (f"m {n(x0 + r)} {n(y0)} l {n(x1 - r)} {n(y0)} b {n(x1)} {n(y0)} {n(x1)} {n(y0)} {n(x1)} {n(y0 + r)} "
+            f"l {n(x1)} {n(y1 - r)} b {n(x1)} {n(y1)} {n(x1)} {n(y1)} {n(x1 - r)} {n(y1)} "
+            f"l {n(x0 + r)} {n(y1)} b {n(x0)} {n(y1)} {n(x0)} {n(y1)} {n(x0)} {n(y1 - r)} "
+            f"l {n(x0)} {n(y0 + r)} b {n(x0)} {n(y0)} {n(x0)} {n(y0)} {n(x0 + r)} {n(y0)}")
 
 
 def _hook_events(hook, dur, y):
@@ -167,8 +191,9 @@ def _hook_events(hook, dur, y):
     return ev
 
 
-def build_ass(words, start, end, hook, style_name, highlight, hook_y, cap_y) -> str:
+def build_ass(words, start, end, hook, style_name, highlight, hook_y, cap_y, cap_bg="none") -> str:
     st = STYLES.get(style_name, STYLES["bounce"])
+    cap_bg = cap_bg if cap_bg in CAP_BGS else "none"
     words = [dict(w, s=w["s"] - CAPTION_LEAD, e=w["e"] - CAPTION_LEAD) for w in words]
     strong = {_key(h) for h in highlight if _key(h)}
     head = f"""[Script Info]
@@ -220,6 +245,10 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         cy = cap_y - f.cap_shift(size)
         x = (W - total) / 2
         p = st["pop"]
+        line_h = f.em(size) * 1.0
+        if cap_bg == "box":                                   # one dark rounded box behind the whole line
+            ev.append(f"Dialogue: 0,{_ts(g_start)},{_ts(g_end)},Cap,,0,0,0,,{{\\an7\\pos(0,0)\\bord0\\shad0\\c&H000000&\\1a&H48&\\p1}}"
+                      f"{_rrect(x - 34, cap_y - line_h * 0.62, x + total + 34, cap_y + line_h * 0.62, 26)}{{\\p0}}")
         for i, (w, t) in enumerate(zip(g, texts)):
             wd = f.width(t, size)
             p = max(104, min(st["pop"], 100 + int(2200 / max(wd, 1))))   # long words grow less, so they never touch their neighbours
@@ -230,7 +259,12 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             base = st["strong"] if _key(w["w"]) in strong else st["base"]
             if a - g_start >= 0.02:                                                   # waiting to be said
                 ev.append(f"Dialogue: 1,{_ts(g_start)},{_ts(a)},Cap,,0,0,0,,{{{pos}\\c&H{base}&}}{t}")
-            if b - a >= 0.02:                                                         # being said: colour and a quick pop, in front
+            if b - a >= 0.02 and cap_bg == "word":                                   # being said: a coloured box behind it
+                bx0 = x - wd - gap - 16
+                ev.append(f"Dialogue: 2,{_ts(a)},{_ts(b)},Cap,,0,0,0,,{{\\an7\\pos(0,0)\\bord0\\shad0\\c&H{st['active']}&\\p1}}"
+                          f"{_rrect(bx0, cap_y - line_h * 0.6, bx0 + wd + 32, cap_y + line_h * 0.6, 18)}{{\\p0}}")
+                ev.append(f"Dialogue: 3,{_ts(a)},{_ts(b)},Cap,,0,0,0,,{{{pos}\\c&H14100E&\\bord0}}{t}")
+            elif b - a >= 0.02:                                                       # being said: colour and a quick pop, in front
                 ev.append(f"Dialogue: 2,{_ts(a)},{_ts(b)},Cap,,0,0,0,,{{{pos}\\c&H{st['active']}&\\fscx94\\fscy94"
                           f"\\t(0,90,\\fscx{p}\\fscy{p})\\t(90,200,\\fscx{p - 5}\\fscy{p - 5})}}{t}")
             if g_end - b >= 0.02:                                                     # said
@@ -244,22 +278,28 @@ def _even(v) -> int:
     return max(0, int(v) // 2 * 2)
 
 
-def _game_window(src_w, src_h, aspect, hud):
+def _game_window(src_w, src_h, aspect, hud, cx=None):
     """Where the gameplay crop sits, as (x, width) in source pixels, or None to show the whole width.
-    A HUD on one side pulls the window to that side; HUDs on both sides mean the whole width is shown."""
+    It is centred on the action when that is known (`cx`, 0-1), else on the middle (an FPS crosshair); a HUD on one
+    side pulls it to that side; HUDs on both sides mean the whole width is shown."""
     gw = max(2, _even(src_h * aspect))
     if gw >= src_w:
         return None
     left, right = (list(hud or []) + [False, False])[:2]
     if left and right:
         return None
-    x = 0 if left else (src_w - gw) if right else (src_w - gw) // 2
-    return _even(x), gw
+    if left:
+        x = 0
+    elif right:
+        x = src_w - gw
+    else:
+        x = (cx if cx is not None else 0.5) * src_w - gw / 2
+    return min(max(0, _even(x)), _even(src_w - gw)), gw
 
 
-def _panel(label_in, label_out, src_w, src_h, pw, ph, hud):
+def _panel(label_in, label_out, src_w, src_h, pw, ph, hud, cx=None):
     """Gameplay into a pw x ph panel: cropped to fill it (keeping a HUD in view), or the whole width over a blur."""
-    win = _game_window(src_w, src_h, pw / ph, hud)
+    win = _game_window(src_w, src_h, pw / ph, hud, cx)
     if win:
         x, gw = win
         return (f"[{label_in}]crop={gw}:{_even(src_h)}:{x}:0,scale={pw}:{ph}:force_original_aspect_ratio=increase,"
@@ -279,41 +319,98 @@ def _box_px(box, src_w, src_h):
     return px, py, pw, ph
 
 
-def _filter(layout, fg_h, src_w=0, src_h=0, seen=None):
+def _action_cx(seen, aspect=None, src_w=0, src_h=0):
+    """The horizontal centre of the action (0-1): the AI's subject box, else the middle. When the webcam sits at one
+    side, the gameplay window is moved just clear of it so no sliver of the webcam shows in the gameplay."""
     seen = seen or {}
-    fps = f"[0:v]fps={config.OUT_FPS}"
+    sub = seen.get("subject")
+    cx = sub[0] + sub[2] / 2 if sub and sub[2] < 0.95 else None
+    cam = seen.get("cam")
+    if cam and aspect and src_w and src_h:
+        gw = min(1.0, src_h * aspect / src_w)                # the window's width, as a share of the frame
+        c = cx if cx is not None else 0.5
+        x0, x1 = c - gw / 2, c + gw / 2
+        cam_l, cam_r = cam[0], cam[0] + cam[2]
+        if x0 < cam_r <= 0.5 and cam_r + gw <= 1.0:
+            cx = cam_r + gw / 2                              # webcam on the left: start right after it
+        elif x1 > cam_l >= 0.5 and cam_l - gw >= 0.0:
+            cx = cam_l - gw / 2                              # webcam on the right: end just before it
+    return cx
+
+
+def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
+    """The ffmpeg filters that turn input label `inp` into a 1080x1920 picture labelled `out`.
+    `t` makes every inner label unique, so several of these can live in one graph (one per scene)."""
+    seen = seen or {}
+    L = lambda n: f"{n}{t}"                                                          # noqa: E731
+    head = f"[{inp}]fps={config.OUT_FPS},setsar=1"
     if layout == "split" and seen.get("cam"):
-        cx, cy, cw, ch = _box_px(seen["cam"], src_w, src_h)
-        return (f"{fps},split=2[c][g];[c]crop={cw}:{ch}:{cx}:{cy},scale={W}:{CAM_H}:force_original_aspect_ratio=increase,"
-                f"crop={W}:{CAM_H}[cam];" + _panel("g", "game", src_w, src_h, W, H - CAM_H, seen.get("hud"))
-                + "[cam][game]vstack=inputs=2,setsar=1[v0];")
-    if layout == "gamefocus" and seen.get("face"):
-        fx, fy, fw, fh = seen["face"]
-        side = min(src_w, src_h, max(2, int(max(fw * src_w, fh * src_h) * 2.4)))
-        bx = min(max(0, _even((fx + fw / 2) * src_w - side / 2)), _even(src_w - side))
-        by = min(max(0, _even((fy + fh / 2) * src_h - side / 2)), _even(src_h - side))
-        r = BUBBLE // 2
-        return (f"{fps},split=2[c][g];" + _panel("g", "game", src_w, src_h, W, H, seen.get("hud"))
-                + f"[c]crop={_even(side)}:{_even(side)}:{bx}:{by},scale={BUBBLE}:{BUBBLE},format=yuva420p,"
-                f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='if(lte(hypot(X-{r},Y-{r}),{r - 2}),255,0)'[bub];"
-                f"[game][bub]overlay={W - BUBBLE - 48}:{H - BUBBLE - 220}:format=auto,setsar=1[v0];")
+        ch = cam_height(seen, src_w, src_h)
+        cx, cy, cw, chh = _box_px(seen["cam"], src_w, src_h)
+        return (f"{head},split=2[{L('c')}][{L('g')}];[{L('c')}]crop={cw}:{chh}:{cx}:{cy},scale={W}:{ch}:force_original_aspect_ratio=increase,"
+                f"crop={W}:{ch}[{L('cam')}];" + _panel(L("g"), L("game"), src_w, src_h, W, H - ch, seen.get("hud"), _action_cx(seen, W / (H - ch), src_w, src_h))
+                + f"[{L('cam')}][{L('game')}]vstack=inputs=2,setsar=1[{out}];")
+    if layout in ("gamefocus", "pip") and seen.get("cam"):
+        cx, cy, cw, chh = _box_px(seen["cam"], src_w, src_h)
+        game = _panel(L("g"), L("game"), src_w, src_h, W, H, seen.get("hud"), _action_cx(seen, W / H, src_w, src_h))
+        if layout == "gamefocus":                      # a circle around the face, from inside the webcam box
+            fx, fy, fw, fh = seen.get("face") or (seen["cam"][0] + seen["cam"][2] * .3, seen["cam"][1] + seen["cam"][3] * .2,
+                                                     seen["cam"][2] * .4, seen["cam"][3] * .5)
+            side = _even(min(chh, cw, max(fw * src_w, fh * src_h) * 2.6))
+            bx = min(max(cx, _even((fx + fw / 2) * src_w - side / 2)), _even(cx + cw - side))
+            by = min(max(cy, _even((fy + fh / 2) * src_h - side / 2)), _even(cy + chh - side))
+            r, ring = BUBBLE // 2, BUBBLE // 2 + 7
+            return (f"{head},split=2[{L('c')}][{L('g')}];" + game
+                    + f"[{L('c')}]crop={side}:{side}:{bx}:{by},scale={BUBBLE}:{BUBBLE},format=yuva420p,"
+                    f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='if(lte(hypot(X-{r},Y-{r}),{r - 1}),255,0)'[{L('bub')}];"
+                    f"color=c=white:s={2 * ring}x{2 * ring},format=yuva420p,geq=lum=255:cb=128:cr=128:a='if(lte(hypot(X-{ring},Y-{ring}),{ring}),255,0)'[{L('ring')}];"
+                    f"[{L('game')}][{L('ring')}]overlay={W - 2 * ring - 50}:{H - 2 * ring - 170}:shortest=1[{L('gr')}];"
+                    f"[{L('gr')}][{L('bub')}]overlay={W - BUBBLE - 57}:{H - BUBBLE - 177}:format=auto,setsar=1[{out}];")
+        ph = _even(PIP_W * chh / max(1, cw))           # the webcam as a floating window with rounded corners
+        rr = 26
+        a = (f"if(gt(abs(X-W/2),W/2-{rr})*gt(abs(Y-H/2),H/2-{rr}),"
+             f"if(lte(hypot(abs(X-W/2)-(W/2-{rr}),abs(Y-H/2)-(H/2-{rr})),{rr}),255,0),255)")
+        return (f"{head},split=2[{L('c')}][{L('g')}];" + game
+                + f"[{L('c')}]crop={cw}:{chh}:{cx}:{cy},scale={PIP_W}:{ph},pad={PIP_W + 12}:{ph + 12}:6:6:white,format=yuva420p,"
+                f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='{a}'[{L('pip')}];"
+                f"[{L('game')}][{L('pip')}]overlay={W - PIP_W - 60}:{H - ph - 190}:format=auto,setsar=1[{out}];")
     if layout == "face" and (seen.get("cx") is not None or seen.get("face")):
-        cx = seen.get("cx")
-        if cx is None:
+        cxf = seen.get("cx")
+        if cxf is None:
             fx, _, fw, _ = seen["face"]
-            cx = fx + fw / 2
+            cxf = fx + fw / 2
         cw = min(_even(src_w), _even(src_h * W / H))
-        x = min(max(0, _even(cx * src_w - cw / 2)), _even(src_w - cw))
-        return f"{fps},crop={cw}:{_even(src_h)}:{x}:0,scale={W}:{H},setsar=1[v0];"
-    if layout in ("split", "gamefocus", "face"):
+        x = min(max(0, _even(cxf * src_w - cw / 2)), _even(src_w - cw))
+        return f"{head},crop={cw}:{_even(src_h)}:{x}:0,scale={W}:{H},setsar=1[{out}];"
+    if layout == "game":
+        return (f"{head}[{L('g')}];" + _panel(L("g"), L("gp"), src_w, src_h, W, H, seen.get("hud"), _action_cx(seen, W / H, src_w, src_h))
+                + f"[{L('gp')}]setsar=1[{out}];")
+    if layout in ("split", "gamefocus", "pip", "face"):
         layout, fg_h = "blur", min(H, int(round(W * src_h / max(1, src_w) / 2)) * 2) if src_w else H
     if layout == "crop":
-        return f"[0:v]fps={config.OUT_FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[v0];"
-    return (f"[0:v]fps={config.OUT_FPS},split=2[a][b];"
-            f"[a]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=6:2,"
-            f"scale={W}:{H},eq=brightness=-0.14:saturation=1.15[bg];"
-            f"[b]scale={W}:{fg_h}:force_original_aspect_ratio=increase,crop={W}:{fg_h}[fg];"
-            f"[bg][fg]overlay=0:(H-h)/2,setsar=1[v0];")
+        return f"{head},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[{out}];"
+    return (f"{head},split=2[{L('a')}][{L('b')}];"
+            f"[{L('a')}]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=6:2,"
+            f"scale={W}:{H},eq=brightness=-0.14:saturation=1.15[{L('bg')}];"
+            f"[{L('b')}]scale={W}:{fg_h}:force_original_aspect_ratio=increase,crop={W}:{fg_h}[{L('fg')}];"
+            f"[{L('bg')}][{L('fg')}]overlay=0:(H-h)/2,setsar=1[{out}];")
+
+
+def _filter(layout, fg_h, src_w=0, src_h=0, seen=None, parts=None):
+    """The whole picture graph, ending in [v0]. `parts` = [(t0, t1, layout, seen), ...] frames each scene of the clip
+    on its own and joins them back into one continuous clip."""
+    if not parts or len(parts) == 1:
+        if parts:
+            layout, seen = parts[0][2], parts[0][3]
+        return _chain("0:v", "v0", layout, fg_h, src_w, src_h, seen)
+    n = len(parts)
+    g = f"[0:v]split={n}" + "".join(f"[i{k}]" for k in range(n)) + ";"
+    for k, (t0, t1, lay, sn) in enumerate(parts):
+        g += f"[i{k}]trim=start={t0:.3f}:end={t1:.3f},setpts=PTS-STARTPTS[t{k}];"
+        _, fh, _, _ = geometry(src_w, src_h, lay, sn)
+        g += _chain(f"t{k}", f"s{k}", lay, fh, src_w, src_h, sn, t=f"_{k}")
+    g += "".join(f"[s{k}]scale={W}:{H},setsar=1[u{k}];" for k in range(n))      # every scene exactly the same shape
+    return g + "".join(f"[u{k}]" for k in range(n)) + f"concat=n={n}:v=1:a=0,setsar=1[v0];"
 
 
 _qsv_ok = None
@@ -325,21 +422,29 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
     out_dir.mkdir(parents=True, exist_ok=True)
     start, end = clip["start"], clip["end"]
     wanted = clip.get("layout", "blur")
-    seen = {}
-    if wanted in ("auto", "split", "gamefocus", "face"):
+    cam_style = clip.get("cam_style") or "split"
+    seen, parts = {}, None
+    if wanted in ("auto", "split", "gamefocus", "pip", "game", "face"):
         from . import vision
         seen = clip.get("seen") or vision.analyze(src, start, end, src_w, src_h)
-        wanted = vision.choose_layout(wanted, seen)
-    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, wanted)
+        if seen.get("kind") == "multi":
+            parts = [(g["t0"], g["t1"], vision.choose_layout(wanted, g, cam_style), g) for g in seen["segments"]]
+            main = max(parts, key=lambda q: q[1] - q[0])          # captions sit where the longest scene wants them
+            wanted, main_seen = main[2], main[3]
+        else:
+            wanted, main_seen = vision.choose_layout(wanted, seen, cam_style), seen
+    else:
+        main_seen = {}
+    layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, wanted, main_seen)
     ass = build_ass(words, start, end, clip.get("hook", ""), clip.get("style", "bounce"),
-                    clip.get("highlight_words", []), hook_y, cap_y)
+                    clip.get("highlight_words", []), hook_y, cap_y, clip.get("cap_bg") or "none")
     # The clip is made in a short work folder and moved into place afterwards. The caption step of ffmpeg cannot
     # open files whose full path is longer than 260 characters on Windows, which a data folder deep inside other
     # folders easily reaches. Inside the work folder every name is short and relative (a drive colon would also
     # break the filter syntax).
     work = Path(tempfile.mkdtemp(prefix="pk"))
     try:
-        out = _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass, src_w, src_h, seen)
+        out = _render_in(work, src, out_dir, name, start, end, layout, fg_h, ass, src_w, src_h, main_seen, parts)
         out["seen"] = seen
         return out
     finally:
@@ -347,13 +452,13 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
 
 
 def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layout, fg_h, ass: str,
-               src_w=0, src_h=0, seen=None) -> dict:
+               src_w=0, src_h=0, seen=None, parts=None) -> dict:
     global _qsv_ok
     (work / f"{name}.ass").write_text(ass, encoding="utf-8")
     (work / "f").mkdir()
     for f in config.FONTS_DIR.glob("*.ttf"):
         shutil.copyfile(f, work / "f" / f.name)
-    fc = _filter(layout, fg_h, src_w, src_h, seen) + f"[v0]ass={name}.ass:fontsdir=f[v]"
+    fc = _filter(layout, fg_h, src_w, src_h, seen, parts) + f"[v0]ass={name}.ass:fontsdir=f[v]"
     base = ["ffmpeg", "-y", "-v", "error", "-ss", f"{start:.2f}", "-t", f"{end - start:.2f}", "-i", str(src),
             "-filter_complex", fc, "-map", "[v]", "-map", "0:a:0", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11",
             "-c:a", "aac", "-b:a", "160k", "-ar", "48000", "-movflags", "+faststart", "-pix_fmt"]

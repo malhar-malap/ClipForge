@@ -340,3 +340,48 @@ def _anthropic(model, prompt, schema):
     text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
     u = data.get("usage") or {}
     return _parse(text), int(u.get("input_tokens") or 0), int(u.get("output_tokens") or 0)
+
+
+# ---------------------------------------------------------------- a call that looks at pictures (clip framing)
+def call_vision(model: str, prompt: str, images_b64: list, schema: dict):
+    """Ask one model about a few JPEG frames. Returns (parsed JSON, tokens sent, tokens written back).
+    Gemini, Claude and OpenAI-style services all take images; a model that cannot see raises, and the caller falls
+    back to framing from what this machine sees."""
+    how = PROVIDERS[provider()][2]
+    if how == "gemini":
+        parts = [{"inline_data": {"mime_type": "image/jpeg", "data": b}} for b in images_b64] + [{"text": prompt}]
+        body = {"contents": [{"role": "user", "parts": parts}],
+                "generationConfig": {"temperature": 0.1, "responseMimeType": "application/json", "responseSchema": schema}}
+        r = httpx.post(f"{base_url()}/{model}:generateContent", json=body, headers={"x-goog-api-key": key()}, timeout=90)
+        if r.status_code != 200:
+            _fail(r, model)
+        data = r.json()
+        text = "".join(p.get("text", "") for p in data["candidates"][0]["content"]["parts"])
+        u = data.get("usageMetadata", {})
+        sent = int(u.get("promptTokenCount") or 0)
+        return json.loads(text), sent, max(0, int(u.get("totalTokenCount") or 0) - sent)
+    words = (prompt + "\n\nAnswer with one JSON object only, no other text and no code fences, following this JSON Schema:\n"
+             + json.dumps(_json_schema(schema)))
+    if how == "anthropic":
+        content = [{"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": b}} for b in images_b64]
+        content.append({"type": "text", "text": words})
+        r = httpx.post(f"{base_url()}/messages", timeout=90, headers={"x-api-key": key(), "anthropic-version": "2023-06-01"},
+                       json={"model": model, "max_tokens": 1024, "messages": [{"role": "user", "content": content}]})
+        if r.status_code != 200:
+            _fail(r, model)
+        data = r.json()
+        text = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
+        u = data.get("usage") or {}
+        out = _parse(text)
+        return (out if isinstance(out, dict) else {}), int(u.get("input_tokens") or 0), int(u.get("output_tokens") or 0)
+    content = [{"type": "image_url", "image_url": {"url": "data:image/jpeg;base64," + b}} for b in images_b64]
+    content.append({"type": "text", "text": words})
+    headers = {"Authorization": f"Bearer {key()}"} if key() else {}
+    r = httpx.post(f"{base_url()}/chat/completions", headers=headers, timeout=90,
+                   json={"model": model, "messages": [{"role": "user", "content": content}], "response_format": {"type": "json_object"}})
+    if r.status_code != 200:
+        _fail(r, model)
+    data = r.json()
+    u = data.get("usage") or {}
+    out = _parse(data["choices"][0]["message"].get("content"))
+    return (out if isinstance(out, dict) else {}), int(u.get("prompt_tokens") or 0), int(u.get("completion_tokens") or 0)

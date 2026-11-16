@@ -123,7 +123,7 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .pv{position:absolute;inset:0;cursor:pointer}
 .pv-p{position:absolute;overflow:hidden}.pv-p video{position:absolute;max-width:none;max-height:none}
 .pv-p.bg video{filter:blur(18px) brightness(.7)}
-.pv-p.bub{border-radius:50%;box-shadow:0 0 0 3px #fff}
+.pv-p.bub{border-radius:50%;box-shadow:0 0 0 3px #fff}.pv-p.pipw{border-radius:10px;box-shadow:0 0 0 3px #fff}
 .pv-cap{position:absolute;left:5%;right:5%;text-align:center;font:800 20px/1.15 Poppins,system-ui,sans-serif;color:#fff;text-transform:uppercase;-webkit-text-stroke:1px #000;text-shadow:0 2px 6px rgba(0,0,0,.8);pointer-events:none}
 .pv-cap b{color:#FFE14D}
 .pv-hook{position:absolute;left:50%;transform:translate(-50%,-50%);background:#fff;color:#191917;font:800 15px/1.2 Poppins,system-ui,sans-serif;padding:6px 12px;border-radius:10px;max-width:86%;text-align:center;pointer-events:none}
@@ -372,7 +372,7 @@ function drawNotices() {
 }
 
 /* ---------------------------------------------------------------- projects */
-const LAYOUT_SHORT = {auto: "Auto", split: "Facecam on top", gamefocus: "Facecam bubble", face: "Follow the speaker", blur: "Full frame, blurred fill", zoom: "Zoomed in", crop: "Centre crop"};
+const LAYOUT_SHORT = {auto: "Auto (recommended)", split: "Facecam on top", gamefocus: "Floating circle facecam", pip: "Floating window facecam", game: "Gameplay only", face: "Follow the speaker", blur: "Full frame, blurred fill", zoom: "Zoomed in", crop: "Centre crop"};
 const LANGS = [["auto", "Detect automatically"], ["en", "English"], ["hi", "Hindi / Hinglish"], ["ur", "Urdu"], ["bn", "Bengali"], ["ta", "Tamil"], ["te", "Telugu"], ["mr", "Marathi"], ["es", "Spanish"], ["pt", "Portuguese"], ["ar", "Arabic"]];
 const opt = (pairs, v) => pairs.map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("");
 function statusBadge(j) {
@@ -397,7 +397,9 @@ function drawProjects() {
         <label class="f">Shortest clip (s)<input id="o_min" type="number" min="5" max="120" value="15"></label>
         <label class="f">Longest clip (s)<input id="o_maxlen" type="number" min="10" max="180" value="60"></label>
         <label class="f">Layout<select id="o_layout">${opt(Object.keys(S.status.layouts || {}).map(k => [k, LAYOUT_SHORT[k] || S.status.layouts[k]]), "auto")}</select></label>
+        <label class="f">Facecam style<select id="o_cam">${opt(Object.entries(S.status.cam_styles || {split: "Facecam on top half"}), "split")}</select></label>
         <label class="f">Caption style<select id="o_style">${opt(Object.entries(S.status.styles || {}), "bounce")}</select></label>
+        <label class="f">Caption background<select id="o_capbg">${opt(Object.entries(S.status.cap_bgs || {none: "Outline only"}), "none")}</select></label>
         <label class="f">Language spoken<select id="o_lang">${opt(LANGS, "auto")}</select></label>
         <label class="f">Quality<select id="o_quality">${opt([["1080", "1080p"], ["720", "720p (faster)"]], "1080")}</select></label>
       </div>
@@ -414,7 +416,8 @@ function drawProjects() {
 }
 function jobOptions() {
   const n = id => Number($(id)?.value) || undefined;
-  return {max_clips: n("#o_max"), min_len: n("#o_min"), max_len: n("#o_maxlen"), layout: $("#o_layout")?.value, style: $("#o_style")?.value, language: $("#o_lang")?.value, quality: n("#o_quality")};
+  return {max_clips: n("#o_max"), min_len: n("#o_min"), max_len: n("#o_maxlen"), layout: $("#o_layout")?.value, style: $("#o_style")?.value,
+          cam_style: $("#o_cam")?.value, cap_bg: $("#o_capbg")?.value, language: $("#o_lang")?.value, quality: n("#o_quality")};
 }
 function drawUploads() {
   const box = $("#ups"); if (!box) return;
@@ -493,7 +496,8 @@ function workspace(j, c) {
       ${c.reason ? `<div class="why"><b class="score">Score ${c.score || "–"}</b> · ${esc(c.reason)}</div>` : ""}
       <h3>On the video</h3>
       <label class="f">Hook text<input data-f="hook" value="${esc(c.hook)}" maxlength="60"></label>
-      <div class="two"><label class="f">Layout<select data-f="layout">${opt(layouts, c.layout)}</select></label><label class="f">Caption style<select data-f="style">${opt(Object.entries(S.status.styles || {}), c.style)}</select></label></div>
+      <div class="two"><label class="f">Layout<select data-f="layout">${opt(layouts, c.layout)}</select></label><label class="f">Facecam style<select data-f="cam_style">${opt(Object.entries(S.status.cam_styles || {}), c.cam_style || "split")}</select></label></div>
+      <div class="two"><label class="f">Caption style<select data-f="style">${opt(Object.entries(S.status.styles || {}), c.style)}</select></label><label class="f">Caption background<select data-f="cap_bg">${opt(Object.entries(S.status.cap_bgs || {}), c.cap_bg || "none")}</select></label></div>
       <div class="two"><label class="f">Start (seconds)<input data-f="start" type="number" step="0.5" value="${c.start}"></label><label class="f">End (seconds)<input data-f="end" type="number" step="0.5" value="${c.end}"></label></div>
       <h3>Post text</h3>
       <label class="f">Title<input data-f="title" value="${esc(c.title)}" maxlength="100"></label>
@@ -511,20 +515,24 @@ function workspace(j, c) {
         : `<p class="small faint">Connect YouTube, Instagram or TikTok in <a href="/app/settings/accounts" data-go="/app/settings/accounts">Settings</a> to post from here.</p>`) : ""}
     </div></div>`;
 }
+const mainSeen = c => c.seen?.kind === "multi" ? [...c.seen.segments].sort((a, b) => (b.t1 - b.t0) - (a.t1 - a.t0))[0] : (c.seen || {});
 function pvLayout(c) {
+  c = Object.assign({}, c, {seen: mainSeen(c)});
   const k = c.seen?.kind || "none";
-  if (c.layout === "auto") return k === "facecam" ? "split" : k === "head" ? "face" : "blur";
+  if (c.layout === "auto") return k === "facecam" ? ({circle: "gamefocus", rect: "pip", none: "game"}[c.cam_style] || "split") : k === "head" ? "face" : (c.seen?.scene === "gameplay" ? "game" : "blur");
   if ((c.layout === "split" || c.layout === "gamefocus") && k !== "facecam") return "blur";
   return c.layout || "blur";
 }
 function mountPreview(j, c) {
   const st = $("#pvs"); if (!st) return;
   const src = `/api/jobs/${j.id}/clips/${encodeURIComponent(c.id)}/preview`;
-  const off = c.src_offset || 0, a = c.start - off, b = c.end - off, lay = pvLayout(c), seen = c.seen || {};
+  const off = c.src_offset || 0, a = c.start - off, b = c.end - off, lay = pvLayout(c), seen = mainSeen(c);
   const W = st.clientWidth || 300, H = W * 16 / 9, panels = [];
   const gameRect = (pw, ph, sa) => { const fw = Math.min(1, (pw / ph) / sa), hud = seen.hud || [false, false]; if (hud[0] && hud[1]) return [0, 0, 1, 1]; return [hud[0] ? 0 : hud[1] ? 1 - fw : (1 - fw) / 2, 0, fw, 1]; };
   const build = sa => {
     if (lay === "split" && seen.cam) panels.push([0, 0, W, H / 3, seen.cam, ""], [0, H / 3, W, H * 2 / 3, gameRect(W, H * 2 / 3, sa), ""]);
+    else if (lay === "pip" && seen.cam) panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .5, H * .66, W * .44, W * .44 * (seen.cam[3] * 9) / (seen.cam[2] * 16), seen.cam, "pipw"]);
+    else if (lay === "game") panels.push([0, 0, W, H, gameRect(W, H, sa), ""]);
     else if (lay === "gamefocus" && seen.face) { const f = seen.face, side = Math.min(1, Math.max(f[2] * sa, f[3]) * 2.4), sw = side / sa;
       panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .62, H * .69, W * .33, W * .33, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); }
     else if (lay === "face" || lay === "crop") { const cx = lay === "face" ? (seen.cx ?? .5) : .5, fw = Math.min(1, (9 / 16) / sa); panels.push([0, 0, W, H, [Math.min(Math.max(0, cx - fw / 2), 1 - fw), 0, fw, 1], ""]); }

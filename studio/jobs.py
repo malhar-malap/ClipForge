@@ -109,7 +109,8 @@ _lock = threading.RLock()
 on_clip_ready: list = []   # callbacks (job, clip), run once when a clip first finishes
 
 DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "auto", "quality": 1080,
-            "range_start": None, "range_end": None, "language": "auto"}
+            "range_start": None, "range_end": None, "language": "auto",
+            "cam_style": "split", "cap_bg": "none"}
 
 
 LIMITS = {"max_clips": (1, 20), "min_len": (5, 120), "max_len": (10, 180), "quality": (360, 1080)}
@@ -128,6 +129,10 @@ def clean_options(options) -> dict:
             v = v if v in render.STYLES else DEFAULTS["style"]
         elif k == "layout":
             v = v if v in render.LAYOUTS else DEFAULTS["layout"]
+        elif k == "cam_style":                   # how a facecam is shown: split, circle, rect, none
+            v = v if v in ("split", "circle", "rect", "none") else DEFAULTS["cam_style"]
+        elif k == "cap_bg":                      # what sits behind the captions: none, box, word
+            v = v if v in render.CAP_BGS else DEFAULTS["cap_bg"]
         elif k == "language":                    # "auto", or a language code such as en, hi, ur, es
             v = str(v).strip().lower()
             v = v if v == "auto" or re.fullmatch(r"[a-z]{2,3}", v) else "auto"
@@ -366,9 +371,13 @@ def request_render(jid, cid, changes: dict):
         raise ValueError("Those times aren't valid.")
     if not 3 <= new["end"] - new["start"] <= 180:
         raise ValueError("A clip can be 3 to 180 seconds long.")
-    for k in ("hook", "title", "description", "style", "layout"):
+    for k in ("hook", "title", "description", "style", "layout", "cam_style", "cap_bg"):
         if k in changes:
             new[k] = str(changes[k])[:{"hook": 60, "title": 100, "description": 2000}.get(k, 20)]
+    if new.get("cam_style") not in ("split", "circle", "rect", "none"):
+        new["cam_style"] = DEFAULTS["cam_style"]
+    if new.get("cap_bg") not in render.CAP_BGS:
+        new["cap_bg"] = DEFAULTS["cap_bg"]
     if new.get("style") not in render.STYLES:
         new["style"] = DEFAULTS["style"]
     if new.get("layout") not in render.LAYOUTS:
@@ -820,7 +829,8 @@ def _run_job(job):
             notes.append(ai["note"])
         for c in found:
             c.update(id=f"clip{len(job['clips']) + 1:02d}", start=round(c["start"] + shift, 2),
-                     end=round(c["end"] + shift, 2), style=o["style"], layout=o["layout"], status="queued", version=0)
+                     end=round(c["end"] + shift, 2), style=o["style"], layout=o["layout"], cam_style=o.get("cam_style", "split"),
+                     cap_bg=o.get("cap_bg", "none"), status="queued", version=0)
             job["clips"].append(c)
             if job.get("preview"):
                 c["status"] = "found"          # previews are prepared once every part has been read

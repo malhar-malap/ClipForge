@@ -1,179 +1,102 @@
-# ClipForge
+<p align="center"><img src="web/brand/logo.svg" alt="ClipForge" height="56"></p>
 
-Turn long videos and live streams into captioned vertical clips, ready to post. Runs on your own computer or on
-the hosted ClipForge site, with plans, free previews and an optional bring-your-own-AI-key plan.
+<p align="center"><b>Long videos in. Shorts people finish out.</b><br>
+AI clipping for streamers, podcasters and creators: finds the moments worth posting, frames them for 9:16,<br>
+and adds captions that pop. Built for gaming streams and Indian languages.</p>
 
-ClipForge is built on [PeakCut](https://github.com/haziqahmedqasmi/PeakCut) (MIT licence). See [LICENSE](LICENSE).
-
-**What ClipForge adds to PeakCut**
-
-- **Gaming and face layouts.** `auto` looks at each clip's frames with OpenCV (on the server, no AI vision calls):
-  a webcam in a corner of gameplay gets the facecam-on-top split, a talking head is followed, and a static HUD
-  (health bar, minimap, score) is kept inside the gameplay crop. Also `gamefocus` (gameplay with a round facecam).
-- **Hindi, Hinglish and other languages for uploads.** The language is detected from a 30-second sample; anything
-  other than English is transcribed with faster-whisper on the server. Captions stay in Roman letters for Hindi/Urdu.
-- **Plans and payments** (`CLIPFORGE_BILLING=1`): free previews played in the browser, downloads only with a plan,
-  Trial / Creator / Creator BYOK / Pro through Razorpay, minutes per plan, and per-user AI keys stored encrypted.
-  See [Plans and payments](#plans-and-payments-clipforge).
-- **Two-step ranking.** Set `CLIPFORGE_RANK_MODELS` (for example `claude-sonnet-5-5`) and paid jobs get a quick first
-  pass (`PEAKCUT_AI_MODELS`, for example `claude-haiku-5-5`) that finds twice as many candidates, then the stronger
-  model picks the best. Previews and BYOK users use the first pass only.
-- 1080p downloads by default.
-
-Paste a YouTube, Twitch or Kick link (or upload a file) and ClipForge finds the moments worth clipping, cuts them to
-9:16, adds word-by-word captions and a hook, and can post them to your connected accounts. It can also record a
-creator's live stream and clip the highlights while the stream is still running.
+---
 
 ## What it does
 
-- **Clips from any video.** Transcribes the audio, asks an AI which moments would hold a stranger's attention, and
-  renders each one with captions in one of three styles.
-- **Live clipping.** Records a stream into a rolling buffer and clips as it happens, using loudness, chat activity
-  and the transcript.
-- **Workspaces per creator.** Channels, clip settings, posting rules and an activity log for each creator you clip.
-- **Posting.** Connect YouTube, Instagram and TikTok in one click, then queue or auto-post finished clips, with
-  spacing and daily caps (see [DEPLOY.md](DEPLOY.md#connecting-youtube-instagram-and-tiktok) for the one-time setup).
-- **No sign-in on your own computer.** It opens straight into the dashboard. On a shared server, switch accounts on
-  (`PEAKCUT_ACCOUNTS=1`) for email or Google sign-in and an admin dashboard.
-- **Your own AI.** Gemini, OpenAI, Grok, Groq, OpenRouter, Claude, a local model through Ollama, or anything that
-  speaks the OpenAI chat format. No key at all also works: clips are then picked by loudness.
+| | |
+|---|---|
+| **Finds the best moments** | Reads the transcript, hears loudness spikes and chat bursts, and has an AI score every moment on its hook, payoff and whether it works on its own. An optional stronger model re-ranks the finalists. |
+| **Frames every scene** | Detects the facecam, the speaker or the gameplay in each scene of a clip (streamers switch scenes mid-clip) and frames each part on its own. HUDs stay in view. With an AI key, a vision model confirms the layout. |
+| **Your facecam, your style** | Facecam on the top half, a floating circle, a floating window, or gameplay only. |
+| **Captions that pop** | Word-by-word captions in three styles, with an outline, a dark box or a highlight box behind the spoken word. Hindi and Urdu come out in Roman letters (Hinglish). |
+| **Any language** | English with Parakeet; Hindi, Tamil, Telugu, Spanish and ~100 more with Whisper. YouTube's own captions are used when they exist (never a translated or dubbed track). |
+| **Live clipping** | Records a Twitch, Kick or YouTube stream and clips it while it is still live. |
+| **Plans and payments** | Free previews in the browser, downloads with a plan (Trial, Creator, Creator BYOK, Pro) through Razorpay, minutes per plan, and users' own AI keys stored encrypted. |
+| **Posting** | Connect YouTube, Instagram and TikTok and post clips straight from a project. |
 
-## Quick start
+## Quick start (your own computer)
 
-You need Python 3.10 or newer and `ffmpeg`. On Windows: `winget install Gyan.FFmpeg`. On a Mac: `brew install ffmpeg`.
-On Linux: `sudo apt install ffmpeg`. ClipForge finds it by itself and tells you in the dashboard if it is missing.
+You need **Python 3.10+**, **ffmpeg** and, for HD YouTube downloads, **Deno**.
 
 ```bash
-git clone <this repository> peakcut
+# macOS
+brew install ffmpeg deno
+# Windows
+winget install Gyan.FFmpeg
+winget install DenoLand.Deno
 ```
 
 ```bash
-cd peakcut
-```
-
-```bash
+git clone https://github.com/malhar-malap/ClipForge.git
+cd ClipForge
 pip install -r requirements.txt
-```
-
-Start the server:
-
-```bash
 python -m studio.server
 ```
 
-The first start downloads the speech model by itself (about 480 MB, once).
+Open <http://127.0.0.1:8765>. There is no sign-in on your own computer. Add an AI key under **Settings → AI**
+(Claude, Gemini, OpenAI and others work; a vision-capable model also improves framing). Without a key, clips are
+picked by loudness only.
 
-Open http://127.0.0.1:8765. There is no sign-in: it opens straight into the dashboard. Go to **Settings, AI**, choose
-your AI service, paste your key and press **Save and test** (see [Choose your AI](#choose-your-ai)).
+## Running it as a website
 
-## Choose your AI
-
-ClipForge needs a chat model that can return JSON. The easy way is in the dashboard: **Settings, AI**. Pick the
-service, paste your key, press **Find models** to choose from the service's own list, then **Save and test**. The
-key is kept in the data folder on your machine and is never shown again.
-
-If you prefer a file (or run a server), the same three things can go in `.env`. What is saved in the dashboard wins:
+Copy `.env.example` to `.env`; every setting is explained there. The ones that matter:
 
 ```ini
-PEAKCUT_AI_PROVIDER=gemini
-PEAKCUT_AI_MODELS=gemini-2.5-flash
-PEAKCUT_AI_KEY=your-key-here
+PEAKCUT_ACCOUNTS=1                        # everyone signs in
+GOOGLE_CLIENT_FILE=/secrets/google_client.json   # "Sign in with Google"
+CLIPFORGE_BILLING=1                       # free previews, paid downloads
+CLIPFORGE_SECRET_KEY=...                  # encrypts users' own AI keys
+RAZORPAY_KEY_ID=... RAZORPAY_KEY_SECRET=... RAZORPAY_WEBHOOK_SECRET=...
 ```
 
-| `PEAKCUT_AI_PROVIDER` | Service | Where to get a key |
-|---|---|---|
-| `gemini` | Google Gemini | https://aistudio.google.com/apikey |
-| `openai` | OpenAI | https://platform.openai.com/api-keys |
-| `xai` | Grok (xAI) | https://console.x.ai |
-| `groq` | Groq | https://console.groq.com/keys |
-| `openrouter` | OpenRouter (many models, one key) | https://openrouter.ai/keys |
-| `anthropic` | Claude | https://console.anthropic.com |
-| `ollama` | A model on your own machine, no key | https://ollama.com |
-| `custom` | Any OpenAI-compatible address: also set `PEAKCUT_AI_BASE_URL` | |
-
-- `PEAKCUT_AI_MODELS` is the model id exactly as the service names it. Model names change often, so check the
-  service's current list. Several ids separated by commas are tried in order, which gives you a fallback.
-- A fast, inexpensive model is the right choice. A one-hour video is read in about four requests.
-- You pay the AI service directly for what you use. The **AI usage** page in the app shows how many requests and
-  tokens each video took.
-- Speech to text does not use the AI service. It runs on your own machine, so audio never leaves it.
-
-## Settings
-
-Everything is set through environment variables, normally in a `.env` file next to this README.
-[`.env.example`](.env.example) lists every setting with a short explanation. The ones that matter first:
-
-| Setting | What it is for |
-|---|---|
-| `PEAKCUT_AI_PROVIDER`, `PEAKCUT_AI_MODELS`, `PEAKCUT_AI_KEY` | The AI that picks clips and writes titles (or set it in the dashboard) |
-| `PEAKCUT_ACCOUNTS` | `1` makes everyone sign in. Use it on any server other people can reach |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Optional: Sign in with Google, and connecting YouTube |
-| `PEAKCUT_SMTP_*`, `PEAKCUT_MAIL_FROM` | Optional: confirmation and password emails |
-| `PEAKCUT_DATA` | Where videos, clips and the database are kept (default `./data`) |
-
-`.env`, the `secrets/` folder and all user data are ignored by git. Keep keys there, never in the code.
-
-## Admins
-
-This only matters with accounts switched on (`PEAKCUT_ACCOUNTS=1`); without them you are the owner and can do
-everything. An account is an admin only when the database says so. No email address is special in the code and no web request
-can change a role. Do it on the machine that runs ClipForge:
-
-```bash
-python -m studio.admin grant you@example.com
-```
-
-`revoke` and `list` work the same way. The admin dashboard is at `/admin` and answers "not found" to everyone else.
-
-## How it is built
-
-| Part | What it is |
-|---|---|
-| `studio/` | The server: FastAPI, the clip pipeline, live recording, accounts |
-| `studio/ai.py` | The only file that talks to an AI service. Add a provider here |
-| `web/` | The pages: landing, sign-in, the app, the admin dashboard (plain HTML, CSS and JavaScript, no build step) |
-| `tests/` | Tests that run against a throwaway copy of the app |
-| `deploy/`, `Dockerfile`, `docker-compose.yml` | One-server deployment with PostgreSQL and automatic HTTPS |
-
-Video work is done with `ffmpeg` and `yt-dlp`. Speech is transcribed with `sherpa-onnx` and the Parakeet model.
-Data is kept per user: accounts in the database (SQLite on your own computer, PostgreSQL on a server), videos and
-clips in each user's own folder. [AGENTS.md](AGENTS.md) is a short map of the code for contributors and AI coding
-assistants.
-
-## Where your videos and clips are kept
-
-Everything ClipForge keeps is in one folder: videos, clips, recordings, creators, settings and the speech model. By
-default it is the `data` folder inside ClipForge. **Settings, Storage** shows the folder and how much room its drive
-has, opens it in one click, and lets you move it to another drive: choose the new folder, and ClipForge moves
-everything there the next time it starts. If the drive is nearly full, ClipForge says so and stops taking new videos
-until there is room. (`PEAKCUT_DATA` in `.env` still works and takes priority.)
-
-## Updating
-
-ClipForge checks GitHub once a minute while it runs. When a newer version is out, the dashboard shows a notice
-within a minute or two (no restart needed), with what changed
-and how to update: ask your AI coding assistant to do it (the notice has a sentence to paste), or run
-`git pull && pip install -r requirements.txt` in the ClipForge folder and restart it (with Docker:
-`git pull && docker compose up -d --build`). Your `.env`, keys and clips are not touched. Only the two commit ids
-are sent to GitHub; set `PEAKCUT_UPDATE_CHECK=0` to turn the check off.
-
-## Deploy
-
-[DEPLOY.md](DEPLOY.md) walks through a single server with Docker: the app, PostgreSQL, and Caddy for HTTPS.
+[`docs/DEPLOY.md`](docs/DEPLOY.md) walks through one server with Docker, PostgreSQL and automatic HTTPS:
 
 ```bash
 docker compose up -d --build
 ```
 
-## How it behaves under load
+Give a plan without payment (beta creators) or make someone an admin:
 
-- The page asks the server one small question every few seconds. When nothing has changed, the answer comes
-  straight from memory.
-- Each person's videos wait in their own line and the lines take turns, so one person cannot hold everyone up.
-- The server measures its own processor, memory and disk every second. Extra videos and recordings start only
-  while there is room, wait briefly when it is nearly full, and continue the moment it frees up.
-- There are no limits on upload size, video length, recordings, creators or storage unless you set them in
-  `.env`. Five videos can be sent at once. Request sizes are always capped, so junk can't fill the memory.
+```bash
+python -m studio.admin plan someone@example.com creator
+python -m studio.admin grant you@example.com
+```
+
+## Plans
+
+| Plan | Price (GST incl.) | Minutes | Notes |
+|---|---|---|---|
+| Free previews | ₹0 | – | Best 3 clips of up to 2 videos a day, played in the browser |
+| Trial | ₹49 once | 120 | 7 days, once per account |
+| Creator | ₹399 / month | 600 | Stronger AI ranking |
+| Creator BYOK | ₹199 / month | 600 | Runs on the user's own AI key; starts when the key passes a test |
+| Pro | ₹999 / month | 2,000 | Priority queue, live clipping |
+
+Prices and minutes live only in `studio/billing.py`.
+
+## How it is built
+
+```
+studio/          the server (FastAPI) and the clip pipeline
+  brain.py         prompts: finding moments, ranking, captions
+  vision.py        framing: faces (YuNet), webcam borders, scenes, AI vision
+  render.py        layouts, captions and the ffmpeg render
+  jobs.py          the video pipeline and the fair queue
+  transcribe.py    speech to text (Parakeet), whisper.py for other languages
+  billing.py       plans, minutes, previews, Razorpay
+  keystore.py      users' own AI keys, encrypted
+  live.py          live recording and clipping
+  server.py        every web route and the request gate
+web/             the pages: landing, app, sign-in, admin (plain HTML, CSS, JS)
+tests/           the test suite (python tests/run.py)
+deploy/          Caddy, nginx and GPU speech-worker configs
+docs/            deployment guide
+```
 
 ## Tests
 
@@ -181,53 +104,20 @@ docker compose up -d --build
 python tests/run.py
 ```
 
-This starts a copy of the app on a spare port with an empty temporary data folder, runs the permission, abuse and
-queue tests against it, then removes it. It needs no keys and never touches real data.
+Starts a throwaway copy on a spare port with an empty data folder and runs every test group against it. No keys
+needed, nothing outside your machine is contacted.
 
 ## Security
 
-- With sign-in off, ClipForge listens on this computer only (`127.0.0.1`), refuses changes sent by other websites,
-  and only answers to its own address. Do not expose it to the internet that way: turn accounts on.
-- Passwords are stored only as salted scrypt hashes. Sessions are random tokens stored hashed; cookies are HTTP-only.
-- Every route works out who is asking from the session, never from the request, so users only reach their own data.
-- Only known video sites are fetched, and text from videos is treated as data when it is shown to the AI.
-- Found a problem? Please report it privately through the repository's security advisories instead of opening a
-  public issue.
+Passwords are salted scrypt hashes; sessions are random tokens stored hashed in HTTP-only cookies; every route
+works out the user from the session; users' AI keys are encrypted; payments count only after Razorpay's signature
+checks out; the Docker image runs as an unprivileged user. Found a problem? Please report it privately through
+GitHub's security advisories.
 
-## Using it responsibly
+## Credits and licence
 
-Clip videos you made, or have permission to use. You are responsible for the rights to what you download, clip and
-post, and for following the terms of the sites you fetch from and post to.
+ClipForge is built on [PeakCut](https://github.com/haziqahmedqasmi/PeakCut) and released under the
+[MIT licence](LICENSE). Caption fonts in `studio/fonts/` are under the SIL Open Font License. The YuNet face model in
+`studio/models/` is MIT licensed (OpenCV Zoo).
 
-## Licence
-
-[MIT](LICENSE). Caption fonts in `studio/fonts/` (Anton, Archivo Black, Poppins) are under the SIL Open Font
-License; the licence texts are in the same folder.
-
-## Plans and payments (ClipForge)
-
-Off by default, so a copy on your own computer works with no sign-in and no limits. On the hosted site:
-
-```ini
-PEAKCUT_ACCOUNTS=1
-CLIPFORGE_BILLING=1
-CLIPFORGE_SECRET_KEY=<a Fernet key: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())">
-RAZORPAY_KEY_ID=rzp_live_...
-RAZORPAY_KEY_SECRET=...            # or RAZORPAY_KEY_SECRET_FILE
-RAZORPAY_WEBHOOK_SECRET=...        # webhook URL: https://YOUR-DOMAIN/api/billing/webhook (events: payment.captured, order.paid)
-# CLIPFORGE_PREVIEWS_PER_DAY=2  CLIPFORGE_PREVIEW_MAX_MINUTES=60  CLIPFORGE_PREVIEW_CLIPS=3
-# CLIPFORGE_WHISPER_MODEL=small    # the model for non-English speech (small, medium, large-v3)
-```
-
-| Plan | Price (GST incl.) | Minutes | Length | AI |
-|---|---|---|---|---|
-| Trial | Rs 49, once per account | 120 | 7 days | ours |
-| Creator | Rs 399 | 600 | 30 days | ours |
-| Creator BYOK | Rs 199 | 600 | 30 days | the user's own key; starts when the key passes a test |
-| Pro | Rs 999 | 2,000 | 30 days | ours |
-
-Prices and minutes are set in `studio/billing.py` only. Give a plan without payment (beta creators):
-
-```bash
-python -m studio.admin plan someone@example.com creator
-```
+Clip videos you made or have permission to use, and follow the terms of the sites you fetch from and post to.
