@@ -164,7 +164,8 @@ def save(provider_id: str, model_ids, address: str = "", new_key=None) -> dict:
     if not ms:
         raise ValueError("Enter the model to use.")
     if any(not re.fullmatch(r"[\w.\-:/@]+", m) for m in ms):
-        raise ValueError("A model id has letters, digits and . - : / only.")
+        raise ValueError("That's a model name, not its ID. Model IDs have no spaces (for example gemini-2.5-flash). "
+                         "Press Find models and pick one from the list.")
     address = str(address or "").strip().rstrip("/")[:300]
     if address and not re.fullmatch(r"https?://[^\s]+", address):
         raise ValueError("The address has to start with http:// or https://")

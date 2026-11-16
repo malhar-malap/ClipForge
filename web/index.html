@@ -659,8 +659,10 @@ async function drawSettings() {
       const k = await api("/api/ai");
       body.innerHTML = `<section class="panel sect"><h2>AI service</h2><p>The AI picks the moments and writes hooks and titles for the Auto plans. ${k.ready ? `<span class="badge good">Ready · ${esc(k.label)}</span>` : `<span class="badge warn">Not set up</span>`}</p>
         <div class="formgrid"><label class="f">Service<select id="ai_provider">${k.providers.map(x => `<option value="${esc(x.id)}" ${x.id === k.provider ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label>
-          <label class="f">Models (first is tried first)<input id="ai_models" value="${esc(k.models.join(", "))}" placeholder="e.g. claude-haiku-5-5"></label>
-          <label class="f">Key<input id="ai_key" type="password" autocomplete="off" placeholder="${k.has_key ? "Saved" + (k.key_hint ? ", ends in " + esc(k.key_hint) : "") + ". Paste to replace" : "Paste your key"}"></label></div>
+          <label class="f">Key<input id="ai_key" type="password" autocomplete="off" placeholder="${k.has_key ? "Saved" + (k.key_hint ? ", ends in " + esc(k.key_hint) : "") + ". Paste to replace" : "Paste your key"}"></label>
+          <label class="f">Model<span class="row" style="flex-wrap:nowrap"><input id="ai_models" value="${esc(k.models.join(", "))}" placeholder="Press Find models"><button class="btn" data-act="findmodels" type="button">Find models</button></span></label></div>
+        <div id="ai_pickwrap" class="formgrid" style="margin-top:12px" hidden><label class="f">Models your key can use (recommended first)<select id="ai_pick"></select></label></div>
+        <p class="small muted" style="margin-top:10px">Paste your key, press <b>Find models</b>, pick one, then <b>Save</b> and <b>Test</b>. A fast model that can read images (Gemini Flash, Claude Haiku, GPT mini) is best: it also frames your clips.</p>
         <div class="row" style="margin-top:12px"><button class="btn primary" data-act="saveai">Save</button><button class="btn" data-act="testai">Test</button></div></section>`;
     } else if (tab === "usage") {
       const u = await api("/api/usage"), k = u.totals || u;
@@ -704,6 +706,21 @@ document.addEventListener("click", async e => {
     if (a === "saveownkey") { b.disabled = true; try { await send("/api/me/ai", {provider: $("#own_provider").value, models: $("#own_model").value, key: $("#own_key").value}, "PUT"); toast("Your key works. The plan is active."); S.status = await api("/api/status"); drawTop(); drawNotices(); return drawPlans(); } finally { b.disabled = false; } }
     if (a === "delownkey") { if (!await ask("Remove your AI key?", "Your BYOK plan pauses until you add a working key.", "Remove", true)) return; await api("/api/me/ai", {method: "DELETE"}); S.status = await api("/api/status"); drawTop(); return drawPlans(); }
     if (a === "saveai") { const k = $("#ai_key").value.trim(); await send("/api/ai", {provider: $("#ai_provider").value, models: $("#ai_models").value, key: k || null}, "PUT"); toast("Saved"); S.status = await api("/api/status"); drawNotices(); return drawSettings(); }
+    if (a === "findmodels") {
+      b.disabled = true;
+      try {
+        const r = await send("/api/ai/models", {provider: $("#ai_provider").value, key: $("#ai_key").value.trim() || undefined});
+        const skip = /(embed|tts|audio|image-gen|imagen|veo|live|aqa|learnlm|gemma|vision-only|native-audio|transcribe|realtime|search|moderation|whisper|dall|davinci|babbage)/i;
+        const rank = m => (/flash/i.test(m) && !/lite/i.test(m) ? 0 : /haiku|mini/i.test(m) ? 0 : /flash/i.test(m) ? 1 : /pro|sonnet|gpt/i.test(m) ? 2 : 3) * 10 - (parseFloat((m.match(/(\d+(?:\.\d+)?)/) || [0, 0])[1]) || 0) / 10;
+        const ms = (r.models || []).filter(m => !skip.test(m)).sort((x, y) => rank(x) - rank(y) || y.localeCompare(x));
+        if (!ms.length) return toast("The service listed no usable models for this key.", true);
+        $("#ai_pick").innerHTML = ms.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("");
+        $("#ai_pickwrap").hidden = false; $("#ai_models").value = ms[0];
+        $("#ai_pick").onchange = e => { $("#ai_models").value = e.target.value; };
+        toast(`Found ${ms.length} models. The first one is filled in.`);
+      } finally { b.disabled = false; }
+      return;
+    }
     if (a === "testai") { b.disabled = true; try { const r = await send("/api/ai/test"); toast(`Works: ${r.model}`); } finally { b.disabled = false; } return; }
     if (a === "disconnect") { if (!await ask("Disconnect this account?", "Clips will no longer be posted to it.", "Disconnect", true)) return; await api(`/api/accounts/${d.a}`, {method: "DELETE"}); return drawSettings(); }
     if (a === "delaccount") {
