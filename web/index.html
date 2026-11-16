@@ -79,7 +79,26 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .drop{margin-top:14px;border:1.5px dashed var(--line-2);border-radius:var(--r-lg);padding:26px;text-align:center;color:var(--dim);cursor:pointer}
 .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
 .drop b{color:var(--text)}
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+.optwrap{margin-top:14px;padding-top:16px;border-top:1px solid var(--line)}
+.pickrow{margin-bottom:16px}.pickrow h4{margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+.tiles{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:thin}
+.tile{flex:none;display:flex;flex-direction:column;align-items:center;gap:7px;padding:6px 6px 8px;border:1.5px solid var(--line);border-radius:14px;background:var(--panel);color:var(--dim);font:inherit;font-size:12.5px;cursor:pointer;transition:border-color .15s,color .15s,background-color .15s}
+.tile:hover{border-color:var(--line-2);color:var(--text);background:var(--sunk)}
+.tile.on{border-color:var(--accent);color:var(--text);background:var(--accent-soft)}.tile.on span{font-weight:600}
+.pa{position:relative;display:block;overflow:hidden;border-radius:9px;background:#1C1B19}
+.pa.cam{width:58px;height:103px}
+.pa-game{position:absolute;inset:0;background:linear-gradient(160deg,#3B4A3A,#2A3340 60%,#4A3A2E);background-size:cover;background-position:center}
+.pa-game.half{top:50%}
+.pa-face{position:absolute;display:grid;place-items:end center;overflow:hidden;background:var(--peach)}
+.pa-face svg{width:70%;fill:#C9876A}
+.pa-face.top{left:0;right:0;top:0;height:50%}.pa-face.top svg{width:42%}
+.pa-face.circ{width:26px;height:26px;right:5px;bottom:9px;border-radius:50%;box-shadow:0 0 0 2px #fff}
+.pa-face.win{width:28px;height:20px;right:5px;bottom:9px;border-radius:4px;box-shadow:0 0 0 2px #fff}
+.pa.cap{width:124px;height:70px;display:grid;place-items:center}
+.pa-words{color:#fff;font-size:15px;line-height:1.1;text-align:center;-webkit-text-stroke:.6px #000;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.pa-words.box{padding:4px 8px;border-radius:7px;background:rgba(255,255,255,.14);-webkit-text-stroke:0}
+.pa-words b{font-weight:inherit}.pa-words b.box{color:#14100E;-webkit-text-stroke:0;text-shadow:none;padding:0 4px;border-radius:4px}
 .ups{margin-top:12px;display:grid;gap:8px}
 .up{display:grid;grid-template-columns:1fr 120px;gap:12px;align-items:center;font-size:13px}
 
@@ -232,6 +251,7 @@ header.top nav .pill{position:absolute;z-index:0;top:3px;height:30px;border-radi
 .spcap .pvw.box{color:#14100E;-webkit-text-stroke:0;text-shadow:none;padding:0 5px;border-radius:5px}
 .pend{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:14px}
 .new{position:relative;overflow:hidden;padding:22px;background:linear-gradient(135deg,#FFFDF9 0%,#FBF3EA 100%)}
+.panel.new{overflow:clip}   /* the soft glows stick out; clip keeps the panel from sliding sideways when a button gets focus */
 .new::before{content:"";position:absolute;width:340px;height:340px;right:-120px;top:-180px;border-radius:50%;background:var(--peach);filter:blur(50px);opacity:.7;pointer-events:none;animation:drift 16s ease-in-out infinite alternate}
 .new::after{content:"";position:absolute;width:260px;height:260px;left:30%;bottom:-200px;border-radius:50%;background:var(--sage);filter:blur(50px);opacity:.6;pointer-events:none;animation:drift 20s ease-in-out infinite alternate-reverse}
 @keyframes drift{to{transform:translate(-40px,30px) scale(1.1)}}
@@ -416,6 +436,39 @@ function statusBadge(j) {
 }
 const wsOf = id => (S.creators || []).find(c => c.id === id);
 const CAPLOOK = {bounce: {font: "'Poppins',sans-serif", w: 800, hl: "#FFF000", up: true}, hype: {font: "'Anton',sans-serif", w: 400, hl: "#FF3C3C", up: true}, clean: {font: "'Poppins',sans-serif", w: 800, hl: "#FFD76B", up: false}};
+// ---- style pickers: every choice shown as a small picture of how it looks, not a dropdown
+const PICK_LABEL = {cam: {split: "Top half", circle: "Circle", rect: "Window", none: "Gameplay only"},
+                    capbg: {none: "Outline", box: "Dark box", word: "Word highlight"}};
+function pickArt(g, v, other) {
+  const frame = S.ui.frame?.img;
+  if (g === "cam") {
+    const game = `<i class="pa-game" ${frame ? `style="background-image:url(${frame})"` : ""}></i>`;
+    const face = cls => `<i class="pa-face ${cls}"><svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="4"/><path d="M2 20c0-5 4-7 8-7s8 2 8 7"/></svg></i>`;
+    return `<span class="pa cam">${v === "split" ? face("top") + `<i class="pa-game half" ${frame ? `style="background-image:url(${frame})"` : ""}></i>` : game + (v === "circle" ? face("circ") : v === "rect" ? face("win") : "")}</span>`;
+  }
+  const st = CAPLOOK[g === "style" ? v : other.style] || CAPLOOK.bounce, bg = g === "capbg" ? v : other.capbg;
+  const w = ["to", "get", "started"].map(x => st.up ? x.toUpperCase() : x);
+  const hot = bg === "word" ? `<b class="box" style="background:${st.hl}">${w[2]}</b>` : `<b style="color:${st.hl}">${w[2]}</b>`;
+  return `<span class="pa cap"><span class="pa-words ${bg === "box" ? "box" : ""}" style="font-family:${st.font};font-weight:${st.w}">${w[0]} ${w[1]}<br>${hot}</span></span>`;
+}
+function picker(g, val, attr, other) {
+  const items = g === "style" ? Object.entries(S.status.styles || {bounce: "Bounce"})
+    : Object.keys(g === "cam" ? (S.status.cam_styles || PICK_LABEL.cam) : (S.status.cap_bgs || PICK_LABEL.capbg)).map(k => [k, PICK_LABEL[g][k] || k]);
+  return `<div class="pick" data-g="${g}"><input type="hidden" ${attr} value="${esc(val)}"><div class="tiles">${items.map(([k, l]) =>
+    `<button type="button" class="tile ${k === val ? "on" : ""}" data-act="tile" data-v="${esc(k)}" aria-pressed="${k === val}">${pickArt(g, k, other)}<span>${esc(l)}</span></button>`).join("")}</div></div>`;
+}
+function pickVal(root, g) { return root.querySelector(`.pick[data-g="${g}"] input`)?.value; }
+function refreshPicks(root) {
+  const other = {style: pickVal(root, "style"), capbg: pickVal(root, "capbg")};
+  root.querySelectorAll(".pick").forEach(p => p.querySelectorAll(".tile").forEach(t => {
+    const art = t.querySelector(".pa"); if (art) art.outerHTML = pickArt(p.dataset.g, t.dataset.v, other); }));
+}
+function pickRows(v, attr) {   // v: {cam, style, capbg}; attr(name) gives the hidden input's id/name/data-f
+  const other = {style: v.style, capbg: v.capbg};
+  return `<div class="pickrow"><h4>Facecam</h4>${picker("cam", v.cam, attr("cam"), other)}</div>
+    <div class="pickrow"><h4>Captions</h4>${picker("style", v.style, attr("style"), other)}</div>
+    <div class="pickrow"><h4>Caption background</h4>${picker("capbg", v.capbg, attr("capbg"), other)}</div>`;
+}
 function formVal(id, fallback) { const v = S.ui.form?.[id]; return v != null ? v : fallback; }
 function drawProjects() {
   const o = S.ui;
@@ -436,17 +489,17 @@ function drawProjects() {
         : `${o.pending?.length ? `<div class="pend">${o.pending.map(f => `<span class="badge">${ic("film")}${esc(f.name)}</span>`).join("")}<button class="btn ghost sm" data-act="clearpend">Clear</button></div>
             <div class="newrow"><button class="btn primary" data-act="startup">${ic("scissors")}Find clips in ${o.pending.length} video${o.pending.length === 1 ? "" : "s"}</button></div>`
           : `<div class="drop" data-act="pick" id="drop">${ic("up")}<div><b>Choose video files</b> or drop them here</div><div class="small faint">MP4, MOV, MKV or WebM. Pick a style, then press Find clips.</div></div>`}`}
-      <div class="opts" ${showOpts ? "" : "hidden"} id="opts">
+      <div class="optwrap" ${showOpts ? "" : "hidden"} id="opts">
+        ${pickRows({cam: formVal("o_cam", def.cam_style || "split"), style: formVal("o_style", def.style || "bounce"), capbg: formVal("o_capbg", def.cap_bg || "none")},
+                   g => `id="${{cam: "o_cam", style: "o_style", capbg: "o_capbg"}[g]}"`)}
+        <div class="opts">
         <label class="f">Layout<select id="o_layout">${opt(layouts, formVal("o_layout", def.layout || "auto"))}</select></label>
-        <label class="f">Facecam style<select id="o_cam">${opt(Object.entries(S.status.cam_styles || {split: "Facecam on top half"}), formVal("o_cam", def.cam_style || "split"))}</select></label>
-        <label class="f">Caption style<select id="o_style">${opt(Object.entries(S.status.styles || {}), formVal("o_style", def.style || "bounce"))}</select></label>
-        <label class="f">Caption background<select id="o_capbg">${opt(Object.entries(S.status.cap_bgs || {none: "Outline only"}), formVal("o_capbg", def.cap_bg || "none"))}</select></label>
         <label class="f">Language spoken<select id="o_lang">${opt(LANGS, formVal("o_lang", def.language || "auto"))}</select></label>
         <label class="f">Number of clips<input id="o_max" type="number" min="1" max="20" value="${esc(formVal("o_max", def.max_clips || 6))}"></label>
         <label class="f">Shortest clip (s)<input id="o_min" type="number" min="5" max="120" value="${esc(formVal("o_min", def.min_len || 15))}"></label>
         <label class="f">Longest clip (s)<input id="o_maxlen" type="number" min="10" max="180" value="${esc(formVal("o_maxlen", def.max_len || 60))}"></label>
         <label class="f">Quality<select id="o_quality">${opt([["1080", "1080p"], ["720", "720p (faster)"]], formVal("o_quality", "1080"))}</select></label>
-      </div>
+      </div></div>
       <div class="ups" id="ups"></div></div>
       <div class="spvwrap" ${o.frame ? "" : "hidden"}><div class="spv" id="spv"></div><p class="small faint" style="text-align:center;margin-top:8px">Live preview from ${o.mode === "link" ? "the video's thumbnail" : "a frame of your video"}. Change the style and watch it update.</p></div>
       </div>
@@ -625,8 +678,8 @@ function workspace(j, c) {
       ${c.reason ? `<div class="why"><div><span class="small muted">Viral score</span> <b class="score">${c.score || "–"}</b><span class="faint small">/100</span></div><div style="margin-top:4px">${esc(c.reason)}</div></div>` : ""}
       <h3>On the video</h3>
       <label class="f">Hook text<input data-f="hook" value="${esc(c.hook)}" maxlength="60"></label>
-      <div class="two"><label class="f">Layout<select data-f="layout">${opt(layouts, c.layout)}</select></label><label class="f">Facecam style<select data-f="cam_style">${opt(Object.entries(S.status.cam_styles || {}), c.cam_style || "split")}</select></label></div>
-      <div class="two"><label class="f">Caption style<select data-f="style">${opt(Object.entries(S.status.styles || {}), c.style)}</select></label><label class="f">Caption background<select data-f="cap_bg">${opt(Object.entries(S.status.cap_bgs || {}), c.cap_bg || "none")}</select></label></div>
+      <label class="f">Layout<select data-f="layout">${opt(layouts, c.layout)}</select></label>
+      ${pickRows({cam: c.cam_style || "split", style: c.style || "bounce", capbg: c.cap_bg || "none"}, g => `data-f="${{cam: "cam_style", style: "style", capbg: "cap_bg"}[g]}"`)}
       <div class="two"><label class="f">Start (seconds)<input data-f="start" type="number" step="0.5" value="${c.start}"></label><label class="f">End (seconds)<input data-f="end" type="number" step="0.5" value="${c.end}"></label></div>
       <h3>Post text</h3>
       <label class="f">Title<input data-f="title" value="${esc(c.title)}" maxlength="100"></label>
@@ -814,6 +867,12 @@ document.addEventListener("click", async e => {
     if (a === "logout") { await send("/api/auth/logout"); location.href = "/login"; return; }
     if (a === "resend") { await send("/api/auth/resend-verification"); return toast("Sent. Check your inbox."); }
     if (a === "mode") { S.ui.mode = d.m; return drawProjects(); }
+    if (a === "tile") {
+      const p = b.closest(".pick"), inp = p.querySelector("input");
+      inp.value = d.v; p.querySelectorAll(".tile").forEach(t => { t.classList.toggle("on", t === b); t.setAttribute("aria-pressed", t === b); });
+      refreshPicks(b.closest("form, #opts, .form") || document);
+      inp.dispatchEvent(new Event("change", {bubbles: true})); return;
+    }
     if (a === "opts") { S.ui.opts = !S.ui.opts; $("#opts").hidden = !S.ui.opts; b.innerHTML = ic("sliders") + (S.ui.opts ? "Hide style" : "Style and options"); return; }
     if (a === "ws") { S.ui.ws = d.w; S.ui.form = {}; try { localStorage.setItem("cf_ws", d.w); } catch {} return drawProjects(); }
     if (a === "newws") return wsDialog(null);
@@ -901,11 +960,9 @@ function wsDialog(ws) {
   d.innerHTML = `<form class="dl" id="wsform" style="max-width:520px"><h2>${ws ? "Workspace settings" : "New workspace"}</h2>
     <p class="muted small">A workspace keeps one kind of content together (say "Valorant streams" or "Podcast"), with its own default style.</p>
     <label class="f">Name<input name="name" value="${esc(v.name || "")}" placeholder="Valorant streams" required maxlength="60"></label>
+    ${pickRows({cam: v.cam_style || "split", style: v.style || "bounce", capbg: v.cap_bg || "none"}, g => `name="${{cam: "cam_style", style: "style", capbg: "cap_bg"}[g]}"`)}
     <div class="formgrid" style="grid-template-columns:1fr 1fr">
       <label class="f">Layout<select name="layout">${opt(layouts, v.layout || "auto")}</select></label>
-      <label class="f">Facecam style<select name="cam_style">${opt(Object.entries(S.status.cam_styles || {}), v.cam_style || "split")}</select></label>
-      <label class="f">Caption style<select name="style">${opt(Object.entries(S.status.styles || {}), v.style || "bounce")}</select></label>
-      <label class="f">Caption background<select name="cap_bg">${opt(Object.entries(S.status.cap_bgs || {}), v.cap_bg || "none")}</select></label>
       <label class="f">Language spoken<select name="language">${opt(LANGS, v.language || "auto")}</select></label>
       <label class="f">Clips per video<input name="max_clips" type="number" min="1" max="20" value="${esc(v.max_clips || 6)}"></label></div>
     <div class="row" style="justify-content:space-between">${ws ? `<button type="button" class="btn danger" data-act="delws" data-w="${esc(ws.id)}">Delete workspace</button>` : "<span></span>"}

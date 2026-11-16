@@ -90,6 +90,11 @@ input:focus,select:focus,textarea:focus{border-color:#E4572E!important;box-shado
 a{color:inherit}
 main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
+/* the left panel keeps its own dark ink so the light heading and logo stay readable on the cream page */
+.side{background:#1C1B19;margin:8px;border-radius:16px;min-height:calc(100vh - 16px)!important;box-sizing:border-box}
+.side h1{color:#F6F1E8!important}.side h1 em{color:#E4572E!important;font-style:italic}
+.side li svg{color:#E4572E!important}.side ul{color:#C9C2B6!important}
+.main{background:#FFFDF9!important}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
