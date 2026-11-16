@@ -4,30 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ClipForge</title>
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf1">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&family=Inter:wght@300&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#FF8B33;--brand-press:#F27A1F;--brand-ink:#2A1A12;--brand-soft:#FFF2E8;--brand-line:#FFD9BC;--brand-deep:#A9480A;
-  --frame:#1E1612;--frame-2:#2C221D;--frame-line:rgba(255,255,255,.08);--frame-text:#F4EEEA;--frame-dim:#A99A91;
-  --bg:#FFFFFF;--muted:#F7F4F1;--line:#EEE8E4;--line-2:#E1D9D3;
-  --text:#211813;--dim:#6D6159;--faint:#A0948C;
-  --good:#0F8A57;--good-soft:#E6F6EE;--bad:#D3343F;--bad-soft:#FDECEE;--live:#E5323F;
-  --r-lg:16px;--r:12px;--r-sm:8px;
+  --brand:#6C47FF;--brand-press:#5935F0;--brand-ink:#17123A;--brand-soft:#F1EDFF;--brand-line:#DCD3FF;--brand-deep:#4A2BD6;
+  --accent:#C6F432;--accent-ink:#12101F;
+  --frame:#0D0B1A;--frame-2:#1A1730;--frame-line:rgba(255,255,255,.07);--frame-text:#ECEAFB;--frame-dim:#8D89AB;
+  --bg:#FFFFFF;--muted:#F5F4FA;--line:#ECEAF4;--line-2:#DEDBEC;
+  --text:#15132A;--dim:#5F5C78;--faint:#9C99B3;
+  --good:#0E9F6E;--good-soft:#E3F7EE;--bad:#E0364B;--bad-soft:#FDECEF;--live:#F0364B;
+  --r-lg:18px;--r:12px;--r-sm:9px;
+  --shadow:0 1px 0 rgba(21,19,42,.04),0 12px 32px -20px rgba(21,19,42,.28);
   color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{height:100%}
-body{margin:0;background:var(--frame);color:var(--text);font:14px/1.5 "Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+body{margin:0;background:var(--frame);color:var(--text);font:14px/1.5 "Plus Jakarta Sans","Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 h1,h2,h3,h4,p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
 svg{width:18px;height:18px;flex:none;fill:currentColor}
 ::selection{background:var(--brand-line)}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#E2D9D7;border-radius:999px;border:3px solid #fff}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#DCD9EA;border-radius:999px;border:3px solid #fff}
 
 /* ---------- frame */
 .app{display:grid;grid-template-columns:240px minmax(0,1fr);height:100vh}
@@ -49,13 +51,13 @@ svg{width:18px;height:18px;flex:none;fill:currentColor}
 .nav-item.on svg{color:var(--brand-ink)}
 .label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:var(--frame-text);white-space:nowrap}
-.nav-item.on .count{background:rgba(42,26,18,.14);color:var(--brand-ink)}
-.avatar{width:26px;height:26px;border-radius:50%;background:rgba(255,139,51,.18);color:#FFB27A;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;overflow:hidden}
+.nav-item.on .count{background:rgba(23,18,58,.14);color:var(--brand-ink)}
+.avatar{width:26px;height:26px;border-radius:50%;background:rgba(108,71,255,.18);color:#B7A4FF;display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;overflow:hidden}
 img.avatar{object-fit:cover;background:rgba(255,255,255,.08)}
 .tav{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;background:var(--muted)}
 #title{display:flex;align-items:center;gap:10px}
 .chprev{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--muted);animation:rise .25s ease both}
-.chprev img,.chprev .ph{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#EFE7E1}
+.chprev img,.chprev .ph{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:#EEECF6}
 .chprev b{display:block;font-size:14px;color:var(--brand-ink)}
 .chprev span{font-size:12px;color:var(--faint)}
 .chprev.bad{background:#FDECEC;color:#A12A2A;font-size:13px}
@@ -80,10 +82,10 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .upd .cmd{display:flex;gap:8px;align-items:center}
 .upd .cmd code{flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px;background:var(--muted);border-radius:8px;padding:9px 11px}
 .upd h3{font-size:13px;font-weight:600;color:var(--brand-ink);margin:0}
-.vb{display:flex;align-items:center;gap:12px;margin:12px 28px 0;padding:12px 12px 12px 16px;border-radius:12px;background:#FFF4E6;color:#7A3E0C;font-size:14px;animation:rise .3s ease both}
+.vb{display:flex;align-items:center;gap:12px;margin:12px 28px 0;padding:12px 12px 12px 16px;border-radius:12px;background:#F1EDFF;color:#3B2696;font-size:14px;animation:rise .3s ease both}
 .vb svg{width:18px;height:18px;flex:none;color:var(--brand-deep)}
 .vb span{flex:1;min-width:0}
-.vb b{color:#5A2C06}
+.vb b{color:#241668}
 @media (max-width:640px){.vb{margin:10px 16px 0;flex-wrap:wrap}}
 .topbar .titles{flex:1;min-width:0}
 #tpic:empty{display:none}
@@ -98,7 +100,7 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 @media (min-width:761px){.topbar.tabbed{position:sticky}.topbar.tabbed .utabs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}.topbar.tabbed .titles{max-width:calc(50% - 230px)}}
 @media (max-width:760px){.utabs{order:5;flex-basis:100%;margin:2px 0 0;position:relative}.topbar.tabbed .titles{max-width:none;flex:1}}
 .utabs .tabbtn{height:34px;padding:0 14px;border-radius:8px;background:transparent;color:var(--dim);font-size:13px;transition:background-color .18s ease,color .18s ease}
-.utabs .tabbtn:hover{background:#EDE3DB;color:var(--text)}
+.utabs .tabbtn:hover{background:#E8E5F3;color:var(--text)}
 .utabs .tabbtn::after{display:none}
 .utabs .tabbtn.on{background:transparent;color:var(--brand-ink)}
 .utabs .tabbtn{position:relative;z-index:1}
@@ -106,18 +108,18 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .utabs .tabbtn,.utabs .tabbtn svg,.utabs .tabbtn .n{transition:color .25s ease,background-color .25s ease}
 .utabs .tabbtn.on svg{color:var(--brand-ink)}
 .utabs .tabbtn .n{background:var(--muted);color:var(--dim)}
-.utabs .tabbtn.on .n{background:rgba(42,26,18,.14);color:var(--brand-ink)}
+.utabs .tabbtn.on .n{background:rgba(23,18,58,.14);color:var(--brand-ink)}
 .rdot{flex:none;width:9px;height:9px;border-radius:50%;background:#fff}
 .btn .rdot.on{background:#E5323F;animation:pulse 1.3s infinite}
 /* live stream panel */
-.stream{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,1fr);gap:14px;background:#1E1612;border-radius:16px;padding:12px;margin-bottom:22px;color:#EFE5DE;animation:rise .3s ease both}
+.stream{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(250px,1fr);gap:14px;background:#0D0B1A;border-radius:16px;padding:12px;margin-bottom:22px;color:#EEECF6;animation:rise .3s ease both}
 .stream .player{position:relative;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000}
 .stream iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.noembed{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;text-align:center;background:#120D0A;color:#EFE5DE}
+.noembed{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px;text-align:center;background:#120D0A;color:#EEECF6}
 .noembed .logo{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:4px}
 .noembed .logo svg{width:22px;height:22px}
 .noembed b{font-size:15px;color:#fff}
-.noembed span{font-size:13px;color:#B9A597;max-width:380px}
+.noembed span{font-size:13px;color:#A7A3C2;max-width:380px}
 .noembed .btn{margin-top:6px}
 .sinfo{display:flex;flex-direction:column;gap:12px;padding:6px 6px 4px 2px;min-width:0}
 .sinfo .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -126,18 +128,18 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .sinfo .lv{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;background:#E5323F;color:#fff;padding:3px 10px;border-radius:999px}
 .sinfo .lv i{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.3s infinite}
 .sinfo h3{font-size:16px;line-height:1.4;font-weight:600;color:#fff;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
-.sinfo .by{font-size:12px;color:#B9A597;margin-top:-6px}
+.sinfo .by{font-size:12px;color:#A7A3C2;margin-top:-6px}
 .sstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:8px}
 .sstats div{background:rgba(255,255,255,.06);border-radius:10px;padding:10px 12px}
 .sstats b{display:block;font-size:17px;font-weight:700;color:#fff;letter-spacing:-.01em}
-.sstats span{font-size:11px;color:#B9A597}
+.sstats span{font-size:11px;color:#A7A3C2}
 .sinfo .cta{margin-top:auto;display:flex;flex-direction:column;gap:8px}
 .sinfo .cta .btn{height:46px;width:100%;justify-content:center;font-size:15px}
-.sinfo .cta small{font-size:12px;color:#B9A597;text-align:center}
+.sinfo .cta small{font-size:12px;color:#A7A3C2;text-align:center}
 .splat{display:flex;gap:4px;margin-left:auto}
-.splat button{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:8px;background:rgba(255,255,255,.06);color:#B9A597;cursor:pointer;transition:background-color .15s ease}
+.splat button{display:grid;place-items:center;width:30px;height:30px;border:0;border-radius:8px;background:rgba(255,255,255,.06);color:#A7A3C2;cursor:pointer;transition:background-color .15s ease}
 .splat button:hover{background:rgba(255,255,255,.12)}
-.splat button.on{background:rgba(255,139,51,.22)}
+.splat button.on{background:rgba(108,71,255,.22)}
 .splat svg{width:15px;height:15px}
 @media (max-width:960px){.stream{grid-template-columns:1fr}}
 .sbadge{display:inline-flex;align-items:center;gap:6px;margin-top:3px;font-size:11px;font-weight:600;padding:2px 8px 2px 7px;border-radius:999px;background:var(--muted);color:var(--dim)}
@@ -152,7 +154,7 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .ttabs .tabbtn{height:32px;padding:0 12px;border-radius:8px;font-size:13px;color:var(--dim)}
 .ttabs .tabbtn::after{display:none}
 .ttabs .tabbtn svg{width:16px;height:16px}
-.ttabs .tabbtn:hover{background:#EDE3DB;color:var(--text)}
+.ttabs .tabbtn:hover{background:#E8E5F3;color:var(--text)}
 .ttabs .tabbtn.on{background:var(--brand-soft);color:var(--brand-ink)}
 .ttabs .tabbtn.on .n{background:#fff}
 #actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
@@ -164,7 +166,7 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .chan{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--muted);min-height:64px}
 .chan .logo{flex:none;width:36px;height:36px;border-radius:10px;display:grid;place-items:center}
 .chan .logo svg{width:20px;height:20px}
-.chan .pic{flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover;background:#EFE7E1}
+.chan .pic{flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover;background:#EEECF6}
 .chan .who{flex:1;min-width:0}
 .chan .who b{display:block;font-size:14px;color:var(--brand-ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .chan .who span{font-size:12px;color:var(--faint)}
@@ -213,7 +215,7 @@ img.avatar.ring{background:transparent}
 /* ---------- fields */
 :where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea){width:100%;height:40px;padding:0 12px;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-sm);min-width:0;outline:none;transition:border-color .15s ease}
 :where(textarea){height:auto;padding:10px 12px;resize:vertical}
-:where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea):hover{border-color:#D9CCC2}
+:where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea):hover{border-color:#CFCBE3}
 :where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea):focus{background:#fff;border-color:var(--brand)}
 input:not([type=checkbox],[type=radio],[type=range]):focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 input::placeholder,textarea::placeholder{color:var(--faint)}
@@ -267,7 +269,7 @@ label.ck input{accent-color:var(--brand);margin:0}
 .hero h2{font-size:clamp(21px,5.2vw,28px);font-weight:700;letter-spacing:-.03em;color:var(--brand-ink);line-height:1.2;text-wrap:balance}
 .hero>p{color:var(--dim);margin:8px auto 22px;max-width:520px;font-size:15px}
 .composer{max-width:760px;margin:0 auto;background:#fff;border:1px solid var(--line-2);border-radius:var(--r-lg);text-align:left;transition:background-color .15s ease,border-color .15s ease}
-.composer:has(#url:focus){border-color:#FFB27A}
+.composer:has(#url:focus){border-color:#B7A4FF}
 .composer.compact{max-width:none;margin-bottom:28px;background:var(--muted)}
 .composer.over{background:var(--brand-soft);border-color:var(--brand)}
 .composer :focus-visible{outline:none}
@@ -279,7 +281,7 @@ label.ck input{accent-color:var(--brand);margin:0}
 .chip{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:999px;border:0;background:var(--muted);color:var(--dim);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap;transition:background-color .15s ease,color .15s ease}
 .composer.compact .chip{background:#fff}
 .chip svg{width:16px;height:16px}
-.chip:hover,.chip:focus-visible{background:#EDE3DB;color:var(--text)}
+.chip:hover,.chip:focus-visible{background:#E8E5F3;color:var(--text)}
 .chip.on,.pick.open .chip{background:var(--brand-soft);color:var(--brand-ink)}
 .hint{font-size:12px;color:var(--faint);margin-right:6px}
 .composer-bar{flex-wrap:nowrap}
@@ -297,7 +299,7 @@ label.ck input{accent-color:var(--brand);margin:0}
 .att-in{display:flex;flex-direction:column;gap:8px;padding:0 12px 8px}
 .lp{display:flex;align-items:center;gap:12px;padding:8px;border-radius:12px;background:var(--muted);animation:rise .28s ease both}
 .composer.compact .lp{background:#fff}
-.lp .th{position:relative;flex:none;width:112px;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#2A1A12}
+.lp .th{position:relative;flex:none;width:112px;aspect-ratio:16/9;border-radius:8px;overflow:hidden;background:#17123A}
 .lp .th img{width:100%;height:100%;object-fit:cover;display:block}
 .lp .th .du{position:absolute;right:5px;bottom:5px;background:rgba(20,12,8,.82);color:#fff;font-size:11px;font-weight:600;padding:1px 6px;border-radius:6px}
 .lp .tx{min-width:0;flex:1}
@@ -312,7 +314,7 @@ label.ck input{accent-color:var(--brand);margin:0}
 .lp.bad b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#7A1F1F}
 .lp.wait .rm{margin-left:auto}
 .lp.bad svg{width:16px;height:16px;flex:none}
-.lp.wait .th,.sk{background:linear-gradient(90deg,#EFE7E1 0%,#F8F3EF 50%,#EFE7E1 100%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
+.lp.wait .th,.sk{background:linear-gradient(90deg,#EEECF6 0%,#F8F7FC 50%,#EEECF6 100%);background-size:200% 100%;animation:shimmer 1.2s linear infinite}
 .sk{display:block;height:10px;border-radius:6px;margin:4px 0}
 .lp{position:relative;overflow:hidden}
 .lp .th video{width:100%;height:100%;object-fit:cover;display:block}
@@ -327,30 +329,30 @@ label.ck input{accent-color:var(--brand);margin:0}
 .addrow svg{width:16px;height:16px}
 .addrow span{margin-left:auto;font-weight:500;color:var(--faint);font-size:12px}
 @media (max-width:560px){.lp .th{width:88px}.lp .ok{display:none}}
-.btn.primary:disabled{background:#F3E7DD;color:#B9A597;cursor:not-allowed}
+.btn.primary:disabled{background:#F3E7DD;color:#A7A3C2;cursor:not-allowed}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 @keyframes spin{to{transform:rotate(360deg)}}
-.working{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--brand);background:rgba(255,139,51,.14);padding:2px 8px 2px 6px;border-radius:999px}
+.working{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:var(--brand);background:rgba(108,71,255,.14);padding:2px 8px 2px 6px;border-radius:999px}
 .working i{width:10px;height:10px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:spin .8s linear infinite}
-.nav-item.on .working{background:rgba(42,26,18,.14);color:var(--brand-ink)}
+.nav-item.on .working{background:rgba(23,18,58,.14);color:var(--brand-ink)}
 .app.mini .nav-item .working{display:none}
 
 /* custom dropdown: a dark panel, no border or shadow needed against the white */
 .pick{position:relative}
 .pick .car{width:13px;height:13px;transition:transform .15s ease}
 .pick.open .car{transform:rotate(180deg)}
-.pick-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:230px;max-height:280px;overflow:auto;background:#2A1A12;border-radius:12px;padding:6px;
+.pick-menu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:230px;max-height:280px;overflow:auto;background:#17123A;border-radius:12px;padding:6px;
   opacity:0;visibility:hidden;transform:translateY(-6px);pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility .18s}
 .pick.open .pick-menu{opacity:1;visibility:visible;transform:none;pointer-events:auto}
-.pick-opt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:transparent;color:#E9DED6;border-radius:8px;font-size:13px;font-weight:500;text-align:left;cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.pick-opt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:transparent;color:#E8E5F3;border-radius:8px;font-size:13px;font-weight:500;text-align:left;cursor:pointer;transition:background-color .15s ease,color .15s ease}
 .pick-opt:hover,.pick-opt:focus-visible{background:rgba(255,255,255,.08);color:#fff}
-.pick-new{display:flex;align-items:center;gap:10px;width:100%;margin-top:4px;padding:8px 10px;border:0;border-top:1px solid rgba(255,255,255,.08);border-radius:0 0 8px 8px;background:transparent;color:#FFB27A;font-size:13px;font-weight:600;text-align:left;cursor:pointer;transition:background-color .15s ease,color .15s ease}
-.pick-new:hover,.pick-new:focus-visible{background:rgba(255,139,51,.14);color:#FFC79D}
-.pick-new .av{background:rgba(255,139,51,.18)}
-.pick-empty{margin:6px 10px 4px;font-size:12px;line-height:1.45;color:#B9A597}
+.pick-new{display:flex;align-items:center;gap:10px;width:100%;margin-top:4px;padding:8px 10px;border:0;border-top:1px solid rgba(255,255,255,.08);border-radius:0 0 8px 8px;background:transparent;color:#B7A4FF;font-size:13px;font-weight:600;text-align:left;cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.pick-new:hover,.pick-new:focus-visible{background:rgba(108,71,255,.14);color:#FFC79D}
+.pick-new .av{background:rgba(108,71,255,.18)}
+.pick-empty{margin:6px 10px 4px;font-size:12px;line-height:1.45;color:#A7A3C2}
 img.av{object-fit:cover}
-.pick-opt .av,.pick-new .av{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:700;background:rgba(255,139,51,.18);color:#FFB27A}
+.pick-opt .av,.pick-new .av{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:11px;font-weight:700;background:rgba(108,71,255,.18);color:#B7A4FF}
 .pick-new .av svg,.pick-opt .av svg{width:14px;height:14px}
 .pick-opt .tick{margin-left:auto;width:15px;height:15px;color:var(--brand);visibility:hidden}
 .pick-opt[aria-selected=true] .tick{visibility:visible}
@@ -377,25 +379,25 @@ img.av{object-fit:cover}
 .tiles3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .tile-o{display:flex;flex-direction:column;gap:7px;padding:6px 6px 8px;border:0;border-radius:10px;background:#fff;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:background-color .15s ease,color .15s ease}
 .composer.compact .tile-o{background:var(--muted)}
-.tile-o:hover,.tile-o:focus-visible{background:#EDE3DB;color:var(--text)}
+.tile-o:hover,.tile-o:focus-visible{background:#E8E5F3;color:var(--text)}
 .tile-o[aria-pressed=true]{background:var(--brand-soft);color:var(--brand-ink)}
-.cap-prev{height:54px;border-radius:7px;background:#1E1612;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;font-size:14px;line-height:1;color:#fff;letter-spacing:0;-webkit-text-stroke:1px #000;paint-order:stroke fill}
+.cap-prev{height:54px;border-radius:7px;background:#0D0B1A;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;font-size:14px;line-height:1;color:#fff;letter-spacing:0;-webkit-text-stroke:1px #000;paint-order:stroke fill}
 .cap-prev b{font-weight:inherit}
-.lay-prev{height:54px;border-radius:7px;background:#1E1612;display:grid;place-items:center}
-.lay-prev .ph{position:relative;width:28px;height:48px;border-radius:4px;overflow:hidden;background:#4A3428}
-.lay-prev .ph::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,#B4643A,#5E3A2A);filter:blur(3px);opacity:.75}
-.lay-prev .ph i{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:16px;background:linear-gradient(135deg,#FF8B33,#FFB27A)}
+.lay-prev{height:54px;border-radius:7px;background:#0D0B1A;display:grid;place-items:center}
+.lay-prev .ph{position:relative;width:28px;height:48px;border-radius:4px;overflow:hidden;background:#2E2A52}
+.lay-prev .ph::before{content:"";position:absolute;inset:0;background:linear-gradient(160deg,#4B32C9,#241F4A);filter:blur(3px);opacity:.75}
+.lay-prev .ph i{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:16px;background:linear-gradient(135deg,#6C47FF,#B7A4FF)}
 .lay-prev.zoom .ph i{left:-6px;right:-6px;height:24px}
 .lay-prev.crop .ph i{left:0;right:0;top:0;height:100%;transform:none}
-.lay-prev.split .ph i{top:0;height:34%;transform:none;background:#FFB27A}.lay-prev.split .ph::after{content:"";position:absolute;left:0;right:0;bottom:0;height:66%;background:linear-gradient(135deg,#FF8B33,#B4643A)}
-.lay-prev.gamefocus .ph i{top:0;height:100%;transform:none}.lay-prev.gamefocus .ph::after{content:"";position:absolute;right:3px;bottom:6px;width:10px;height:10px;border-radius:50%;background:#FFE3CC}
-.lay-prev.face .ph i{top:0;height:100%;transform:none;background:radial-gradient(circle at 50% 38%,#FFE3CC 0 5px,#FF8B33 6px)}
-.lay-prev.auto .ph i{top:0;height:100%;transform:none;background:repeating-linear-gradient(135deg,#FF8B33 0 4px,#FFB27A 4px 8px)}
+.lay-prev.split .ph i{top:0;height:34%;transform:none;background:#B7A4FF}.lay-prev.split .ph::after{content:"";position:absolute;left:0;right:0;bottom:0;height:66%;background:linear-gradient(135deg,#6C47FF,#4B32C9)}
+.lay-prev.gamefocus .ph i{top:0;height:100%;transform:none}.lay-prev.gamefocus .ph::after{content:"";position:absolute;right:3px;bottom:6px;width:10px;height:10px;border-radius:50%;background:#E3DBFF}
+.lay-prev.face .ph i{top:0;height:100%;transform:none;background:radial-gradient(circle at 50% 38%,#E3DBFF 0 5px,#6C47FF 6px)}
+.lay-prev.auto .ph i{top:0;height:100%;transform:none;background:repeating-linear-gradient(135deg,#6C47FF 0 4px,#B7A4FF 4px 8px)}
 .seg{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px}
 .composer.compact .seg{background:var(--muted)}
 .seg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 6px;border:0;border-radius:7px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:background-color .15s ease,color .15s ease}
 .seg button small{font-size:11px;font-weight:500;color:var(--faint);transition:color .15s ease}
-.seg button:hover,.seg button:focus-visible{background:#EDE3DB;color:var(--text)}
+.seg button:hover,.seg button:focus-visible{background:#E8E5F3;color:var(--text)}
 .seg button[aria-pressed=true]{background:var(--brand-soft);color:var(--brand-ink)}
 .seg button[aria-pressed=true] small{color:#B8693A}
 .range{display:flex;align-items:center;gap:8px}
@@ -491,7 +493,7 @@ img.av{object-fit:cover}
 .savebar.on{opacity:1;transform:none;pointer-events:auto}
 .savebar>span{flex:1;display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
 .savebar>span svg{width:16px;height:16px;color:var(--brand)}
-.savebar .btn.ghost{color:#E9DED6;background:transparent;border-color:transparent}
+.savebar .btn.ghost{color:#E8E5F3;background:transparent;border-color:transparent}
 .savebar .btn.ghost:hover{background:rgba(255,255,255,.08)}
 .step .n{width:26px;height:26px;border-radius:999px;border:1px solid var(--line-2);background:#fff;display:grid;place-items:center;font-size:12px;font-weight:600;flex:none;color:var(--brand-ink)}
 .step b{display:block;font-weight:600;color:var(--text)}
@@ -514,15 +516,15 @@ img.av{object-fit:cover}
 .err{color:var(--bad);font-size:13px;overflow-wrap:anywhere;margin:6px 0}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
 .clip{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
-.shot{position:relative;aspect-ratio:9/16;background:#17110E;border:0;padding:0;cursor:pointer;display:block;width:100%;overflow:hidden}
+.shot{position:relative;aspect-ratio:9/16;background:#0A0915;border:0;padding:0;cursor:pointer;display:block;width:100%;overflow:hidden}
 .shot img{width:100%;height:100%;object-fit:cover;display:block}
 .shot .veil{position:absolute;left:10px;bottom:10px}
 .veil span{width:34px;height:34px;border-radius:50%;background:var(--brand);display:grid;place-items:center;color:var(--brand-ink)}
 .veil svg{width:15px;height:15px;margin-left:2px}
 .badge{position:absolute;top:10px;font-size:12px;font-weight:600;padding:2px 8px;border-radius:var(--r-sm);background:#fff;color:var(--brand-ink)}
 .badge.l{left:10px}.badge.r{right:10px}
-.badge.s-hi{background:var(--brand);color:var(--brand-ink)}.badge.s-mid{background:#FFE3CC;color:var(--brand-ink)}
-.making{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:14px;color:var(--dim);font-size:13px;font-weight:500;background:linear-gradient(110deg,#F4EFEE 30%,#FBF8F7 50%,#F4EFEE 70%);background-size:220% 100%;animation:shim 1.6s linear infinite}
+.badge.s-hi{background:var(--brand);color:var(--brand-ink)}.badge.s-mid{background:#E3DBFF;color:var(--brand-ink)}
+.making{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:14px;color:var(--dim);font-size:13px;font-weight:500;background:linear-gradient(110deg,#F3F2F9 30%,#FAF9FD 50%,#F3F2F9 70%);background-size:220% 100%;animation:shim 1.6s linear infinite}
 @keyframes shim{to{background-position:-220% 0}}
 .clip-body{padding:12px 14px;display:flex;flex-direction:column;gap:5px;flex:1}
 .hook{font-weight:600;font-size:13px;color:var(--brand-ink)}
@@ -532,12 +534,12 @@ img.av{object-fit:cover}
 .selck input{width:16px;height:16px;accent-color:var(--brand);cursor:pointer;margin:0}
 .clip.picked{border-color:var(--brand)}
 #selbar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;display:none;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
-  max-width:calc(100vw - 24px);padding:10px 12px 10px 18px;border-radius:14px;background:#1F140D;color:#FFF4EA;font-size:14px;border:1px solid rgba(255,178,122,.25)}
+  max-width:calc(100vw - 24px);padding:10px 12px 10px 18px;border-radius:14px;background:#0A0915;color:#F4F1FF;font-size:14px;border:1px solid rgba(183,164,255,.25)}
 #selbar.on{display:flex}
 #selbar b{font-weight:700;margin-right:6px}
-#selbar .btn{background:transparent;color:#FFF4EA;border-color:rgba(255,244,234,.25)}
-#selbar .btn:hover{background:rgba(255,244,234,.1)}
-#selbar .btn.primary{background:var(--brand);color:#1F140D;border-color:var(--brand)}
+#selbar .btn{background:transparent;color:#F4F1FF;border-color:rgba(241,237,255,.25)}
+#selbar .btn:hover{background:rgba(241,237,255,.1)}
+#selbar .btn.primary{background:var(--brand);color:#0A0915;border-color:var(--brand)}
 #selbar .btn.primary:hover{background:#FFA25C}
 #selbar .btn.danger{color:#FF9A8F;border-color:rgba(255,154,143,.45)}
 #selbar .btn.danger:hover{background:rgba(255,154,143,.14)}
@@ -559,8 +561,8 @@ img.av{object-fit:cover}
 .evbtn:hover,.evpick.open .evbtn{color:var(--brand)}
 .evbtn .car{width:14px;height:14px;color:var(--faint)}
 .evpick .pick-menu{min-width:240px}
-.pick-opt .ph{font-size:11px;color:#9C8A7E;margin-left:6px}
-.stat .evpick .pick-opt .pl{font-size:13px;color:inherit}.stat .evpick .pick-opt .ph{font-size:11px;color:#9C8A7E}.stat .evpick .evbtn .pv{font-size:20px;color:inherit}
+.pick-opt .ph{font-size:11px;color:#8D89AB;margin-left:6px}
+.stat .evpick .pick-opt .pl{font-size:13px;color:inherit}.stat .evpick .pick-opt .ph{font-size:11px;color:#8D89AB}.stat .evpick .evbtn .pv{font-size:20px;color:inherit}
 .autonote{font-size:12px;color:var(--faint);margin:-8px 0 14px}.stat span{font-size:12px;color:var(--dim)}
 .meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
 .meter{background:var(--muted);border-radius:var(--r);padding:12px 14px}
@@ -599,7 +601,7 @@ dialog::backdrop{background:rgba(14,12,11,.42);animation:fadein .16s ease}
 .dlg h2{font-size:18px;font-weight:600;color:var(--brand-ink)}
 .dlg-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
 .editor{display:grid;grid-template-columns:minmax(240px,340px) minmax(300px,450px);max-height:calc(100vh - 48px)}
-.editor .stage{background:#17110E;display:grid;place-items:center;position:relative;min-height:320px}
+.editor .stage{background:#0A0915;display:grid;place-items:center;position:relative;min-height:320px}
 .editor video,.editor .stage img{width:100%;max-height:calc(100vh - 48px);aspect-ratio:9/16;object-fit:contain;display:block}
 .editor .panel{padding:22px;overflow:auto;display:flex;flex-direction:column;gap:14px}
 .editor h3{font-size:13px;font-weight:600;color:var(--dim);margin-top:6px}
@@ -618,7 +620,7 @@ dialog::backdrop{background:rgba(14,12,11,.42);animation:fadein .16s ease}
 .ntoast.out{animation:ntout .25s ease forwards}
 .ntoast i{flex:none;width:34px;height:34px;border-radius:9px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-deep)}
 .ntoast i svg{width:17px;height:17px}
-.ntoast.k-expiry i{background:#FFF1DC;color:#9A5B12}.ntoast.k-post i{background:#FDECEC;color:#C53030}.ntoast.k-live i{background:#FDECEC;color:#E5323F}.ntoast.k-clips i{background:#E9F6EE;color:#1F7A4D}
+.ntoast.k-expiry i{background:#F4F1FF;color:#4A2BD6}.ntoast.k-post i{background:#FDECEC;color:#C53030}.ntoast.k-live i{background:#FDECEC;color:#E5323F}.ntoast.k-clips i{background:#E9F6EE;color:#1F7A4D}
 .ntoast .tx{flex:1;min-width:0}
 .ntoast b{display:block;font-size:13px;font-weight:600;color:var(--brand-ink);line-height:1.35}
 .ntoast span{display:block;font-size:12px;color:var(--dim);margin-top:2px;overflow-wrap:anywhere}
@@ -648,7 +650,7 @@ dialog::backdrop{background:rgba(14,12,11,.42);animation:fadein .16s ease}
 .nt:hover{background:var(--muted)}
 .nt i{flex:none;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:var(--brand-soft);color:var(--brand-deep)}
 .nt i svg{width:16px;height:16px}
-.nt.k-expiry i{background:#FFF1DC;color:#9A5B12}.nt.k-post i,.nt.k-fail i{background:#FDECEC;color:#C53030}.nt.k-live i{background:#FDECEC;color:#E5323F}.nt.k-clips i{background:#E9F6EE;color:#1F7A4D}
+.nt.k-expiry i{background:#F4F1FF;color:#4A2BD6}.nt.k-post i,.nt.k-fail i{background:#FDECEC;color:#C53030}.nt.k-live i{background:#FDECEC;color:#E5323F}.nt.k-clips i{background:#E9F6EE;color:#1F7A4D}
 .nt .tx{flex:1;min-width:0}
 .nt b{display:block;font-size:13px;font-weight:600;color:var(--brand-ink);line-height:1.35}
 .nt span{display:block;font-size:12px;color:var(--dim);margin-top:2px;overflow-wrap:anywhere}
@@ -670,7 +672,7 @@ dialog::backdrop{background:rgba(14,12,11,.42);animation:fadein .16s ease}
 
 /* ---------- AI status and usage */
 .ai-card{display:flex;align-items:center;gap:10px;width:100%;margin-top:6px;padding:8px;border-radius:8px;background:var(--frame-2);border:1px solid transparent;color:var(--frame-text);cursor:pointer;text-align:left}
-.ai-card .ai-ic{flex:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:rgba(255,139,51,.16);color:var(--brand)}
+.ai-card .ai-ic{flex:none;width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:rgba(108,71,255,.16);color:var(--brand)}
 .ai-card .ai-ic svg{width:18px;height:18px}
 .ai-card .ai-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
 .ai-card small{font-size:12px;color:var(--frame-dim);font-weight:500}
@@ -710,27 +712,27 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 
 /* ---------- motion and hover: colour only, never size */
 .btn,.nav-item,.chip,.step,.tabbtn,.icon-btn,label.ck,.clip,a.lnk,.ai-card,.veil span,td,label.sw input{transition:background-color .15s ease,border-color .15s ease,color .15s ease}
-.btn:hover{background:var(--muted);border-color:#D4CAC3}
-.btn.primary:hover{background:#FF9A4C;border-color:#FF9A4C}
-.btn.dark:hover{background:#3A2C25;border-color:#3A2C25}
+.btn:hover{background:var(--muted);border-color:#D4D1E4}
+.btn.primary:hover{background:#8768FF;border-color:#8768FF}
+.btn.dark:hover{background:#2A2645;border-color:#2A2645}
 .btn.danger:hover{background:#FADDE0}
 .btn.ghost:hover{background:var(--muted);border-color:transparent;color:var(--text)}
 
 .nav-item:hover{background:var(--frame-2)}
-.nav-item.on:hover{background:#FF9A4C}
+.nav-item.on:hover{background:#8768FF}
 .icon-btn:hover{background:var(--muted);color:var(--text)}
 .side .icon-btn:hover{background:var(--frame-2);color:var(--frame-text)}
 .chip:hover{background:var(--muted);color:var(--text)}
 .chip.on:hover,.pick.open .chip:hover{background:#FFE2CC;color:var(--brand-ink)}
 .step:hover{background:#F1EBE6}
 .tabbtn:hover{color:var(--brand-ink);background:var(--muted)}
-label.ck:hover{border-color:#D4CAC3}
+label.ck:hover{border-color:#D4D1E4}
 .clip:hover{border-color:var(--line-2)}
-.shot:hover .veil span{background:#FF9A4C}
+.shot:hover .veil span{background:#8768FF}
 a.lnk:hover{color:var(--brand-deep)}
 tr:hover>td{background:#FCFAF8}
 .ai-card:hover{background:#352a24}
-.ai-card.on{border-color:rgba(255,139,51,.5)}
+.ai-card.on{border-color:rgba(108,71,255,.5)}
 .app.mini .ai-card:hover{background:var(--frame-2)}
 dialog[open]{animation:fadein .16s ease}
 @keyframes fadein{from{opacity:0}}
@@ -741,7 +743,7 @@ dialog[open]{animation:fadein .16s ease}
   .app,.app.mini{grid-template-columns:1fr}
   .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:30;transform:translateX(-100%);transition:transform .2s ease}
   .app.open .side{transform:none}
-  .app.open .scrim{display:block;position:fixed;inset:0;background:rgba(30,22,18,.5);z-index:25}
+  .app.open .scrim{display:block;position:fixed;inset:0;background:rgba(13,11,26,.5);z-index:25}
   .app.mini .side-head .logo{display:block}.app.mini .side-head .mark{display:none}
   .app.mini .label,.app.mini .count,.app.mini .nav h4{display:revert}.app.mini .ai-card .ai-tx,.app.mini .me .who{display:flex}.app.mini .ai-card .ai-n{display:inline}.app.mini .me{flex-direction:row;padding:10px 4px 0 8px}.app.mini .ai-card{justify-content:flex-start;padding:12px;background:var(--frame-2)}
   .side-head .collapse{display:none}
@@ -781,7 +783,7 @@ dialog[open]{animation:fadein .16s ease}
 .tr-grow{flex:1}
 .tr-back{width:40px;height:40px;border-radius:var(--r);border:0;background:var(--muted);color:var(--brand-ink);display:grid;place-items:center;cursor:pointer;flex:none;transition:background-color .15s ease,opacity .2s ease}
 .tr-back svg{transform:rotate(180deg)}
-.tr-back:hover{background:#EDE3DB}
+.tr-back:hover{background:#E8E5F3}
 .tr-back[disabled]{opacity:0;pointer-events:none}
 .tr-foot .btn{height:40px;padding:0 16px}
 @keyframes tr-in{from{opacity:0;transform:translateY(6px)}}
@@ -812,6 +814,110 @@ dialog[open]{animation:fadein .16s ease}
   .set-sec h2{font-size:16px}
   .ai-big{font-size:24px}
 }
+
+/* ================================================================ ClipForge design system */
+body{letter-spacing:-.006em}
+h1,h2,h3{letter-spacing:-.022em}
+::selection{background:#DCD3FF}
+/* frame */
+.side{background:radial-gradient(130% 55% at 0% 0%,#231B52 0%,rgba(13,11,26,0) 62%),var(--frame);border-right:1px solid var(--frame-line)}
+.nav-item{border-radius:10px;min-height:38px;font-weight:500;transition:background-color .15s ease,color .15s ease}
+.nav-item:hover{background:rgba(255,255,255,.05)}
+.nav-item.on{background:linear-gradient(90deg,rgba(108,71,255,.42),rgba(108,71,255,.12));color:#fff;font-weight:600;box-shadow:inset 3px 0 0 var(--accent)}
+.nav-item.on svg{color:var(--accent)}
+.nav-item.on .count{background:rgba(255,255,255,.16);color:#fff}
+.nav-item.on .avatar{background:var(--accent);color:var(--accent-ink)}
+.nav .plan-chip{margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.nav .plan-chip.none{background:rgba(255,255,255,.1);color:var(--frame-dim)}
+#main{background:#FBFAFF}
+.topbar{background:rgba(251,250,255,.86);backdrop-filter:saturate(1.4) blur(10px);-webkit-backdrop-filter:saturate(1.4) blur(10px)}
+.topbar h1{font-size:16px;font-weight:700;color:var(--text)}
+/* buttons and inputs */
+.btn{border-radius:11px;font-weight:600;transition:background-color .15s ease,border-color .15s ease,box-shadow .15s ease,transform .1s ease}
+.btn:hover{border-color:#CFCBE3}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:linear-gradient(135deg,#7D5CFF 0%,#5B36F2 100%);border-color:transparent;color:#fff;box-shadow:0 8px 20px -10px rgba(91,54,242,.75)}
+.btn.primary svg{color:#fff}
+.btn.primary:hover{filter:brightness(1.07);box-shadow:0 10px 24px -10px rgba(91,54,242,.85)}
+.btn.primary:active{background:linear-gradient(135deg,#6A48F5,#4F2CE0)}
+.btn.dark{background:var(--frame);border-color:var(--frame)}.btn.dark svg{color:var(--accent)}
+.btn.lime{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+:where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea){border-radius:11px}
+:where(input:not([type=checkbox],[type=radio],[type=file],[type=range]),select,textarea):focus{border-color:var(--brand);box-shadow:0 0 0 4px rgba(108,71,255,.14)}
+/* surfaces */
+.card{border-radius:var(--r-lg);border-color:var(--line);box-shadow:var(--shadow)}
+.empty{border-radius:var(--r-lg);background:#fff}
+.vb{background:linear-gradient(90deg,#F1EDFF,#F8F6FF);color:#30207F;border:1px solid #E4DCFF}
+.vb b{color:#1E1460}.vb svg{color:var(--brand)}
+.pill.warn{color:#4A2BD6;background:#F1EDFF}
+.pill.brand{background:var(--brand);color:#fff}
+.tabbtn.on{color:var(--text)}.tabbtn::after{background:linear-gradient(90deg,var(--brand),#9B7BFF)}
+/* home */
+.hero{padding:56px 28px 60px;background:radial-gradient(70% 90% at 50% -20%,#E7DFFF 0%,rgba(231,223,255,0) 70%),radial-gradient(40% 50% at 85% 10%,rgba(198,244,50,.18) 0%,rgba(198,244,50,0) 70%)}
+.hero h2{font-size:clamp(24px,5.4vw,36px);font-weight:800;color:var(--text);letter-spacing:-.035em}
+.hero h2 em{font-style:normal;background:linear-gradient(90deg,#6C47FF,#9B5CFF 55%,#C04BFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--dim);font-size:15px}
+.hero .kicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:5px 12px 5px 6px;border-radius:999px;background:#fff;border:1px solid var(--line);font-size:12.5px;font-weight:600;color:var(--dim);box-shadow:var(--shadow)}
+.hero .kicker b{padding:2px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:11px;letter-spacing:.03em}
+.composer{border-radius:20px;border-color:var(--line-2);box-shadow:0 1px 0 rgba(21,19,42,.03),0 24px 50px -30px rgba(76,48,200,.45)}
+.composer:focus-within{border-color:#B9A8FF}
+/* clips */
+.clip{border-radius:16px;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease}
+.clip:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(76,48,200,.5)}
+.clip .badge.l{background:var(--accent);color:var(--accent-ink);font-weight:800}
+.clip .hook{font-weight:800;letter-spacing:-.01em}
+/* dialogs and toasts */
+dialog{border-radius:20px}
+.toast{border-radius:12px}
+.set-link.on{background:#F1EDFF;color:var(--text)}.set-link.on svg{color:var(--brand)}
+/* sidebar plan meter */
+.plan-mini{display:block;width:100%;text-align:left;margin-bottom:8px;padding:11px 12px;border-radius:12px;border:1px solid var(--frame-line);background:linear-gradient(135deg,rgba(108,71,255,.22),rgba(108,71,255,.06));color:var(--frame-text);cursor:pointer}
+.plan-mini:hover{border-color:rgba(198,244,50,.4)}
+.plan-mini small{display:block;font-size:11px;color:var(--frame-dim);text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.plan-mini b{font-size:14px}
+.plan-mini .mb{height:5px;border-radius:5px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden}.plan-mini .mb i{display:block;height:100%;background:var(--accent)}
+.plan-mini .ml{font-size:11.5px;color:var(--frame-dim);margin-top:6px}
+.app.mini .plan-mini{display:none}
+/* the Plans page */
+.pp-now{position:relative;overflow:hidden;border-radius:22px;padding:26px 28px;color:#fff;background:radial-gradient(70% 120% at 100% 0%,rgba(198,244,50,.22) 0%,rgba(198,244,50,0) 60%),linear-gradient(135deg,#2A1C78 0%,#15123A 100%);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;margin-bottom:28px}
+.pp-now small{display:block;color:#B9B2E8;text-transform:uppercase;letter-spacing:.08em;font-size:11.5px;font-weight:700}
+.pp-now h2{font-size:28px;font-weight:800;margin:4px 0 6px}
+.pp-now p{color:#CFCAF2;font-size:13.5px}
+.pp-now .mb{height:8px;border-radius:8px;background:rgba(255,255,255,.12);margin:14px 0 6px;overflow:hidden;max-width:460px}.pp-now .mb i{display:block;height:100%;background:var(--accent)}
+.pp-now .big{font-size:34px;font-weight:800;letter-spacing:-.03em;text-align:right;line-height:1}
+.pp-now .big span{display:block;font-size:12px;font-weight:600;color:#B9B2E8;letter-spacing:0;margin-top:6px}
+.pp-head{display:flex;align-items:end;justify-content:space-between;gap:16px;margin:8px 0 14px}
+.pp-head h2{font-size:22px;font-weight:800}
+.pp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:34px}
+.pp-card{position:relative;background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease}
+.pp-card:hover{transform:translateY(-3px);box-shadow:0 22px 44px -26px rgba(76,48,200,.5)}
+.pp-card.hot{border:1.5px solid var(--brand);box-shadow:0 26px 50px -28px rgba(91,54,242,.7)}
+.pp-card.on{border:1.5px solid var(--good)}
+.pp-card .rib{position:absolute;top:-11px;left:22px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:var(--accent);color:var(--accent-ink)}
+.pp-card h3{font-size:16px;font-weight:700}
+.pp-card .pr{font-size:34px;font-weight:800;letter-spacing:-.035em;color:var(--text)}
+.pp-card .pr small{font-size:13px;font-weight:600;color:var(--faint);letter-spacing:0;margin-left:4px}
+.pp-card .tag{font-size:13px;color:var(--dim);min-height:38px}
+.pp-card ul{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:13.5px;flex:1}
+.pp-card li{display:flex;gap:9px;align-items:flex-start}
+.pp-card li svg{width:17px;height:17px;color:var(--brand);margin-top:1px}
+.pp-card .btn{width:100%}
+.pp-free{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:18px 22px;border-radius:18px;background:#fff;border:1px dashed var(--line-2);margin-bottom:34px}
+.pp-free b{font-size:15px}
+.pp-faq{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px 28px;margin-bottom:24px}
+.pp-faq div{padding:16px 0;border-top:1px solid var(--line)}
+.pp-faq b{display:block;margin-bottom:4px}
+.pp-faq p{color:var(--dim);font-size:13.5px}
+.pp-key{background:#fff;border:1px solid var(--line);border-radius:20px;padding:24px;margin-bottom:34px;box-shadow:var(--shadow)}
+@media (max-width:760px){.pp-now{grid-template-columns:1fr}.pp-now .big{text-align:left}.pp-free{flex-direction:column;align-items:flex-start}}
+
+.pvcard{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;color:#fff;
+  background:radial-gradient(90% 60% at 50% 0%,rgba(198,244,50,.18),rgba(198,244,50,0) 60%),linear-gradient(165deg,#3A23A8 0%,#1A1547 70%,#0F0C26 100%)}
+.pvcard b{font-size:17px;font-weight:800;letter-spacing:-.01em;text-transform:uppercase;line-height:1.15;text-wrap:balance}
+.pvcard small{font-size:12px;color:#C9C2F2}
+.pvplay{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 24px -8px rgba(198,244,50,.6)}
+.pvplay svg{width:22px;height:22px;margin-left:3px}
+.clip:hover .pvplay{transform:scale(1.06)}
 /* ClipForge: previews, locked clips, plans */
 .pv-stage{position:relative;width:100%;max-width:340px;aspect-ratio:9/16;margin:0 auto;background:#0E0A08;border-radius:14px;overflow:hidden;cursor:pointer}
 .pv-p{position:absolute;overflow:hidden}.pv-p video,.editor .pv-p video{position:absolute;max-width:none;max-height:none;aspect-ratio:auto;object-fit:fill;display:block}
@@ -836,7 +942,7 @@ dialog[open]{animation:fadein .16s ease}
 <body>
 <div class="app" id="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=cf1" alt="ClipForge"><img class="mark" src="/brand/favicon.svg?v=cf1" alt="ClipForge">
+    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=cf2" alt="ClipForge"><img class="mark" src="/brand/favicon.svg?v=cf2" alt="ClipForge">
       <button class="icon-btn collapse" data-act="collapse" id="collapseBtn" aria-label="Collapse sidebar"></button></div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-foot" id="foot"></div>
@@ -1145,7 +1251,7 @@ function statusBadge(c) {
 }
 const cav = c => { const r = c.live_job || liveOn(c).length ? " ring" : "";
   return c.profile?.pic && c.profile.channel === c.channel ? `<img class="avatar${r}" src="${avatarUrl(c)}" alt="">` : `<span class="avatar${r}">${esc((c.name || "?")[0].toUpperCase())}</span>`; };
-const GRADS = [["#FF8B33", "#FFB27A"], ["#7C5CFF", "#B9A7FF"], ["#0EA5E9", "#7DD3FC"], ["#10B981", "#6EE7B7"],
+const GRADS = [["#6C47FF", "#B7A4FF"], ["#7C5CFF", "#B9A7FF"], ["#0EA5E9", "#7DD3FC"], ["#10B981", "#6EE7B7"],
                ["#F43F5E", "#FDA4AF"], ["#F59E0B", "#FDE68A"], ["#EC4899", "#F9A8D4"], ["#14B8A6", "#99F6E4"]];
 function meAvatar(u) {
   if (u.photo) return `<img class="avatar me-pic" src="/api/me/photo?v=${u.photo}" alt="">`;
@@ -1270,6 +1376,7 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   put($("#nav"), nav("overview", navIc("home", "overview"), "Home") +
     nav("library", navIc("film", "library"), "All videos", (() => { const w = S.jobs.filter(j => ["queued", "running"].includes(j.status)).length;
       return w ? `<span class="working" title="${w} working now"><i></i>${w} working</span>` : S.jobs.length ? `<span class="count">${S.jobs.length}</span>` : ""; })()) +
+    (S.status.billing?.billing ? nav("plans", navIc("crown", "plans"), "Plans", S.status.billing.plan ? `<span class="plan-chip">${esc(S.status.billing.plan.label.replace("Creator ", ""))}</span>` : `<span class="plan-chip none">Free</span>`) : "") +
     `<h4><span>Creators</span></h4>` +
     S.creators.map(c => nav("c:" + c.id, cav(c), c.name,
       c.live_job ? `<span class="sb-tag rec" title="Recording now"><i></i>Rec</span>`
@@ -1278,14 +1385,17 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
     (S.status.user?.role === "admin" && S.status.accounts !== false ? `<h4><span>Owner</span></h4><a class="nav-item" href="/admin" title="Admin dashboard" style="text-decoration:none">${ic("shield")}<span class="label">Admin dashboard</span></a>` : ""));
   const st = S.status;
   const k = S.status.ai;
-  put($("#foot"), (k ? `<button class="ai-card ${S.view === "usage" ? "on" : ""}" data-act="go" data-v="usage" title="${k.ready ? `AI: ${esc(k.provider || "ready")}, ${k.today_calls || 0} calls today` : "The AI is not set up"}">
+  const BP = S.status.billing?.billing && S.status.billing.plan;
+  put($("#foot"), (BP ? `<button class="plan-mini" data-act="go" data-v="plans"><small>${esc(BP.label)}${BP.status === "waiting_key" ? " · needs your key" : ""}</small>
+      <div class="mb"><i style="width:${Math.max(2, Math.round(BP.left / Math.max(1, BP.minutes) * 100))}%"></i></div><div class="ml">${Math.round(BP.left).toLocaleString()} of ${BP.minutes.toLocaleString()} minutes left</div></button>` : "") + (k ? `<button class="ai-card ${S.view === "usage" ? "on" : ""}" data-act="go" data-v="usage" title="${k.ready ? `AI: ${esc(k.provider || "ready")}, ${k.today_calls || 0} calls today` : "The AI is not set up"}">
       <span class="ai-ic">${ic("bolt")}</span><span class="ai-tx"><small>AI</small><b>${k.ready ? esc(k.provider || "Ready") : "Not set up"}</b></span>${k.ready ? `<span class="ai-n">${(k.today_calls || 0).toLocaleString()} today</span>` : ""}</button>` : "") +
     (S.status.user ? `<div class="me"><button class="me-btn" data-act="acctmenu" aria-haspopup="menu" aria-expanded="false">${meAvatar(S.status.user)}
       <span class="who">${S.status.accounts === false ? `<b>Settings</b><span>AI key, connected apps</span>` : `<b>${esc(S.status.user.name)}</b><span>${esc(S.status.user.email)}</span>`}</span></button>
       <button class="icon-btn bell" data-act="bell" title="Notifications" aria-label="Notifications${S.status.unread ? `, ${S.status.unread} new` : ""}" aria-haspopup="dialog">${ic("bell")}${S.status.unread ? `<span class="dotn">${S.status.unread > 9 ? "9+" : S.status.unread}</span>` : ""}</button></div>` : ""));
   const c = creator();
   const recording = S.creators.filter(x => x.live_job).length;
-  let title = {overview:"Home", library:"All videos", settings:"Settings", usage:"AI usage"}[S.view] || "", sub = "", act = "";
+  let title = {overview:"Home", library:"All videos", plans:"Plans", settings:"Settings", usage:"AI usage"}[S.view] || "", sub = "", act = "";
+  if (S.view === "plans") sub = "Your plan, minutes and everything a plan includes.";
   if (S.view === "usage") sub = "What the AI has been used for.";
   if (S.view === "overview") sub = `${greeting()}. ${S.creators.length} creator${S.creators.length === 1 ? "" : "s"}${recording ? `, ${recording} recording now` : ""}.`;
   if (S.view === "library") sub = "Every video and recording, across all creators.";
@@ -1318,8 +1428,8 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   const diskBar = !toolBar && S.status.disk_full && S.view !== "settings" ? `<div class="vb" role="alert">${ic("warn")}<span><b>The drive ClipForge saves to is almost full, so it can't take new videos.</b> Free up space on it, or move ClipForge's folder to a bigger drive.</span>${me?.is_admin ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="storage">Open Storage</button>` : ""}</div>` : "";
   const B = S.status.billing;
   const planBar = !B?.billing || S.view === "settings" || me?.verified === false ? ""
-    : !B.plan ? `<div class="vb" role="status">${ic("bolt")}<span><b>Free previews: ${B.previews_left ?? 0} left today.</b> Choose a plan to download your clips in full quality.</span><button class="btn sm primary" data-act="plans">See plans</button></div>`
-    : B.plan.status === "waiting_key" ? `<div class="vb" role="status">${ic("warn")}<span><b>Your Creator BYOK plan is paid.</b> It starts as soon as your AI key passes its test.</span><button class="btn sm primary" data-act="go" data-v="settings" data-tab="plan">Add your key</button></div>` : "";
+    : !B.plan ? `<div class="vb" role="status">${ic("bolt")}<span><b>Free previews: ${B.previews_left ?? 0} left today.</b> Choose a plan to download your clips in full quality.</span><button class="btn sm primary" data-act="go" data-v="plans">See plans</button></div>`
+    : B.plan.status === "waiting_key" ? `<div class="vb" role="status">${ic("warn")}<span><b>Your Creator BYOK plan is paid.</b> It starts as soon as your AI key passes its test.</span><button class="btn sm primary" data-act="go" data-v="plans">Add your key</button></div>` : "";
   put($("#vbanner"), toolBar ? toolBar : diskBar ? diskBar : aiBar ? aiBar : planBar ? planBar : upBar ? upBar : me && me.verified === false ? `<div class="vb" role="status">${ic("warn")}<span>Confirm your email to start clipping. We sent a link to <b>${esc(me.email)}</b>.</span><button class="btn sm" data-act="resendverify">Send a new link</button></div>`
     : kk && kk.ready === false && S.view !== "usage" ? `<div class="vb" role="status">${ic("bolt")}<span>${me?.is_admin ? "Add your AI key to let the AI pick clips and write titles. Until then, clips are picked by loudness." : "The AI isn't set up on this server yet, so clips are picked by loudness."}</span>${me?.is_admin && S.view !== "settings" ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">${ic("plus")}Add AI key</button>` : ""}</div>` : "");
   put($("#tpic"), pic); $("#tpic").classList.toggle("live", !!(c && (c.live_job || liveOn(c).length)));
@@ -1327,7 +1437,7 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   put($("#title"), `<span>${esc(title)}</span>`); put($("#subtitle"), subHtml ?? esc(sub)); put($("#actions"), act);
 }
 
-const ROUTES = {overview: "", library: "videos", settings: "settings", usage: "usage"};
+const ROUTES = {overview: "", library: "videos", plans: "plans", settings: "settings", usage: "usage"};
 function pathFor(v, tab) {
   if (v.startsWith("c:")) return `/app/creators/${encodeURIComponent(v.slice(2))}${tab && tab !== "clips" ? "/" + tab : ""}`;
   if (v === "settings") return "/app/settings" + (tab ? "/" + tab : "");
@@ -1355,15 +1465,17 @@ function go(v, tab, fromHistory) {
   $("#app").classList.remove("open");
   const view = $("#view");
   if (window._gaStop) { window._gaStop(); window._gaStop = null; }
-  $("#heroSlot").innerHTML = v === "overview" ? `<section class="hero"><div class="ga-bg" id="appAscii" aria-hidden="true"></div><h2>What do you want to clip today?</h2>
-      <p>Paste a link or drop in videos. You get captioned shorts back.</p><div id="add"></div></section>` : "";
+  $("#heroSlot").innerHTML = v === "overview" ? `<section class="hero"><div class="ga-bg" id="appAscii" aria-hidden="true"></div><span class="kicker"><b>NEW</b>Facecam layouts, Hinglish captions</span><h2>Turn long videos into <em>viral shorts</em></h2>
+      <p>Paste a link or drop in a video. ClipForge finds the best moments and hands you captioned 9:16 clips.</p><div id="add"></div></section>` : "";
   if (v === "overview") view.innerHTML = `<div id="ov"></div>`;
   else if (v === "library") view.innerHTML = `<div id="add"></div><div id="jobs"></div>`;
   else if (v === "settings") view.innerHTML = `<div id="sform"></div>`;
   else if (v === "usage") { view.innerHTML = `<div id="usage"></div>`; loadUsage(); }
+  else if (v === "plans") { view.innerHTML = `<div id="plans"><div class="set-load">Loading…</div></div>`; drawPlansPage(); }
   else view.innerHTML = `<div id="stream"></div><div id="cbody"></div>`;   // the live player stays put across tabs: no restart, no rebuffer
   if ($("#add")) drawAdd(v === "overview" ? "hero" : "compact");
-  if (v === "overview" && window.GradientASCII) { try { window._gaStop = GradientASCII($("#appAscii"), {colors: ["#ffb27a", "#ffffff", "#ffd2ae", "#ffe0c2", "#fff1e6"], shape: "horizon", lightMode: true, cellSize: 16, density: 0.8, glyphOpacity: 0.26, gradientOpacity: 0.32, glow: 0.06, grain: 0.06, mouseInteraction: false, clickEffect: "none"}); } catch {} }
+  // ClipForge: a clean gradient instead of PeakCut's letter pattern
+  if (false && v === "overview" && window.GradientASCII) { try { window._gaStop = GradientASCII($("#appAscii"), {colors: ["#b7a4ff", "#ffffff", "#d9cfff", "#e6e0ff", "#f4f1ff"], shape: "horizon", lightMode: true, cellSize: 16, density: 0.8, glyphOpacity: 0.26, gradientOpacity: 0.32, glow: 0.06, grain: 0.06, mouseInteraction: false, clickEffect: "none"}); } catch {} }
   if (v === "settings") drawSettings();
   if (v.startsWith("c:")) setTab(S.ctab);
   $("#main").scrollTo(0, 0); render();
@@ -1417,7 +1529,7 @@ function drawAdd(variant) {
 const LAYOUT_SHORT = {auto:"Auto", split:"Facecam top", gamefocus:"Facecam bubble", face:"Follow face", blur:"Blurred fill", zoom:"Zoomed in", crop:"Fill screen"};
 const CAP_LOOK = {bounce:{font:"'Archivo Black'", hl:"#FFFF00", up:true}, hype:{font:"Anton", hl:"#FF3C3C", up:true}, clean:{font:"Poppins", hl:"#6BD7FF", up:false, w:800}};
 function capPrev(k) {
-  const s = CAP_LOOK[k] || {font:"inherit", hl:"#FF8B33", up:true};
+  const s = CAP_LOOK[k] || {font:"inherit", hl:"#6C47FF", up:true};
   const t = s.up ? ["CLIP", "THIS"] : ["Clip", "this"];
   return `<span class="cap-prev" style="font-family:${s.font},sans-serif;font-weight:${s.w || 400}">${t[0]}&nbsp;<b style="color:${s.hl}">${t[1]}</b></span>`;
 }
@@ -1704,7 +1816,7 @@ function postPills(c) {
 function clipHtml(j, c) {
   const m = `/media/${j.id}/`, a = `data-j="${j.id}" data-c="${esc(c.id)}"`;
   const body = c.status === "done" ? `<img src="${m}${esc(c.cover)}?v=${c.version}" alt="" loading="lazy"><span class="veil"><span>${ic("play")}</span></span>`
-    : c.status === "preview" ? `<span class="making" style="animation:none">${ic("play")} Free preview · tap to play</span>`
+    : c.status === "preview" ? `<span class="pvcard"><span class="pvplay">${ic("play")}</span><b>${esc(c.hook || "Preview")}</b><small>Free preview · tap to play</small></span>`
     : c.status === "locked" || c.status === "found" ? `<span class="lockcard">${ic("lock")}<span>Unlocks with a plan</span></span>` : c.status === "error" ? `<span class="making" style="animation:none;color:var(--bad);background:var(--bad-soft)">Could not make this clip. Open it to try again.</span>`
     : `<span class="making">${c.status === "rendering" ? "Making this clip…" : "Waiting its turn…"}</span>`;
   const key = `c:${j.id}:${c.id}`, busyClip = c.status === "queued" || c.status === "rendering";
@@ -1828,7 +1940,7 @@ function drawJobs() {
     list = list.filter(j => j.status !== "live"); }
   if (!list.length) {
     root.querySelectorAll("section").forEach(e => e.remove());
-    if (!$(".empty", root)) root.innerHTML = `<div class="empty"><img src="/brand/favicon.svg?v=cf1" alt=""><b>${cid ? "No clips for this creator yet" : "No videos yet"}</b>${cid ? "Start recording their stream, or paste a link to one of their videos above." : "Paste a link above and the studio will find the best moments and turn them into clips."}</div>`;
+    if (!$(".empty", root)) root.innerHTML = `<div class="empty"><img src="/brand/favicon.svg?v=cf2" alt=""><b>${cid ? "No clips for this creator yet" : "No videos yet"}</b>${cid ? "Start recording their stream, or paste a link to one of their videos above." : "Paste a link above and the studio will find the best moments and turn them into clips."}</div>`;
     return;
   }
   $(".empty", root)?.remove();
@@ -1912,7 +2024,7 @@ async function saveCreator(quiet) {
 function drawLog() {
   const c = creator();
   put($("#clog"), c && c.log.length ? `<div class="card"><div class="log">${c.log.map(l => `<div><time>${when(l.t)}</time><span>${esc(l.msg)}</span></div>`).join("")}</div></div>`
-    : `<div class="empty"><img src="/brand/favicon.svg?v=cf1" alt=""><b>Nothing has happened yet</b>Recordings, clips and posts for this creator will be listed here.</div>`);
+    : `<div class="empty"><img src="/brand/favicon.svg?v=cf2" alt=""><b>Nothing has happened yet</b>Recordings, clips and posts for this creator will be listed here.</div>`);
 }
 
 /* ============================================================ overview */
@@ -1968,7 +2080,7 @@ function drawOverview() {
     <div class="card"><div class="card-head"><div><h2>Creators</h2><p class="sub">Each creator's status and results</p></div></div>
       ${o.creators.length ? `<div class="scroll"><table><tr><th>Creator</th><th>Status</th><th>Auto-post</th><th class="num">Clips today</th><th class="num">Posted today</th><th class="num">Waiting</th><th class="num">Failed</th><th class="num">Views</th><th class="num">Est. $</th></tr>
       ${o.creators.map(r => `<tr><td><a class="lnk" href="#" data-act="go" data-v="c:${esc(r.id)}">${esc(r.name)}</a></td><td>${state(r)}</td><td>${r.autopost ? `<span class="pill ok">On</span>` : `<span class="pill">Off</span>`}</td><td class="num">${r.clips_today} <span class="sub">/ ${r.clips_total}</span></td><td class="num">${r.posted_today} <span class="sub">/ ${r.posted_total}</span></td><td class="num">${r.queued}</td><td class="num">${r.failed}</td><td class="num">${r.views.toLocaleString()}</td><td class="num">${r.earnings.toFixed(2)}</td></tr>`).join("")}</table></div>`
-      : `<div class="empty"><img src="/brand/favicon.svg?v=cf1" alt=""><b>No creators yet</b>Add one to give each streamer their own workspace.</div>`}</div>
+      : `<div class="empty"><img src="/brand/favicon.svg?v=cf2" alt=""><b>No creators yet</b>Add one to give each streamer their own workspace.</div>`}</div>
     <div class="card"><div class="card-head"><div><h2>Post queue</h2><p class="sub">${o.paused ? "Paused. Recording and clipping carry on; nothing is posted." : "Queued clips go out at their scheduled time."}</p></div>
         <button class="btn ${o.paused ? "primary" : ""}" data-act="pause">${ic(o.paused ? "play" : "pause")}${o.paused ? "Resume posting" : "Pause all posting"}</button></div>
       ${o.posts.length ? `<div class="scroll"><table class="stack"><tr><th>When</th><th>Clip</th><th>Creator</th><th>Account</th><th class="num">Views</th><th></th></tr>
@@ -2025,7 +2137,6 @@ function drawUsage() {
 /* ============================================================ settings */
 // With sign-in off there is no profile or password to manage. The AI section is for whoever runs the server.
 const setTabs = () => [
-  ...(S.status.billing?.billing ? [["plan", "Plan", "bolt", "Your plan, minutes and own AI key"]] : []),
   ...(S.status.user?.is_admin ? [["ai", "AI", "bolt", "Your AI service, model and key"]] : []),
   ...(S.status.accounts === false ? [] : [["profile", "Profile", "user", "Your name, email and how you sign in"],
                                           ["security", "Security", "lock", "Password and signing out"]]),
@@ -2048,7 +2159,6 @@ async function drawSettings() {
     <div class="set-body" id="setbody"><div class="set-load">Loading…</div></div></div>`;
   const body = $("#setbody");
   try {
-    if (tab === "plan") await drawPlanTab(body);
     if (tab === "ai") {
       const k = S.ai = await api("/api/ai");
       body.innerHTML = `<section class="set-sec"><h2>AI</h2><p class="help">ClipForge uses an AI model to pick the moments worth clipping and to write hooks, titles and captions. Use your own key from any of these services. You pay that service directly. Without a key, clips are picked by loudness.</p>
@@ -2265,7 +2375,8 @@ function planCards(B, cur) {
       <span class="sub">${p.minutes.toLocaleString()} minutes · ${p.days === 7 ? "7 days, once" : "per month"}${p.own_key ? " · runs on your own AI key" : ""}</span>
       ${cur?.plan === p.id ? `<span class="pill ok">${ic("check")}Your plan</span>` : `<button type="button" class="btn ${p.id === "creator" ? "primary" : ""}" data-act="buy" data-plan="${esc(p.id)}">Choose ${esc(p.label)}</button>`}</div>`).join("")}</div>`;
 }
-function openPlans() {
+function openPlans() { return go("plans"); }
+function openPlansDialogUnused() {
   const B = S.status.billing; if (!B?.billing) return;
   const d = $("#formdlg");
   d.innerHTML = `<form method="dialog" class="dlg" style="max-width:860px"><h2>Choose a plan</h2>
@@ -2286,40 +2397,70 @@ async function buyPlan(plan) {
   await loadRazorpay();
   const me = S.status.user || {};
   new window.Razorpay({key:o.key, amount:o.amount, currency:o.currency, order_id:o.order_id, name:"ClipForge", description:o.label,
-    prefill:{email:me.email || "", name:me.name || ""}, theme:{color:"#FF6A1A"},
+    prefill:{email:me.email || "", name:me.name || ""}, theme:{color:"#6C47FF"},
     handler: async resp => {
       try {
         const r = await send("/api/billing/verify", resp);
         S.status = await api("/api/status"); if ($("#formdlg").open) $("#formdlg").close();
         toast(r.status === "waiting_key" ? "Paid. Add your AI key to start the plan." : "Your plan is active. Enjoy!", "ok");
-        if (r.status === "waiting_key") return go("settings", "plan");
-        render();
+        go("plans");
       } catch (err) { toast(err.message, "bad"); }
     }}).open();
 }
-async function drawPlanTab(body) {
-  const [B, own] = await Promise.all([api("/api/billing"), api("/api/me/ai").catch(() => null)]);
-  S.status.billing = B;
-  const p = B.plan;
-  if (!body.isConnected) body = $("#setbody");          // the settings page was drawn again while this loaded
-  if (!body) return;
-  const pct = p ? Math.min(100, Math.round(p.used / Math.max(1, p.minutes) * 100)) : 0;
-  const needKey = p && (p.ai === "own" || p.status === "waiting_key");
-  body.innerHTML = `<section class="set-sec"><h2>Plan</h2>
-    ${p ? `<p><b>${esc(p.label)}</b> · ${p.status === "waiting_key" ? `<span class="pill warn">Waiting for your AI key</span>` : `<span class="pill ok">Active</span>`} · until ${esc(when(p.ends_at))}</p>
-      <div class="minbar"><i style="width:${pct}%"></i></div><p class="sub">${p.left.toLocaleString()} of ${p.minutes.toLocaleString()} minutes left</p>`
-      : `<p class="help">No plan yet. You can preview ${B.previews_left ?? 0} more video${B.previews_left === 1 ? "" : "s"} today for free.</p>`}
-    ${planCards(B, p)}</section>
-    ${needKey && own ? `<section class="set-sec"><h2>Your AI key</h2>
-      <p class="help">Creator BYOK runs the AI on your own key: you pay the AI service directly for what you use. We test the key with one tiny request before saving it. It's stored encrypted and never shown again.</p>
-      ${own.saved ? `<p>${own.tested ? `<span class="pill ok">${ic("check")}Working</span>` : `<span class="pill warn">Not tested</span>`} <span class="sub">${esc(own.provider)} · ${esc(own.models.join(", "))} · key ending in ${esc(own.key_hint)}</span></p>` : ""}
-      <div class="ai-form">
-        <label class="f">AI service<select id="own_provider">${own.providers.map(x => `<option value="${esc(x)}" ${x === (own.provider || "anthropic") ? "selected" : ""}>${esc({anthropic:"Claude (Anthropic)", openai:"OpenAI", gemini:"Google Gemini", openrouter:"OpenRouter", groq:"Groq", xai:"Grok (xAI)"}[x] || x)}</option>`).join("")}</select></label>
-        <label class="f">Model<input id="own_model" placeholder="For example claude-haiku-5-5" value="${esc((own.models || []).join(", "))}"></label>
-        <label class="f">Key<input id="own_key" type="password" autocomplete="off" spellcheck="false" placeholder="${own.saved ? "Paste a new key to replace it" : "Paste your key"}"></label>
-        <div class="row"><button class="btn primary" data-act="saveownkey">Test and save</button>${own.saved ? `<button class="btn ghost" data-act="delownkey">Remove key</button>` : ""}</div>
-      </div></section>` : ""}`;
+const PLAN_INFO = {
+  trial:   {tag:"Try everything for a week before you commit.", feats:["120 minutes of clips", "Every layout, incl. facecam on top", "1080p downloads, no watermark", "Hinglish and Indian-language captions"]},
+  creator: {tag:"For creators posting shorts every week.", feats:["600 minutes of clips a month", "Facecam, gameplay and follow-face layouts", "1080p downloads, no watermark", "Stronger AI ranking of your best moments", "Titles, descriptions and hashtags"]},
+  byok:    {tag:"Bring your own AI key and pay half.", feats:["600 minutes of clips a month", "Everything in Creator", "Runs on your own Claude, OpenAI or Gemini key", "You pay the AI service directly"]},
+  pro:     {tag:"For streamers, podcasters and teams.", feats:["2,000 minutes of clips a month", "Everything in Creator", "Priority in the queue", "Live stream clipping", "Brand kit (coming soon)"]},
+};
+function planCardsBig(B, cur) {
+  return `<div class="pp-grid">${B.plans.filter(p => !(p.id === "trial" && B.trial_used && cur?.plan !== "trial")).map(p => {
+    const info = PLAN_INFO[p.id] || {tag:"", feats:[]}, mine = cur?.plan === p.id;
+    return `<div class="pp-card ${mine ? "on" : p.id === "creator" ? "hot" : ""}">
+      ${mine ? `<span class="rib" style="background:var(--good);color:#fff">Your plan</span>` : p.id === "creator" ? `<span class="rib">Most popular</span>` : ""}
+      <div><h3>${esc(p.label)}</h3><div class="pr">₹${p.price.toLocaleString("en-IN")}<small>${p.days === 7 ? "once" : "/ month"}</small></div></div>
+      <p class="tag">${esc(info.tag)}</p>
+      <ul>${info.feats.map(f => `<li>${ic("check")}<span>${esc(f)}</span></li>`).join("")}</ul>
+      ${mine ? `<button type="button" class="btn" disabled>Active until ${esc(when(cur.ends_at))}</button>`
+             : `<button type="button" class="btn ${p.id === "creator" ? "primary" : ""}" data-act="buy" data-plan="${esc(p.id)}">${cur ? "Switch to" : "Get"} ${esc(p.label)}</button>`}</div>`;
+  }).join("")}</div>`;
 }
+async function drawPlansPage() {
+  const box = $("#plans"); if (!box) return;
+  let B, own;
+  try { [B, own] = await Promise.all([api("/api/billing"), api("/api/me/ai").catch(() => null)]); }
+  catch (e) { box.innerHTML = `<div class="set-load">${esc(e.message)}</div>`; return; }
+  if (!B.billing) { box.innerHTML = `<div class="empty"><b>No plans on this server</b>Everything is included: clip and download as much as you like.</div>`; return; }
+  S.status.billing = B;
+  const p = B.plan, pct = p ? Math.max(2, Math.round(p.left / Math.max(1, p.minutes) * 100)) : 0;
+  const needKey = p && (p.ai === "own" || p.status === "waiting_key");
+  const target = $("#plans"); if (!target) return;
+  target.innerHTML = (p ? `<section class="pp-now"><div><small>Current plan</small><h2>${esc(p.label)}</h2>
+        <p>${p.status === "waiting_key" ? "Paid. It starts as soon as your AI key passes its test below." : `Active until ${esc(when(p.ends_at))}.`} Minutes are the length of the clips you get.</p>
+        <div class="mb"><i style="width:${pct}%"></i></div><p>${Math.round(p.used).toLocaleString()} minutes used</p></div>
+        <div class="big">${Math.round(p.left).toLocaleString()}<span>of ${p.minutes.toLocaleString()} minutes left</span></div></section>`
+      : `<section class="pp-now"><div><small>You're on</small><h2>Free previews</h2>
+        <p>See the best 3 clips of up to ${B.previews_left ?? 0} more video${B.previews_left === 1 ? "" : "s"} today, played in your browser. Pick a plan to get every clip in full 1080p.</p></div>
+        <div class="big">${B.previews_left ?? 0}<span>previews left today</span></div></section>`)
+    + (needKey && own ? `<section class="pp-key"><div class="pp-head" style="margin-top:0"><div><h2>Your AI key</h2><p class="sub">Creator BYOK runs the AI on your own key. We test it with one tiny request first, store it encrypted, and never show it again.</p></div>
+        ${own.saved ? (own.tested ? `<span class="pill ok">${ic("check")}Working · ends in ${esc(own.key_hint)}</span>` : `<span class="pill warn">Not tested</span>`) : `<span class="pill warn">No key yet</span>`}</div>
+        <div class="ai-form">
+          <label class="f">AI service<select id="own_provider">${own.providers.map(x => `<option value="${esc(x)}" ${x === (own.provider || "anthropic") ? "selected" : ""}>${esc({anthropic:"Claude (Anthropic)", openai:"OpenAI", gemini:"Google Gemini", openrouter:"OpenRouter", groq:"Groq", xai:"Grok (xAI)"}[x] || x)}</option>`).join("")}</select></label>
+          <label class="f">Model<input id="own_model" placeholder="For example claude-haiku-5-5" value="${esc((own.models || []).join(", "))}"></label>
+          <label class="f">Key<input id="own_key" type="password" autocomplete="off" spellcheck="false" placeholder="${own.saved ? "Paste a new key to replace it" : "Paste your key"}"></label>
+          <div class="row"><button class="btn primary" data-act="saveownkey">Test and save</button>${own.saved ? `<button class="btn ghost" data-act="delownkey">Remove key</button>` : ""}</div>
+        </div></section>` : "")
+    + `<div class="pp-head"><div><h2>${p ? "Change plan" : "Choose your plan"}</h2><p class="sub">Prices in rupees, GST included. No auto-renewal: each plan simply ends, and you choose again.</p></div></div>`
+    + planCardsBig(B, p)
+    + (!p ? `<div class="pp-free"><div><b>Not ready yet?</b><p class="sub">Keep previewing for free: ${B.preview_clips || 3} clips per video, every day.</p></div><button class="btn" data-act="go" data-v="overview">Make a free preview</button></div>` : "")
+    + `<div class="pp-head"><h2>Questions</h2></div><div class="pp-faq">
+        <div><b>What counts as a minute?</b><p>Only the length of the clips you get in full quality. Finding moments and previewing are free.</p></div>
+        <div><b>What is a free preview?</b><p>The best ${B.preview_clips || 3} clips of a video, played in your browser with captions and a watermark. Nothing is downloaded.</p></div>
+        <div><b>How does Creator BYOK work?</b><p>You add your own AI key (Claude, OpenAI, Gemini and more). We test it, store it encrypted, and you pay the AI service directly.</p></div>
+        <div><b>Can I re-edit a clip?</b><p>Yes. Changing the text, layout or timing of a clip you already got is free.</p></div>
+      </div>`;
+}
+
 $("#clipdlg").addEventListener("click", e => { if (e.target === e.currentTarget) e.currentTarget.close(); });
 
 /* ============================================================ render + polling */
@@ -2442,11 +2583,11 @@ document.addEventListener("click", async e => {
     if (a === "addmore") { const u = $("#url"); return u && !u.value ? (u.focus(), toast("Paste another link, or drop a file anywhere on the box.")) : $("#file").click(); }
     if (a === "closedlg") return $("#clipdlg").close();
     if (a === "openclip") return openClip(d.j, d.c);
-    if (a === "plans") { if ($("#clipdlg").open) $("#clipdlg").close(); return openPlans(); }
+    if (a === "plans") { if ($("#clipdlg").open) $("#clipdlg").close(); return go("plans"); }
     if (a === "buy") { b.disabled = true; try { await buyPlan(d.plan); } finally { b.disabled = false; } return; }
     if (a === "unlock" || a === "unlockall") {
       const j = jobOf(d.j), ids = a === "unlock" ? [d.c] : (j?.clips || []).filter(c => ["preview", "locked", "found"].includes(c.status)).map(c => c.id);
-      if (!S.status.billing?.plan || S.status.billing.plan.status !== "active") { if ($("#clipdlg").open) $("#clipdlg").close(); return openPlans(); }
+      if (!S.status.billing?.plan || S.status.billing.plan.status !== "active") { if ($("#clipdlg").open) $("#clipdlg").close(); return go("plans"); }
       b.disabled = true;
       for (const id of ids) await send(`/api/jobs/${d.j}/clips/${encodeURIComponent(id)}/unlock`);
       toast(ids.length > 1 ? `Making ${ids.length} full clips…` : "Making the full clip…", "ok"); b.disabled = false; return tick();
@@ -2455,12 +2596,12 @@ document.addEventListener("click", async e => {
       b.disabled = true;
       try {
         await send("/api/me/ai", {provider:$("#own_provider").value, models:$("#own_model").value, key:$("#own_key").value}, "PUT");
-        toast("Your key works. The plan is active.", "ok"); S.status = await api("/api/status"); drawShell(); return drawSettings();
+        toast("Your key works. The plan is active.", "ok"); S.status = await api("/api/status"); drawShell(); return drawPlansPage();
       } finally { b.disabled = false; }
     }
     if (a === "delownkey") {
       if (!await ask("Remove your AI key?", "Your BYOK plan pauses until you add a working key again.", "Remove", true)) return;
-      await api("/api/me/ai", {method:"DELETE"}); S.status = await api("/api/status"); drawShell(); return drawSettings();
+      await api("/api/me/ai", {method:"DELETE"}); S.status = await api("/api/status"); drawShell(); return drawPlansPage();
     }
     if (a === "newcreator") {
       const dlg = $("#formdlg");

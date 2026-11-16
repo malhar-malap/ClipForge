@@ -5,29 +5,29 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reset your ClipForge password</title>
 <meta name="description" content="Reset the password for your ClipForge account.">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf1">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--brand:#FF8B33;--brand-hi:#FF9A4C;--ink:#2A1A12;--soft:#FFF2E8;--line-b:#FFD9BC;--deep:#A9480A;
-  --frame:#1E1612;--frame-2:#2C221D;--frame-text:#F4EEEA;--frame-dim:#A99A91;
-  --muted:#F7F4F1;--line:#EEE8E4;--line-2:#E1D9D3;--text:#211813;--dim:#6D6159;--faint:#A0948C;--bad:#D3343F;--bad-soft:#FDECEE;
+:root{--brand:#6C47FF;--brand-hi:#8768FF;--ink:#17123A;--soft:#F1EDFF;--line-b:#DCD3FF;--deep:#4A2BD6;
+  --frame:#0D0B1A;--frame-2:#1A1730;--frame-text:#ECEAFB;--frame-dim:#8D89AB;
+  --muted:#F5F4FA;--line:#ECEAF4;--line-2:#DEDBEC;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;--bad:#D3343F;--bad-soft:#FDECEE;
   --r-lg:16px;--r:12px;--r-sm:8px;color-scheme:light}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{margin:0;background:#fff;color:var(--text);font:16px/1.55 "Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{margin:0;background:#fff;color:var(--text);font:16px/1.55 "Plus Jakarta Sans","Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 h1,h2,h3,p{margin:0}
 a{color:inherit}
 svg{width:18px;height:18px;flex:none;fill:currentColor}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:var(--r);border:1px solid var(--line-2);background:#fff;color:var(--text);
   font:inherit;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
-.btn:hover{background:var(--muted);border-color:#D4CAC3}
+.btn:hover{background:var(--muted);border-color:#D4D1E4}
 .btn.primary{background:var(--brand);border-color:var(--brand);color:var(--ink)}
 .btn.primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
-.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}.btn.dark:hover{background:#3A2C25;border-color:#3A2C25}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}.btn.dark:hover{background:#2A2645;border-color:#2A2645}
 .btn.sm{height:38px;padding:0 14px;font-size:14px}
 .btn.lg{height:52px;padding:0 26px;font-size:16px}
 .btn:disabled{opacity:.5;cursor:default}
@@ -48,7 +48,7 @@ body{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,
 form{display:flex;flex-direction:column;gap:16px}
 label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:var(--dim)}
 input{height:46px;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:#fff;font:inherit;color:var(--text);outline:none;transition:border-color .15s ease,background-color .15s ease}
-input:hover{border-color:#D4CAC3}input:focus{border-color:var(--brand);background:#fff}
+input:hover{border-color:#D4D1E4}input:focus{border-color:var(--brand);background:#fff}
 input:focus-visible{outline:none}
 input::placeholder{color:var(--faint)}
 .btn{width:100%;height:48px}
@@ -66,11 +66,18 @@ input::placeholder{color:var(--faint)}
 .g{width:20px;height:20px}
 .mobile-logo{display:none}
 @media (max-width:860px){body{grid-template-columns:1fr;background:#fff}.side{display:none}.main{margin:0;border-radius:0;min-height:100vh;align-content:center}.mobile-logo{display:block;height:34px;margin-bottom:28px}}
+
+/* ClipForge look */
+.btn.primary{background:linear-gradient(135deg,#7D5CFF 0%,#5B36F2 100%)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 20px -10px rgba(91,54,242,.75)}
+.btn.primary svg{color:#fff}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn{border-radius:11px}
+input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shadow:0 0 0 4px rgba(108,71,255,.14)}
 </style>
 </head>
 <body>
 <aside class="side">
-  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf1" alt="ClipForge"></a>
+  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf2" alt="ClipForge"></a>
   <div>
     <h1>Clips from every stream, <em>without watching all of it.</em></h1>
     <ul>
@@ -82,7 +89,7 @@ input::placeholder{color:var(--faint)}
   <small>© <span id="year"></span> ClipForge · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></small>
 </aside>
 <main class="main"><div class="card">
-  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf1" alt="ClipForge"></a>
+  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf2" alt="ClipForge"></a>
   <h2 id="h">Reset your password</h2><p id="p">Enter the email you signed up with and we'll send you a link to choose a new password.</p>
   <form id="ask" novalidate>
     <div class="err" id="err" role="alert"></div>
