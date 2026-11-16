@@ -61,7 +61,8 @@ def main() -> int:
                 ("the storage folder: full drive, open, move", ["tests/test_storage.py"]),
                 ("gaming and face layouts", ["tests/test_layouts.py"]),
                 ("plans, previews, payments and own AI keys", ["tests/test_billing.py"]),
-                ("plans over HTTP: who can reach what", ["tests/test_billing_http.py"])]
+                ("plans over HTTP: who can reach what", ["tests/test_billing_http.py"]),
+                ("the stronger second ranking", ["tests/test_ranking.py"])]
         for name, args in runs:
             print(f"\n=== {name} ===", flush=True)
             r = subprocess.run([sys.executable, *args], cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")

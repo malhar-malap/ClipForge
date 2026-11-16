@@ -15,6 +15,9 @@ ClipForge is built on [PeakCut](https://github.com/haziqahmedqasmi/PeakCut) (MIT
 - **Plans and payments** (`CLIPFORGE_BILLING=1`): free previews played in the browser, downloads only with a plan,
   Trial / Creator / Creator BYOK / Pro through Razorpay, minutes per plan, and per-user AI keys stored encrypted.
   See [Plans and payments](#plans-and-payments-clipforge).
+- **Two-step ranking.** Set `CLIPFORGE_RANK_MODELS` (for example `claude-sonnet-5-5`) and paid jobs get a quick first
+  pass (`PEAKCUT_AI_MODELS`, for example `claude-haiku-5-5`) that finds twice as many candidates, then the stronger
+  model picks the best. Previews and BYOK users use the first pass only.
 - 1080p downloads by default.
 
 Paste a YouTube, Twitch or Kick link (or upload a file) and ClipForge finds the moments worth clipping, cuts them to

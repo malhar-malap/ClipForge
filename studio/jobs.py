@@ -592,6 +592,16 @@ def _covers(words: list, start: float, end: float) -> bool:
     return len(inside) >= 25 * minutes and inside[-1]["s"] >= start + 0.85 * (end - start)
 
 
+def _two_pass(job) -> bool:
+    """The stronger second ranking runs when a ranking model is set, never for previews, and not on a user's own
+    key (their key may not have access to it): with billing on, for paid plans that use our AI."""
+    if not brain.rank_models() or job.get("preview"):
+        return False
+    if billing.on():
+        return billing.is_paid(job["user"]) and not billing.uses_own_key(job["user"])
+    return True
+
+
 def _spoken_language(job, audio, lo, hi) -> str:
     """The language our own transcript is written in: the one chosen under Options, or, on "auto", the one
     Whisper hears in a 30-second sample. Without Whisper installed, English (the main model's language)."""
@@ -794,8 +804,14 @@ def _run_job(job):
             continue
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         s0 = int((a - lo) / 16000)
+        two_pass = _two_pass(job)          # paid jobs: the quick model finds twice as many, a stronger one picks
         found, ai = brain.find_clips(bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000, job["title"],
-                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]), notes.append)
+                                     job["uploader"], quota * 2 if two_pass else quota, int(o["min_len"]), int(o["max_len"]), notes.append)
+        if two_pass and ai.get("model") and len(found) > 1:
+            _set(job, stage="Ranking the best moments" + where)
+            found, spent = brain.rank_clips(found, bw, job["title"], job["uploader"], quota)
+            found.sort(key=lambda c: c["start"])
+            tokens += spent
         tokens += ai.get("tokens", 0)
         model = ai.get("model") or model
         if ai.get("note"):
