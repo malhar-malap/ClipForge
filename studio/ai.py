@@ -221,8 +221,28 @@ def test() -> dict:
     ms = models()
     if not ready():
         raise ValueError("Save a service, a model and a key first.")
-    out, sent, wrote = call(ms[0], 'Answer with a JSON array that holds the single string "ok".', {"type": "ARRAY", "items": {"type": "STRING"}})
-    return {"ok": True, "model": ms[0], "tokens": sent + wrote, "answer": str(out)[:80]}
+    last = None
+    for m in ms:                                     # the first model, then any backups listed after it
+        for attempt in range(3):
+            try:
+                out, sent, wrote = call(m, 'Answer with a JSON array that holds the single string "ok".',
+                                        {"type": "ARRAY", "items": {"type": "STRING"}})
+                return {"ok": True, "model": m, "tokens": sent + wrote, "answer": str(out)[:80],
+                        "fallback": m != ms[0], "busy_first": bool(last) and m != ms[0]}
+            except Exception as e:  # noqa: BLE001
+                last = e
+                if _busy(e) and attempt < 2:
+                    time.sleep(2 * (attempt + 1))     # the service is overloaded for a moment: wait and ask again
+                    continue
+                break
+    raise last
+
+
+def _busy(e) -> bool:
+    """The service is overloaded or rate-limited for a moment (not a problem with the key or the model)."""
+    t, low = str(e), str(e).lower()
+    return any(x in t for x in ("HTTP 503", "HTTP 529", "HTTP 500", "HTTP 502", "HTTP 504")) or "overloaded" in low \
+        or "high demand" in low or "unavailable" in low
 
 
 class AIError(RuntimeError):
@@ -240,6 +260,9 @@ def explain(e) -> str:
         return f"{label()} doesn't know the model \"{name}\". Open Settings, AI, press Find models and pick one from the list."
     if "401" in text or "403" in text or "api key" in low or "api_key" in low or "unauthorized" in low or "permission" in low:
         return f"{label()} refused the key. Paste a working key under Settings, AI."
+    if "503" in text or "529" in text or "overloaded" in low or "high demand" in low or "unavailable" in low:
+        return (f"{label()} says \"{name}\" is overloaded right now. That's on {label()}'s side, not your key, and it usually "
+                f"passes in a few minutes. Try again soon, or add a backup model after a comma (for example: {name}, another-model).")
     if "429" in text or "quota" in low or "rate limit" in low or "exhausted" in low:
         return f"{label()} says the key has hit its limit or has no credit left. Check the account with {label()}, or try again later."
     if "connect" in low or "timed out" in low or "timeout" in low or "getaddrinfo" in low or "refused" in low:

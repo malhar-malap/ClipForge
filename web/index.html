@@ -174,6 +174,9 @@ dialog .dl{padding:20px;display:grid;gap:12px}dialog h2{font-size:16px;font-weig
 .toast.bad{background:var(--bad)}
 .spin{width:18px;height:18px;border-radius:50%;border:2px solid #555;border-top-color:#fff;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
+.btn .spin{width:14px;height:14px;border-width:2px;border-color:rgba(28,27,25,.18);border-top-color:currentColor}
+.btn.primary .spin{border-color:rgba(255,255,255,.3);border-top-color:#fff}
+.btn.busy{pointer-events:none;opacity:.85}
 
 
 /* ================================================================ ClipForge: type, colour and motion */
@@ -307,6 +310,11 @@ async function api(path, opt) {
   return r.json();
 }
 const send = (path, body, method = "POST") => api(path, {method, headers: {"Content-Type": "application/json"}, body: JSON.stringify(body ?? {})});
+// A button that is working: a spinner and what it is doing, until `done()` puts it back.
+function busy(b, text) {
+  const was = b.innerHTML; b.classList.add("busy"); b.disabled = true; b.innerHTML = `<span class="spin"></span>${esc(text)}`;
+  return () => { b.classList.remove("busy"); b.disabled = false; b.innerHTML = was; };
+}
 function toast(msg, bad) { const t = document.createElement("div"); t.className = "toast" + (bad ? " bad" : ""); t.textContent = msg; $("#toasts").append(t); setTimeout(() => t.remove(), bad ? 6000 : 3000); }
 function ask(title, text, ok = "Confirm", danger) {
   return new Promise(res => { const d = $("#dlg");
@@ -702,12 +710,12 @@ document.addEventListener("click", async e => {
     }
     if (a === "copy") { const c = jobOf(d.j)?.clips.find(x => x.id === d.c); await navigator.clipboard.writeText([c.title, c.description, (c.hashtags || []).map(h => "#" + h).join(" ")].filter(Boolean).join("\n\n")); return toast("Copied"); }
     if (a === "post") { const accs = $$("[data-pacc]:checked").map(i => i.value); if (!accs.length) return toast("Pick an account first", true); await send("/api/posts", {job: d.j, clip: d.c, accounts: accs, now: !!d.now}); return toast(d.now ? "Posting now" : "Added to the queue"); }
-    if (a === "buy") { b.disabled = true; try { await buy(d.plan); } finally { b.disabled = false; } return; }
-    if (a === "saveownkey") { b.disabled = true; try { await send("/api/me/ai", {provider: $("#own_provider").value, models: $("#own_model").value, key: $("#own_key").value}, "PUT"); toast("Your key works. The plan is active."); S.status = await api("/api/status"); drawTop(); drawNotices(); return drawPlans(); } finally { b.disabled = false; } }
+    if (a === "buy") { const done = busy(b, "Opening payment…"); try { await buy(d.plan); } finally { done(); } return; }
+    if (a === "saveownkey") { const done = busy(b, "Testing your key…"); try { await send("/api/me/ai", {provider: $("#own_provider").value, models: $("#own_model").value, key: $("#own_key").value}, "PUT"); toast("Your key works. The plan is active."); S.status = await api("/api/status"); drawTop(); drawNotices(); return drawPlans(); } finally { done(); } }
     if (a === "delownkey") { if (!await ask("Remove your AI key?", "Your BYOK plan pauses until you add a working key.", "Remove", true)) return; await api("/api/me/ai", {method: "DELETE"}); S.status = await api("/api/status"); drawTop(); return drawPlans(); }
-    if (a === "saveai") { const k = $("#ai_key").value.trim(); await send("/api/ai", {provider: $("#ai_provider").value, models: $("#ai_models").value, key: k || null}, "PUT"); toast("Saved"); S.status = await api("/api/status"); drawNotices(); return drawSettings(); }
+    if (a === "saveai") { const done = busy(b, "Saving…"); try { const k = $("#ai_key").value.trim(); await send("/api/ai", {provider: $("#ai_provider").value, models: $("#ai_models").value, key: k || null}, "PUT"); toast("Saved. Press Test to check it."); S.status = await api("/api/status"); drawNotices(); return drawSettings(); } finally { done(); } }
     if (a === "findmodels") {
-      b.disabled = true;
+      const done = busy(b, "Finding models…");
       try {
         const r = await send("/api/ai/models", {provider: $("#ai_provider").value, key: $("#ai_key").value.trim() || undefined});
         const skip = /(embed|tts|audio|image-gen|imagen|veo|live|aqa|learnlm|gemma|vision-only|native-audio|transcribe|realtime|search|moderation|whisper|dall|davinci|babbage)/i;
@@ -718,10 +726,15 @@ document.addEventListener("click", async e => {
         $("#ai_pickwrap").hidden = false; $("#ai_models").value = ms[0];
         $("#ai_pick").onchange = e => { $("#ai_models").value = e.target.value; };
         toast(`Found ${ms.length} models. The first one is filled in.`);
-      } finally { b.disabled = false; }
+      } finally { done(); }
       return;
     }
-    if (a === "testai") { b.disabled = true; try { const r = await send("/api/ai/test"); toast(`Works: ${r.model}`); } finally { b.disabled = false; } return; }
+    if (a === "testai") {
+      const done = busy(b, "Testing… (can take a few seconds)");
+      try { const r = await send("/api/ai/test"); toast(r.fallback ? `Works with your backup model ${r.model} (the first one was busy).` : `It works: ${r.model} answered.`); }
+      finally { done(); }
+      return;
+    }
     if (a === "disconnect") { if (!await ask("Disconnect this account?", "Clips will no longer be posted to it.", "Disconnect", true)) return; await api(`/api/accounts/${d.a}`, {method: "DELETE"}); return drawSettings(); }
     if (a === "delaccount") {
       const em = prompt("Type your email address to delete your account for good:"); if (!em) return;
