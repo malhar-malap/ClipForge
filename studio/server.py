@@ -1335,10 +1335,14 @@ def ai_models(request: Request, body: dict = Body(default={})):
 
 
 @app.post("/api/ai/test")
-def ai_test(request: Request):
+def ai_test(request: Request, body: dict = Body(default={})):
+    """Test what is on the settings page right now (saved or not). An empty key box means the saved key."""
     _admin(request)
     _throttle("aitest:" + ctx.uid(), 20, 600)
     try:
+        if isinstance(body, dict) and body.get("provider"):
+            with ai.using(ai.form_settings(body.get("provider"), body.get("models"), body.get("key"))):
+                return ai.test()
         return ai.test()
     except ValueError as e:
         raise HTTPException(400, str(e))

@@ -311,6 +311,9 @@ async function api(path, opt) {
 }
 const send = (path, body, method = "POST") => api(path, {method, headers: {"Content-Type": "application/json"}, body: JSON.stringify(body ?? {})});
 // A button that is working: a spinner and what it is doing, until `done()` puts it back.
+// Is what is on the AI settings page the same as what is saved?
+const savedAi = () => S.aiSaved && $("#ai_provider")?.value === S.aiSaved.provider && !$("#ai_key")?.value.trim()
+  && ($("#ai_models")?.value || "").split(",").map(x => x.trim()).filter(Boolean).join(",") === (S.aiSaved.models || []).join(",");
 function busy(b, text) {
   const was = b.innerHTML; b.classList.add("busy"); b.disabled = true; b.innerHTML = `<span class="spin"></span>${esc(text)}`;
   return () => { b.classList.remove("busy"); b.disabled = false; b.innerHTML = was; };
@@ -664,7 +667,7 @@ async function drawSettings() {
         ${accs.length ? `<table class="t"><tr><th>Platform</th><th>Account</th><th>Added</th><th></th></tr>${accs.map(a => `<tr><td>${esc(a.label)}</td><td>${esc(a.name)}</td><td class="muted">${esc(when(a.added))}</td><td style="text-align:right"><button class="btn sm danger" data-act="disconnect" data-a="${esc(a.id)}">Disconnect</button></td></tr>`).join("")}</table>` : `<p class="faint">Nothing connected yet.</p>`}
         <div class="row" style="margin-top:14px">${["youtube", "instagram", "tiktok"].map(pl => can[pl] ? `<a class="btn" href="/oauth/${pl}/start">${ic("plus")}Connect ${({youtube: "YouTube", instagram: "Instagram", tiktok: "TikTok"})[pl]}</a>` : `<button class="btn" disabled title="Not set up on this server">${({youtube: "YouTube", instagram: "Instagram", tiktok: "TikTok"})[pl]} not available</button>`).join("")}</div></section>`;
     } else if (tab === "ai") {
-      const k = await api("/api/ai");
+      const k = S.aiSaved = await api("/api/ai");
       body.innerHTML = `<section class="panel sect"><h2>AI service</h2><p>The AI picks the moments and writes hooks and titles for the Auto plans. ${k.ready ? `<span class="badge good">Ready · ${esc(k.label)}</span>` : `<span class="badge warn">Not set up</span>`}</p>
         <div class="formgrid"><label class="f">Service<select id="ai_provider">${k.providers.map(x => `<option value="${esc(x.id)}" ${x.id === k.provider ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label>
           <label class="f">Key<input id="ai_key" type="password" autocomplete="off" placeholder="${k.has_key ? "Saved" + (k.key_hint ? ", ends in " + esc(k.key_hint) : "") + ". Paste to replace" : "Paste your key"}"></label>
@@ -731,7 +734,7 @@ document.addEventListener("click", async e => {
     }
     if (a === "testai") {
       const done = busy(b, "Testing… (can take a few seconds)");
-      try { const r = await send("/api/ai/test"); toast(r.fallback ? `Works with your backup model ${r.model} (the first one was busy).` : `It works: ${r.model} answered.`); }
+      try { const r = await send("/api/ai/test", {provider: $("#ai_provider").value, models: $("#ai_models").value, key: $("#ai_key").value.trim() || undefined}); toast((r.fallback ? `Works with your backup model ${r.model} (the first one was busy).` : `It works: ${r.model} answered.`) + (savedAi() ? "" : " Press Save to keep these settings.")); }
       finally { done(); }
       return;
     }

@@ -188,6 +188,28 @@ def save(provider_id: str, model_ids, address: str = "", new_key=None) -> dict:
     return public()
 
 
+def form_settings(provider_id, model_ids, new_key=None) -> dict:
+    """The settings typed on the page, checked like save() checks them, without saving: for testing first.
+    An empty key means the key already saved for the same service."""
+    p = ALIASES.get(str(provider_id or "").strip().lower(), str(provider_id or "").strip().lower())
+    if p not in PROVIDERS:
+        raise ValueError("Choose one of the AI services in the list.")
+    if isinstance(model_ids, str):
+        model_ids = model_ids.split(",")
+    ms = [str(m).strip()[:120] for m in (model_ids or []) if str(m).strip()][:5]
+    if not ms:
+        raise ValueError("Enter the model to use, or press Find models.")
+    if any(not re.fullmatch(r"[\w.\-:/@]+", m) for m in ms):
+        raise ValueError("That's a model name, not its ID. Model IDs have no spaces (for example gemini-2.5-flash). "
+                         "Press Find models and pick one from the list.")
+    old = _from_dashboard()
+    saved_key = (str(old.get("key") or "") if old.get("provider") == p else "") or (config.ai_key() if config.AI_PROVIDER == p else "")
+    k = str(new_key or "").strip()[:400] or saved_key
+    if not k and p not in NO_KEY:
+        raise ValueError("Paste the key for this service.")
+    return {"provider": p, "models": ms, "base_url": "", "key": k}
+
+
 def list_models(provider_id=None, address=None, with_key=None) -> list:
     """The model ids a service offers, so the settings page can show a list to pick from."""
     c = current()
