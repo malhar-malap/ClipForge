@@ -53,6 +53,9 @@ def _from_dashboard() -> dict:
     if _saved["at"] != at:
         try:
             data = json.loads(f.read_text(encoding="utf-8")) if at else {}
+            if isinstance(data, dict) and data.get("key"):
+                from .crypt import unseal
+                data["key"] = unseal(data["key"])            # stored encrypted; older plain-text files still read
         except (OSError, ValueError):
             data = {}
         _saved.update(at=at, data=data if isinstance(data, dict) else {})
@@ -178,7 +181,8 @@ def save(provider_id: str, model_ids, address: str = "", new_key=None) -> dict:
     with _lock:
         f = _file()
         tmp = f.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"provider": p, "models": ms, "base_url": address, "key": k}), encoding="utf-8")
+        from .crypt import seal
+        tmp.write_text(json.dumps({"provider": p, "models": ms, "base_url": address, "key": seal(k)}), encoding="utf-8")
         try:
             os.chmod(tmp, 0o600)        # the key is only for whoever runs the server
         except OSError:

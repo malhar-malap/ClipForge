@@ -10,6 +10,7 @@ import re
 import shutil
 import threading
 import time
+import traceback
 from pathlib import Path
 from urllib.parse import quote, urlparse
 
@@ -65,17 +66,23 @@ def _startup():
         except OSError:
             pass
     render.install_fonts()
+    try:
+        from . import crypt
+        crypt.migrate()                  # older plain-text secrets in the data folder: encrypted now
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
     if _tools.missing():
         print("\n  " + _tools.HELP + "\n", flush=True)
     if not transcribe.REMOTE and config.env("PEAKCUT_FETCH_MODEL", "1") != "0":     # the speech model: fetched now, in the background, if it was never downloaded
         from . import fetch_model
         threading.Thread(target=lambda: _quiet(fetch_model.ensure), daemon=True).start()
+    if config.ACCOUNTS and not config.master_key():
+        print("\n  Warning: CLIPFORGE_SECRET_KEY is not set, so AI keys and account tokens are encrypted with a key kept in\n"
+              "  the data folder. On a server, set CLIPFORGE_SECRET_KEY (or _FILE) so a copy of the data alone cannot read them.\n", flush=True)
     if config.BILLING:
         if not config.ACCOUNTS:
             print("\n  CLIPFORGE_BILLING=1 needs PEAKCUT_ACCOUNTS=1: without sign-in everyone is the owner and plans mean nothing.\n", flush=True)
-        if not config.master_key():
-            print("\n  Warning: CLIPFORGE_SECRET_KEY is not set, so users' own AI keys are encrypted with a key kept in the data\n"
-                  "  folder. On a server, set CLIPFORGE_SECRET_KEY (or _FILE) so a copy of the data alone cannot read them.\n", flush=True)
+
         if not (config.RAZORPAY_KEY_ID and config.razorpay_secret() and config.razorpay_webhook_secret()):
             print("\n  Payments are not fully set up: RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET and RAZORPAY_WEBHOOK_SECRET are needed.\n", flush=True)
     jobs.start()

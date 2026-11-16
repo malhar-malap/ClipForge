@@ -64,7 +64,8 @@ def main() -> int:
                 ("plans over HTTP: who can reach what", ["tests/test_billing_http.py"]),
                 ("the stronger second ranking", ["tests/test_ranking.py"]),
                 ("YouTube: original captions and audio, never a dub", ["tests/test_youtube.py"]),
-                ("AI settings: Test checks what is on screen", ["tests/test_ai_settings.py"])]
+                ("AI settings: Test checks what is on screen", ["tests/test_ai_settings.py"]),
+                ("secrets are encrypted in the data folder", ["tests/test_secrets_at_rest.py"])]
         for name, args in runs:
             print(f"\n=== {name} ===", flush=True)
             r = subprocess.run([sys.executable, *args], cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")

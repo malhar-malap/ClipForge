@@ -46,7 +46,8 @@ def _read(name, default):
     if not f.exists():
         return default
     try:
-        return json.loads(f.read_text(encoding="utf-8"))
+        from .crypt import unseal_tree
+        return unseal_tree(json.loads(f.read_text(encoding="utf-8")))
     except ValueError:
         return default
 
@@ -55,7 +56,8 @@ def _write(name, data):
     with _lock:
         d = _dir()
         tmp = d / (name + ".tmp")
-        tmp.write_text(json.dumps(data, indent=1), encoding="utf-8")
+        from .crypt import seal_tree
+        tmp.write_text(json.dumps(seal_tree(data), indent=1), encoding="utf-8")   # tokens and secrets encrypted
         try:
             tmp.chmod(0o600)                 # these hold posting tokens: readable by the app only
         except OSError:
@@ -87,7 +89,8 @@ def _apps_saved() -> dict:
         at = 0
     if _apps_seen["at"] != at:
         try:
-            data = json.loads(f.read_text(encoding="utf-8")) if at else {}
+            from .crypt import unseal_tree
+            data = unseal_tree(json.loads(f.read_text(encoding="utf-8"))) if at else {}
         except (OSError, ValueError):
             data = {}
         _apps_seen.update(at=at, data=data if isinstance(data, dict) else {})
@@ -144,7 +147,8 @@ def save_app(platform: str, cid: str, secret: str) -> dict:
         data = dict(_apps_saved())
         data[name] = {"id": cid, "secret": secret}
         tmp = _apps_file().with_suffix(".tmp")
-        tmp.write_text(json.dumps(data), encoding="utf-8")
+        from .crypt import seal_tree
+        tmp.write_text(json.dumps(seal_tree(data)), encoding="utf-8")
         try:
             tmp.chmod(0o600)
         except OSError:
