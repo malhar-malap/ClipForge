@@ -178,6 +178,15 @@ a{color:inherit}
 main{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* active and selected states: readable on the dark sidebar and the light page */
+.nav-item.on{background:#F6F1E8!important;color:#1C1B19!important;box-shadow:inset 3px 0 0 #E4572E}
+.nav-item.on svg{color:#E4572E!important}
+.nav-item.on .count{background:#E4572E!important;color:#fff!important}
+.seg button.on{background:#1C1B19!important;color:#F6F1E8!important}
+.pill.brand{background:#FBE7DE!important;color:#C7431D!important}
+.hbar-row .track i{background:#E4572E!important}
+.toast::before{background:#E4572E!important}
 </style>
 </head>
 <body>

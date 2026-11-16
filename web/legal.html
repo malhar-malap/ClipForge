@@ -68,6 +68,8 @@ a{color:inherit}
 main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 @keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+body[data-page=acceptable-use] nav a[href="/acceptable-use"],body[data-page=privacy] nav a[href="/privacy"],body[data-page=terms] nav a[href="/terms"]{background:#1C1B19!important;color:#F6F1E8!important}
 </style>
 </head>
 <body data-page="{{PAGE}}">
