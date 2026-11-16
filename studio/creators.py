@@ -14,7 +14,8 @@ def _root() -> Path:
 
 _lock = threading.RLock()
 
-DEFAULTS = {"name": "", "channel": "", "style": "bounce", "layout": "auto", "min_len": 15, "max_len": 60,
+DEFAULTS = {"name": "", "channel": "", "style": "bounce", "layout": "auto", "cam_style": "split", "cap_bg": "none",
+            "language": "auto", "min_len": 15, "max_len": 60,
             "max_clips": 6, "min_score": 80, "auto_watch": False, "buffer_min": 20, "live_per_hour": 4, "ai_every_min": 3, "ai_only_on_spike": True, "auto_jump_pct": 60,
             "plan": "free", "decide_mode": "both", "must_clip_min": 0, "min_gap_min": 2,
             "trigger_words": "clip that, clip it",
@@ -73,6 +74,15 @@ def _clean(data: dict) -> dict:
             v = v if v in ("both", "either") else "both"
         elif k == "privacy":
             v = v if v in ("public", "unlisted", "private") else "public"
+        elif k == "cam_style":
+            v = v if v in ("split", "circle", "rect", "none") else "split"
+        elif k == "cap_bg":
+            v = v if v in ("none", "box", "word") else "none"
+        elif k == "language":
+            v = str(v).strip().lower()
+            v = v if v == "auto" or re.fullmatch(r"[a-z]{2,3}", v) else "auto"
+        elif k in ("style", "layout"):
+            v = str(v).strip()[:20]
         else:
             v = str(v).strip()[:300]
         out[k] = v

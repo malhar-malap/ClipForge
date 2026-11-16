@@ -77,6 +77,20 @@ def _faces(frames):
     return out
 
 
+def _alive(box, frames) -> bool:
+    """Is this face live? A webcam face moves, talks and blinks; a sticker, an emote or a face printed in a score
+    overlay is the same pixels in every frame. The picture inside the box must change over the clip."""
+    if frames is None or len(frames) < 4:
+        return True
+    h, w = frames.shape[1], frames.shape[2]
+    x0, y0 = int(box[0] * w), int(box[1] * h)
+    x1, y1 = max(x0 + 2, int((box[0] + box[2]) * w)), max(y0 + 2, int((box[1] + box[3]) * h))
+    patch = frames[:, y0:y1, x0:x1].astype(np.float32)
+    if patch.size == 0:
+        return True
+    return float(patch.std(axis=0).mean()) >= 3.5
+
+
 def _clusters(per_frame):
     """Face boxes that sit in the same place across frames: [(share of frames, median box, all boxes)]."""
     groups = []
@@ -261,9 +275,13 @@ def decide(per_frame, frames, src_w, src_h, ai_look=None):
 
     # 1. a webcam overlay: a face inside a rectangle that is not the whole picture (small or large webcam alike)
     cam_face, cam = None, None
+    ai_says_none = bool(look) and look.get("facecam") is None
+    clusters = [c for c in clusters if _alive(c[1], frames)]          # stickers and printed faces never count
     for share, box, boxes in clusters:
         if share < 0.4 or (ai_cam and not _inside(box, ai_cam, 0.05)):
             continue
+        if ai_says_none and box[2] * box[3] <= SMALL_FACE:
+            continue                                                     # the AI looked: no webcam overlay here
         rect = _snap(box, gx, gy, ai_cam) if gx is not None else None
         if rect and rect[2] * rect[3] <= 0.5:
             cam_face, cam = box, rect                        # a real border around the face: a webcam overlay
@@ -402,3 +420,26 @@ def choose_layout(requested: str, seen: dict, cam_style: str = "split") -> str:
     if requested == "face" and kind not in ("head", "facecam"):
         return "crop"
     return requested
+
+
+def look_at_image(jpeg: bytes) -> dict:
+    """One still frame (a video's thumbnail, or a frame from a file being uploaded): where the face or the webcam is,
+    for the style preview on the new-project form. Quick and local; no AI."""
+    import cv2
+    img = cv2.imdecode(np.frombuffer(jpeg, np.uint8), cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError("Not an image.")
+    h, w = img.shape[:2]
+    if w > SAMPLE_W:
+        img = cv2.resize(img, (SAMPLE_W, int(SAMPLE_W * h / w)))
+        h, w = img.shape[:2]
+    faces = _faces(np.stack([img]))[0]
+    if not faces:
+        return {"kind": "none", "w": w, "h": h}
+    box = max(faces, key=lambda b: b[2] * b[3])
+    if box[2] * box[3] > SMALL_FACE:
+        return {"kind": "head", "cx": round(box[0] + box[2] / 2, 4), "face": [round(v, 4) for v in box], "w": w, "h": h}
+    grey = np.stack([cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)])
+    gx, gy = _edge_maps(grey)
+    cam = _snap(box, gx, gy) or _cam_from_face(box, w / max(1, h))
+    return {"kind": "facecam", "cam": [round(v, 4) for v in cam], "face": [round(v, 4) for v in box], "w": w, "h": h}

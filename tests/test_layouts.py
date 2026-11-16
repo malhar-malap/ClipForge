@@ -11,7 +11,8 @@ def check(n, got, want=True):
     ok = want(got) if callable(want) else got == want
     print(("PASS " if ok else "FAIL ") + n + ("" if ok else f"   got {got!r}")); ok or fails.append(n)
 
-blank = np.zeros((12, 270, 480), dtype=np.uint8)
+blank = np.random.default_rng(7).integers(0, 255, (12, 270, 480)).astype(np.uint8)   # a picture that keeps changing, like video
+frozen = blank.copy(); frozen[:, 210:240, 420:450] = 90                                   # ...with a still sticker in one corner
 cam_face = (0.88, 0.80, 0.055, 0.10)
 
 # ---- deciding
@@ -22,6 +23,10 @@ check("...and its webcam box contains the face", seen["cam"][0] <= cam_face[0] a
 check("auto turns a facecam into the split layout", vision.choose_layout("auto", seen), "split")
 
 moving = [[(0.1 + 0.06 * i, 0.4, 0.05, 0.09)] for i in range(12)]
+check("a face that never changes (a sticker, an emote, a printed score face) is not a facecam",
+      vision.decide([[(420 / 480, 210 / 270, 30 / 480, 30 / 270)]] * 12, frozen, 1920, 1080)["kind"] != "facecam")
+check("when the AI looked and saw no webcam, a small face is not used as one",
+      vision.decide(per, blank, 1920, 1080, {"scene": "gameplay", "facecam": None})["kind"], "none")
 check("a small face that moves around (a game character) is not a facecam", vision.decide(moving, blank, 1920, 1080)["kind"] != "facecam")
 
 head = [[(0.35, 0.25, 0.18, 0.32)] for _ in range(12)]

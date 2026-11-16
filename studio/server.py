@@ -729,6 +729,22 @@ def link_preview(request: Request, url: str = ""):
         raise HTTPException(422, "Couldn't open that video. Check the link is public and complete.")
 
 
+@app.post("/api/style-frame")
+def style_frame(body: dict = Body(...)):
+    """The style preview on the new-project form: where the face or webcam is in one small frame (a data: URL)."""
+    import base64
+    from . import vision
+    _throttle("styleframe:" + ctx.uid(), 60, 600)
+    data = str(body.get("image") or "")
+    m = re.fullmatch(r"data:image/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)", data)
+    if not m or len(data) > 200_000:
+        raise HTTPException(400, "Send a small JPEG, PNG or WebP frame.")
+    try:
+        return vision.look_at_image(base64.b64decode(m.group(2)))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
 @app.post("/api/jobs")
 def create_from_link(body: dict = Body(...)):
     _need_verified()
