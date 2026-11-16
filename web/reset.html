@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reset your ClipForge password</title>
 <meta name="description" content="Reset the password for your ClipForge account.">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--brand:#6C47FF;--brand-hi:#8768FF;--ink:#17123A;--soft:#F1EDFF;--line-b:#DCD3FF;--deep:#4A2BD6;
+:root{--brand:#191917;--brand-hi:#191917;--ink:#17123A;--soft:#191917;--line-b:#191917;--deep:#191917;
   --frame:#0D0B1A;--frame-2:#1A1730;--frame-text:#ECEAFB;--frame-dim:#8D89AB;
   --muted:#F5F4FA;--line:#ECEAF4;--line-2:#DEDBEC;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;--bad:#D3343F;--bad-soft:#FDECEE;
   --r-lg:16px;--r:12px;--r-sm:8px;color-scheme:light}
@@ -67,17 +67,21 @@ input::placeholder{color:var(--faint)}
 .mobile-logo{display:none}
 @media (max-width:860px){body{grid-template-columns:1fr;background:#fff}.side{display:none}.main{margin:0;border-radius:0;min-height:100vh;align-content:center}.mobile-logo{display:block;height:34px;margin-bottom:28px}}
 
-/* ClipForge look */
-.btn.primary{background:linear-gradient(135deg,#7D5CFF 0%,#5B36F2 100%)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 20px -10px rgba(91,54,242,.75)}
-.btn.primary svg{color:#fff}
-.btn.primary:hover{filter:brightness(1.07)}
-.btn{border-radius:11px}
-input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shadow:0 0 0 4px rgba(108,71,255,.14)}
+
+/* ClipForge calm look */
+:root{--brand:#191917;--brand-hi:#33332f;--ink:#191917;--soft:#F1F1EE;--line-b:#D8D7D2;--deep:#191917;--brand-press:#33332f;--brand-ink:#191917;--brand-soft:#F1F1EE;--brand-line:#D8D7D2;--brand-deep:#191917;
+  --frame:#191917;--frame-2:#262624;--frame-text:#F2F2EF;--frame-dim:#A3A29C;--muted:#F7F7F5;--line:#E7E6E2;--line-2:#D8D7D2;--text:#191917;--dim:#6B6A65;--faint:#9C9B95}
+body{font-family:Inter,system-ui,-apple-system,sans-serif!important}
+.btn.primary{background:#191917!important;border-color:#191917!important;color:#fff!important;box-shadow:none!important;filter:none!important}
+.btn.primary:hover{background:#33332f!important}
+.btn{border-radius:8px}
+input:focus,select:focus,textarea:focus{border-color:#2C5BE8!important;box-shadow:0 0 0 3px #EEF2FD!important}
+a{color:inherit}
 </style>
 </head>
 <body>
 <aside class="side">
-  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf2" alt="ClipForge"></a>
+  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf3" alt="ClipForge"></a>
   <div>
     <h1>Clips from every stream, <em>without watching all of it.</em></h1>
     <ul>
@@ -89,7 +93,7 @@ input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shado
   <small>© <span id="year"></span> ClipForge · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></small>
 </aside>
 <main class="main"><div class="card">
-  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf2" alt="ClipForge"></a>
+  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf3" alt="ClipForge"></a>
   <h2 id="h">Reset your password</h2><p id="p">Enter the email you signed up with and we'll send you a link to choose a new password.</p>
   <form id="ask" novalidate>
     <div class="err" id="err" role="alert"></div>

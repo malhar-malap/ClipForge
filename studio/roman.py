@@ -185,8 +185,8 @@ def _urdu_word(w: str) -> str:
         if ch == "ھ":                     # do chashmi he: the "h" of bh, ph, kh, chh...
             out.append("h")
             continue
-        if ch in "اآ":
-            out.append("aa" if ch == "آ" else "a")
+        if ch in "اآأإٱ":                 # alif, and its Arabic forms with hamza or wasla
+            out.append("aa" if ch == "آ" else "i" if ch == "إ" else "a")
             prev_cons = False
             continue
         if ch in "وؤ":
@@ -214,8 +214,14 @@ def _urdu_word(w: str) -> str:
             continue
         if ch in "عء":
             continue
+        if ch == "ة":                     # Arabic ta marbuta: the "a" at the end of a word
+            out.append("a")
+            prev_cons = False
+            continue
         c = _UR_CONS.get(ch)
         if c is None:
+            if "\u0600" <= ch <= "\u06FF" or "\u0750" <= ch <= "\u077F" or "\uFB50" <= ch <= "\uFEFF":
+                continue                  # a letter or mark with no Roman spelling: left out, never drawn as a box
             out.append(ch)
             prev_cons = False
             continue

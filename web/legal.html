@@ -7,9 +7,9 @@
 <meta name="description" content="{{DESC}}">
 <link rel="canonical" href="{{SITE}}/{{PAGE_PATH}}">
 <meta name="robots" content="index,follow">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
 <style>
-:root{--brand:#6C47FF;--ink:#17123A;--deep:#4A2BD6;--muted:#F5F4FA;--line:#ECEAF4;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;color-scheme:light}
+:root{--brand:#191917;--ink:#17123A;--deep:#191917;--muted:#F5F4FA;--line:#ECEAF4;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;color-scheme:light}
 *{box-sizing:border-box}
 body{margin:0;background:#fff;color:var(--text);font:16px/1.7 "Plus Jakarta Sans","Geist","Segoe UI",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--deep)}
@@ -37,12 +37,12 @@ footer.site .fwrap{max-width:1160px;margin:0 auto;padding:0 24px}
 footer.site .fgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px}
 footer.site .fbrand img{height:30px;display:block;margin-bottom:14px}
 footer.site .fbrand p{max-width:300px;line-height:1.6;margin:0 0 18px;color:#A7A3C2}
-footer.site .fbrand a.fcta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;background:#6C47FF;color:#17123A;font-weight:600;text-decoration:none;transition:background-color .15s ease}
-footer.site .fbrand a.fcta:hover{background:#8768FF}
+footer.site .fbrand a.fcta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;background:#191917;color:#17123A;font-weight:600;text-decoration:none;transition:background-color .15s ease}
+footer.site .fbrand a.fcta:hover{background:#191917}
 footer.site h4{font-size:13px;font-weight:600;color:#fff;margin:4px 0 14px}
 footer.site ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
 footer.site ul a{color:#A7A3C2;text-decoration:none;transition:color .15s ease}
-footer.site ul a:hover{color:#6C47FF}
+footer.site ul a:hover{color:#191917}
 footer.site .fbottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:44px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;color:#8C7B70}
 @media (max-width:760px){footer.site .fgrid{grid-template-columns:1fr 1fr}footer.site .fbrand{grid-column:1/-1}}
 html{scroll-behavior:smooth}
@@ -50,16 +50,20 @@ article{animation:legalin .35s ease both}
 @keyframes legalin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){article{animation:none}}
 
-/* ClipForge look */
-.btn.primary{background:linear-gradient(135deg,#7D5CFF 0%,#5B36F2 100%)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 20px -10px rgba(91,54,242,.75)}
-.btn.primary svg{color:#fff}
-.btn.primary:hover{filter:brightness(1.07)}
-.btn{border-radius:11px}
-input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shadow:0 0 0 4px rgba(108,71,255,.14)}
+
+/* ClipForge calm look */
+:root{--brand:#191917;--brand-hi:#33332f;--ink:#191917;--soft:#F1F1EE;--line-b:#D8D7D2;--deep:#191917;--brand-press:#33332f;--brand-ink:#191917;--brand-soft:#F1F1EE;--brand-line:#D8D7D2;--brand-deep:#191917;
+  --frame:#191917;--frame-2:#262624;--frame-text:#F2F2EF;--frame-dim:#A3A29C;--muted:#F7F7F5;--line:#E7E6E2;--line-2:#D8D7D2;--text:#191917;--dim:#6B6A65;--faint:#9C9B95}
+body{font-family:Inter,system-ui,-apple-system,sans-serif!important}
+.btn.primary{background:#191917!important;border-color:#191917!important;color:#fff!important;box-shadow:none!important;filter:none!important}
+.btn.primary:hover{background:#33332f!important}
+.btn{border-radius:8px}
+input:focus,select:focus,textarea:focus{border-color:#2C5BE8!important;box-shadow:0 0 0 3px #EEF2FD!important}
+a{color:inherit}
 </style>
 </head>
 <body data-page="{{PAGE}}">
-<header><div class="bar"><a href="/" aria-label="ClipForge home"><img src="/brand/logo.svg?v=cf2" alt="ClipForge" width="120" height="30"></a>
+<header><div class="bar"><a href="/" aria-label="ClipForge home"><img src="/brand/logo.svg?v=cf3" alt="ClipForge" width="120" height="30"></a>
   <nav aria-label="Legal pages"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/acceptable-use">Acceptable use</a></nav></div></header>
 <main>
 
@@ -223,7 +227,7 @@ input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shado
 </main>
 <footer class="site"><div class="fwrap">
   <div class="fgrid">
-    <div class="fbrand"><a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf2" alt="ClipForge" width="120" height="30"></a>
+    <div class="fbrand"><a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf3" alt="ClipForge" width="120" height="30"></a>
       <p>AI clipping for Twitch, Kick and YouTube streams. Captioned vertical clips while the stream is still live. Free and open source.</p>
       <a class="fcta" href="/signup">Sign up</a></div>
     <div><h4>Product</h4><ul><li><a href="/#how">How it works</a></li><li><a href="/#features">Features</a></li><li><a href="/#live">Live clipping</a></li><li><a href="/#open">Open source</a></li><li><a href="/#faq">FAQ</a></li></ul></div>

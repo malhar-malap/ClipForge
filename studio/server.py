@@ -591,7 +591,7 @@ def status(request: Request):
             "tour": not accounts.settings()["tour_done"],
             "youtube": accounts.youtube_ready(), "connect": {p: accounts.can_connect(p) for p in accounts.PLATFORM_NAMES}, "max_upload_mb": config.MAX_UPLOAD_MB, "upload_part_mb": config.UPLOAD_PART_MB, "max_batch": config.MAX_ACTIVE_JOBS_PER_USER,
             "styles": {k: v["label"] for k, v in render.STYLES.items()}, "layouts": render.LAYOUTS,
-            "billing": billing.summary(me_.id)}
+            "billing": billing.summary(me_.id), "youtube_hd": _tools.youtube_ready(), "youtube_help": _tools.YOUTUBE_HELP}
 
 
 # ================================================================ videos

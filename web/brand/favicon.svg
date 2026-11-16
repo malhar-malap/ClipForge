@@ -1,7 +1,5 @@
 <svg width="220" height="220" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs><linearGradient id="cfg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8B6BFF"/><stop offset="1" stop-color="#5130E8"/></linearGradient></defs>
-<rect width="220" height="220" rx="56" fill="url(#cfg)"/>
-<path d="M80 58 L160 110 L80 162 Z" fill="#FFFFFF"/>
-<path d="M120 38 L104 182" stroke="#6A47F7" stroke-width="14" stroke-linecap="round"/>
-<circle cx="172" cy="52" r="14" fill="#C6F432"/>
+<rect width="220" height="220" rx="50" fill="#191917"/>
+<path d="M82 60 L158 110 L82 160 Z" fill="#FFFFFF"/>
+<path d="M120 42 L106 178" stroke="#191917" stroke-width="14" stroke-linecap="round"/>
 </svg>

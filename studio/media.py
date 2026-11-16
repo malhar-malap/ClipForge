@@ -104,7 +104,11 @@ def _ydl(opts):
 
 
 def _video_format(height):
-    return f"bv*[height<={height}][vcodec^=avc1]+ba[ext=m4a]/bv*[height<={height}]+ba/b[height<={height}]/b"
+    """The best video up to `height`, with the ORIGINAL audio track: many YouTube videos now carry AI-dubbed audio
+    in other languages, and a dub must never end up in a clip."""
+    orig = "[format_note*=original]"
+    return (f"bv*[height<={height}][vcodec^=avc1]+ba[ext=m4a]{orig}/bv*[height<={height}][vcodec^=avc1]+ba[ext=m4a]/"
+            f"bv*[height<={height}]+ba{orig}/bv*[height<={height}]+ba/b[height<={height}]/b")
 
 
 def _biggest(job_dir: Path, stem: str) -> Path:
@@ -133,14 +137,35 @@ def youtube_words(url: str):
     with _youtube_guard(url), _ydl({}) as ydl:
         i = ydl.extract_info(url, download=False)
         auto = i.get("automatic_captions") or {}
-        key = next((k for k in auto if k.endswith("-orig")), None)
-        if not key and i.get("language") in auto:
-            key = i["language"]
+        key = _original_track(i, auto)
         track = next((f for f in auto.get(key) or [] if f.get("ext") == "json3" and f.get("url")), None) if key else None
         if not track:
             return None
         raw = ydl.urlopen(track["url"]).read(40_000_000)
     return _caption_words(json.loads(raw)), key.replace("-orig", "")
+
+
+def _spoken_language(i: dict) -> str:
+    """The language the video was really recorded in: the audio track YouTube marks "original" (videos with
+    AI-dubbed audio list many languages), else the language YouTube gives the video."""
+    for f in i.get("formats") or []:
+        if f.get("acodec") not in (None, "none") and "original" in str(f.get("format_note") or "").lower() and f.get("language"):
+            return str(f["language"])
+    return str(i.get("language") or "")
+
+
+def _original_track(i: dict, auto: dict):
+    """The automatic-captions track in the language that was spoken, or None. Never a translation or a dub:
+    when the spoken language cannot be told apart, None, and our own speech model writes the transcript."""
+    lang = _spoken_language(i).lower()
+    orig = [k for k in auto if k.endswith("-orig")]
+    base = lambda k: k.lower().replace("-orig", "")                 # noqa: E731
+    if lang:
+        for k in orig + list(auto):
+            if base(k) == lang or base(k).split("-")[0] == lang.split("-")[0]:
+                return k
+        return None
+    return orig[0] if len(orig) == 1 else None
 
 
 def youtube_english_words(url: str):

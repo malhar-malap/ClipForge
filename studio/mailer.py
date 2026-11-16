@@ -45,12 +45,12 @@ def _html(title: str, intro: str, button: str, link: str, outro: str, logo_src: 
         <tr><td style="font-family:{font};font-size:24px;line-height:1.25;font-weight:700;color:#17123A;padding-bottom:12px">{e(title)}</td></tr>
         <tr><td style="font-family:{font};font-size:16px;line-height:1.65;color:#5A4A40;padding-bottom:28px">{e(intro)}</td></tr>
         <tr><td style="padding-bottom:28px">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:#6C47FF">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="border-radius:12px;background:#191917">
             <a href="{e(link)}" style="display:inline-block;padding:14px 28px;font-family:{font};font-size:16px;font-weight:700;color:#17123A;text-decoration:none;border-radius:12px">{e(button)}</a>
           </td></tr></table></td></tr>
         <tr><td style="font-family:{font};font-size:14px;line-height:1.6;color:#7A6A60;padding-bottom:22px">{e(outro)}</td></tr>
         <tr><td style="border-top:1px solid #EFE8E3;padding-top:18px;font-family:{font};font-size:12px;line-height:1.6;color:#8D89AB">
-          Button not working? Copy this link into your browser:<br><a href="{e(link)}" style="color:#4A2BD6;word-break:break-all">{e(link)}</a></td></tr>
+          Button not working? Copy this link into your browser:<br><a href="{e(link)}" style="color:#191917;word-break:break-all">{e(link)}</a></td></tr>
       </table></td></tr>
     <tr><td align="center" style="padding:24px 10px 0;font-family:{font};font-size:12px;line-height:1.7;color:#8D89AB">
       You're getting this because of your ClipForge account. We only email you about your account.<br>

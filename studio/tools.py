@@ -81,3 +81,21 @@ def explain(e) -> str:
 
 
 setup()
+
+
+YOUTUBE_HELP = ("YouTube links come down in low quality (360p) on this computer: yt-dlp needs the Deno JavaScript runtime "
+                "to get HD from YouTube. " + ("Run:  winget install DenoLand.Deno" if sys.platform == "win32" else
+                "Run:  brew install deno" if sys.platform == "darwin" else "Run:  curl -fsSL https://deno.land/install.sh | sh")
+                + "  Then close ClipForge and start it again.")
+
+
+def youtube_ready() -> bool:
+    """Can yt-dlp get HD from YouTube here? It needs Deno (and its yt-dlp-ejs solver, in requirements.txt)."""
+    if shutil.which("deno"):
+        return True
+    home = Path.home()
+    for d in (home / ".deno" / "bin", Path("/opt/homebrew/bin"), Path("/usr/local/bin")):
+        if (d / ("deno.exe" if sys.platform == "win32" else "deno")).is_file():
+            os.environ["PATH"] = str(d) + os.pathsep + os.environ.get("PATH", "")
+            return True
+    return False

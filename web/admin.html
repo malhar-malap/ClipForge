@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>ClipForge Admin</title>
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#6C47FF;--brand-press:#5935F0;--brand-ink:#17123A;--brand-soft:#F1EDFF;--brand-line:#DCD3FF;--brand-deep:#4A2BD6;
+  --brand:#191917;--brand-press:#191917;--brand-ink:#17123A;--brand-soft:#191917;--brand-line:#191917;--brand-deep:#191917;
   --frame:#0D0B1A;--frame-2:#1A1730;--frame-line:rgba(255,255,255,.08);--frame-text:#ECEAFB;--frame-dim:#8D89AB;
   --bg:#FFFFFF;--muted:#F5F4FA;--line:#ECEAF4;--line-2:#DEDBEC;
   --text:#15132A;--dim:#5F5C78;--faint:#9C99B3;
@@ -59,7 +59,7 @@ main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:var(--r);border:1px solid var(--line-2);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;white-space:nowrap;font-weight:600;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
 .btn:hover{background:var(--muted)}
 .btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-.btn.primary:hover{background:#8768FF;border-color:#8768FF}
+.btn.primary:hover{background:#191917;border-color:#191917}
 .btn.primary:disabled{background:#F3E7DD;border-color:#F3E7DD;color:#A7A3C2;cursor:not-allowed}
 .btn.danger{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
 .btn.danger:hover{background:#FADDE0}
@@ -160,18 +160,22 @@ dialog::backdrop{background:rgba(14,12,11,.42)}
 .fbmsg{white-space:pre-wrap;color:var(--text);line-height:1.6;margin:0 0 10px}
 .fbctx{font-size:12px;color:var(--dim);background:var(--muted);border-radius:8px;padding:8px 10px;margin:0 0 12px;overflow-wrap:anywhere}
 
-/* ClipForge look */
-.btn.primary{background:linear-gradient(135deg,#7D5CFF 0%,#5B36F2 100%)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 20px -10px rgba(91,54,242,.75)}
-.btn.primary svg{color:#fff}
-.btn.primary:hover{filter:brightness(1.07)}
-.btn{border-radius:11px}
-input:focus,select:focus,textarea:focus{border-color:#6C47FF!important;box-shadow:0 0 0 4px rgba(108,71,255,.14)}
+
+/* ClipForge calm look */
+:root{--brand:#191917;--brand-hi:#33332f;--ink:#191917;--soft:#F1F1EE;--line-b:#D8D7D2;--deep:#191917;--brand-press:#33332f;--brand-ink:#191917;--brand-soft:#F1F1EE;--brand-line:#D8D7D2;--brand-deep:#191917;
+  --frame:#191917;--frame-2:#262624;--frame-text:#F2F2EF;--frame-dim:#A3A29C;--muted:#F7F7F5;--line:#E7E6E2;--line-2:#D8D7D2;--text:#191917;--dim:#6B6A65;--faint:#9C9B95}
+body{font-family:Inter,system-ui,-apple-system,sans-serif!important}
+.btn.primary{background:#191917!important;border-color:#191917!important;color:#fff!important;box-shadow:none!important;filter:none!important}
+.btn.primary:hover{background:#33332f!important}
+.btn{border-radius:8px}
+input:focus,select:focus,textarea:focus{border-color:#2C5BE8!important;box-shadow:0 0 0 3px #EEF2FD!important}
+a{color:inherit}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=cf2" alt="ClipForge"></div>
+    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=cf3" alt="ClipForge"></div>
     <nav class="nav" id="nav" aria-label="Admin"></nav>
     <div class="side-foot" id="foot"></div>
   </aside>

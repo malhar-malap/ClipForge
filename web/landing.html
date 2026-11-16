@@ -7,132 +7,111 @@
 <meta name="description" content="ClipForge finds the best moments in your streams, podcasts and videos and turns them into captioned 9:16 shorts, with facecam layouts for gamers and Hinglish captions. Free previews, plans from Rs 49.">
 <link rel="canonical" href="{{SITE}}/">
 <meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="theme-color" content="#0D0B1A">
+<meta name="theme-color" content="#FFFFFF">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="ClipForge">
 <meta property="og:url" content="{{SITE}}/">
 <meta property="og:title" content="ClipForge: turn long videos into viral shorts">
 <meta property="og:description" content="AI clipping for streamers, podcasters and creators. Facecam layouts, Hinglish captions, free previews.">
 <meta name="twitter:card" content="summary">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf2">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "ClipForge", "applicationCategory": "MultimediaApplication", "operatingSystem": "Web browser", "url": "{{SITE}}/", "offers": {"@type": "Offer", "price": "49", "priceCurrency": "INR"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Anton&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Anton&display=swap" rel="stylesheet">
 <style>
-:root{--brand:#6C47FF;--brand-2:#9B5CFF;--accent:#C6F432;--ink:#0D0B1A;--ink-2:#17142E;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;
-  --line:#ECEAF4;--line-2:#DEDBEC;--soft:#F5F3FF;--bg:#FBFAFF;--r:14px;color-scheme:light}
+:root{--ink:#191917;--text:#191917;--dim:#6B6A65;--faint:#9C9B95;--line:#E7E6E2;--line-2:#D8D7D2;--bg:#FFFFFF;--sunk:#F7F7F5;--accent:#2C5BE8;color-scheme:light}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-[id]{scroll-margin-top:84px}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 "Plus Jakarta Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.006em}
+[id]{scroll-margin-top:72px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 Inter,system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 h1,h2,h3,p{margin:0}
 a{color:inherit;text-decoration:none}
-svg{width:18px;height:18px;fill:currentColor;flex:none}
-:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
-.wrap{max-width:1160px;margin:0 auto;padding:0 24px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:46px;padding:0 20px;border-radius:12px;border:1px solid var(--line-2);background:#fff;color:var(--text);font:inherit;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;transition:transform .12s ease,box-shadow .15s ease,filter .15s ease}
-.btn:hover{transform:translateY(-1px)}
-.btn.primary{background:linear-gradient(135deg,#7D5CFF,#5B36F2);border-color:transparent;color:#fff;box-shadow:0 12px 28px -12px rgba(91,54,242,.8)}
-.btn.primary:hover{filter:brightness(1.07)}
-.btn.lime{background:var(--accent);border-color:var(--accent);color:var(--ink)}
-.btn.ghost-dark{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#fff}
-/* nav */
-header.nav{position:sticky;top:0;z-index:20;background:rgba(13,11,26,.78);backdrop-filter:saturate(1.4) blur(12px);-webkit-backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid rgba(255,255,255,.06)}
-header.nav .wrap{display:flex;align-items:center;gap:28px;height:68px}
-header.nav img{height:30px;display:block}
-header.nav nav{display:flex;gap:24px;font-size:14.5px;font-weight:600;color:#C9C5E6}
-header.nav nav a:hover{color:#fff}
+svg{width:17px;height:17px;fill:currentColor;flex:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:42px;padding:0 18px;border-radius:8px;border:1px solid var(--line-2);background:#fff;color:var(--text);font:inherit;font-weight:500;font-size:15px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--sunk)}
+.btn.primary,.btn.lime{background:var(--ink);border-color:var(--ink);color:#fff}.btn.primary:hover,.btn.lime:hover{background:#33332f}
+header.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.nav .wrap{display:flex;align-items:center;gap:28px;height:60px}
+header.nav img{height:24px;display:block}
+header.nav nav{display:flex;gap:22px;font-size:14.5px;color:var(--dim)}
+header.nav nav a:hover{color:var(--text)}
 header.nav .sp{flex:1}
-header.nav .signin{color:#fff;font-weight:600;font-size:14.5px}
-header.nav .btn{height:40px;font-size:14px}
-/* hero */
-.hero{position:relative;background:radial-gradient(60% 70% at 15% 0%,#2E1F86 0%,rgba(46,31,134,0) 70%),radial-gradient(40% 50% at 95% 20%,rgba(198,244,50,.16) 0%,rgba(198,244,50,0) 70%),var(--ink);color:#fff;overflow:hidden}
-.hero .wrap{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:48px;align-items:center;padding-top:72px;padding-bottom:96px}
-.kicker{display:inline-flex;align-items:center;gap:10px;padding:6px 14px 6px 6px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);font-size:13px;font-weight:600;color:#D6D2F2}
-.kicker b{padding:3px 9px;border-radius:999px;background:var(--accent);color:var(--ink);font-size:11px;letter-spacing:.04em}
-.hero h1{font-size:clamp(38px,5.6vw,66px);line-height:1.04;font-weight:800;letter-spacing:-.045em;margin:22px 0 18px}
-.hero h1 em{font-style:normal;background:linear-gradient(90deg,#A88BFF,#C6F432);-webkit-background-clip:text;background-clip:text;color:transparent}
-.hero p.lead{font-size:18px;color:#C3BEE3;max-width:540px}
-.linkform{display:flex;gap:8px;margin-top:30px;padding:7px;border-radius:16px;background:#fff;max-width:560px;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
-.linkform input{flex:1;min-width:0;border:0;outline:0;font:inherit;font-size:15px;padding:0 14px;color:var(--text);background:transparent}
-.hero .fine{margin-top:14px;font-size:13.5px;color:#9F99C8;display:flex;gap:18px;flex-wrap:wrap}
-.hero .fine span{display:inline-flex;gap:6px;align-items:center}.hero .fine svg{color:var(--accent);width:16px;height:16px}
-.phone{position:relative;justify-self:center;width:300px;aspect-ratio:9/16;border-radius:38px;padding:10px;background:linear-gradient(160deg,#2B2655,#100E22);box-shadow:0 50px 90px -40px rgba(108,71,255,.7),0 0 0 1px rgba(255,255,255,.08)}
-.phone video,.phone img{width:100%;height:100%;object-fit:cover;border-radius:30px;display:block;background:#000}
-.float{position:absolute;display:flex;align-items:center;gap:8px;padding:9px 13px;border-radius:14px;background:#fff;color:var(--text);font-size:13px;font-weight:700;box-shadow:0 18px 40px -18px rgba(0,0,0,.55);animation:bob 5s ease-in-out infinite}
-.float i{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;background:var(--soft);color:var(--brand);font-style:normal}
-.float i.l{background:var(--accent);color:var(--ink)}
-.f1{left:-70px;top:70px}.f2{right:-64px;top:44%;animation-delay:-1.6s}.f3{left:-50px;bottom:60px;animation-delay:-3s}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-/* strip */
-.strip{border-bottom:1px solid var(--line);background:#fff}
-.strip .wrap{display:flex;gap:36px;align-items:center;justify-content:center;flex-wrap:wrap;padding:22px 24px;color:var(--faint);font-weight:700;font-size:14px}
-.strip b{color:var(--text)}
-/* sections */
-section.sec{padding:96px 0}
-.eyebrow{display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--brand);margin-bottom:12px}
-.sec h2{font-size:clamp(28px,3.6vw,42px);font-weight:800;letter-spacing:-.035em;line-height:1.12;max-width:720px}
-.sec .sub{color:var(--dim);font-size:17px;max-width:620px;margin-top:14px}
-.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:48px}
-.feat{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px;box-shadow:0 1px 0 rgba(21,19,42,.03),0 18px 40px -30px rgba(21,19,42,.3);transition:transform .16s ease,box-shadow .16s ease}
-.feat:hover{transform:translateY(-4px);box-shadow:0 24px 50px -30px rgba(76,48,200,.5)}
-.feat .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;background:var(--soft);color:var(--brand);margin-bottom:18px}
-.feat .ic svg{width:22px;height:22px}
-.feat.star{background:linear-gradient(160deg,#2A1C78,#15123A);color:#fff;border-color:transparent}
-.feat.star .ic{background:var(--accent);color:var(--ink)}
-.feat.star p{color:#C9C3EE}
-.feat h3{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
-.feat p{color:var(--dim);font-size:15px}
-/* how */
-.how{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-top:48px;counter-reset:s}
-.step{position:relative;padding-top:58px}
-.step::before{counter-increment:s;content:counter(s);position:absolute;top:0;left:0;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:var(--ink);color:var(--accent);font-weight:800;font-size:17px}
-.step h3{font-size:19px;font-weight:800;margin-bottom:8px}
+header.nav .signin{font-size:14.5px;color:var(--dim)}
+header.nav .btn{height:36px;font-size:14px}
+.hero{background:var(--sunk);border-bottom:1px solid var(--line)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:56px;align-items:center;padding-top:72px;padding-bottom:80px}
+.kicker{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--dim)}
+.kicker b{font-weight:600;color:var(--text);padding:2px 8px;border:1px solid var(--line-2);border-radius:999px;background:#fff;font-size:12px}
+.hero h1{font-size:clamp(36px,5vw,56px);line-height:1.08;font-weight:700;letter-spacing:-.035em;margin:18px 0 16px}
+.hero h1 em{font-style:normal}
+.hero p.lead{font-size:18px;color:var(--dim);max-width:520px}
+.linkform{display:flex;gap:8px;margin-top:28px;max-width:540px}
+.linkform input{flex:1;min-width:0;height:44px;border:1px solid var(--line-2);border-radius:8px;outline:0;font:inherit;font-size:15px;padding:0 14px;background:#fff}
+.linkform input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #EEF2FD}
+.linkform .btn{height:44px}
+.hero .fine{margin-top:14px;font-size:13.5px;color:var(--dim);display:flex;gap:18px;flex-wrap:wrap}
+.hero .fine span{display:inline-flex;gap:6px;align-items:center}.hero .fine svg{width:15px;height:15px}
+.phone{justify-self:center;width:280px;aspect-ratio:9/16;border-radius:28px;padding:8px;background:var(--ink);box-shadow:0 30px 60px -30px rgba(0,0,0,.35)}
+.phone video,.phone img{width:100%;height:100%;object-fit:cover;border-radius:21px;display:block;background:#000}
+.float{display:none}
+.strip .wrap{display:flex;gap:28px;align-items:center;justify-content:center;flex-wrap:wrap;padding:20px 24px;color:var(--faint);font-size:14px;border-bottom:1px solid var(--line)}
+.strip b{color:var(--text);font-weight:600}
+section.sec{padding:88px 0}
+.eyebrow{display:block;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:10px}
+.sec h2{font-size:clamp(26px,3.2vw,36px);font-weight:700;letter-spacing:-.03em;line-height:1.15;max-width:680px}
+.sec .sub{color:var(--dim);font-size:17px;max-width:600px;margin-top:12px}
+.feats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin-top:44px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.feat{padding:26px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}
+.feat:nth-child(3n){border-right:0}.feat:nth-last-child(-n+3){border-bottom:0}
+.feat .ic{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;border:1px solid var(--line);margin-bottom:16px}
+.feat .ic svg{width:18px;height:18px}
+.feat h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.feat p{color:var(--dim);font-size:14.5px}
+.how{background:var(--sunk);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;margin-top:44px;counter-reset:s}
+.step{padding-top:16px;border-top:2px solid var(--ink)}
+.step::before{counter-increment:s;content:"0" counter(s);display:block;font-size:13px;font-weight:600;color:var(--dim);margin-bottom:8px}
+.step h3{font-size:17px;font-weight:600;margin-bottom:6px}
 .step p{color:var(--dim)}
-/* layouts */
-.looks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:48px}
-.look{border-radius:22px;overflow:hidden;background:var(--ink);position:relative;aspect-ratio:9/14}
-.look img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92}
-.look span{position:absolute;left:14px;bottom:14px;padding:6px 12px;border-radius:999px;background:rgba(13,11,26,.75);color:#fff;font-size:13px;font-weight:700;backdrop-filter:blur(6px)}
-/* pricing */
-.pricing{background:radial-gradient(50% 60% at 50% 0%,#EFE9FF 0%,rgba(239,233,255,0) 70%)}
-.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:48px}
-.plan{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 40px -30px rgba(21,19,42,.3)}
-.plan.hot{border:1.5px solid var(--brand);box-shadow:0 30px 60px -30px rgba(91,54,242,.6)}
-.plan .rib{position:absolute;top:-12px;left:22px;padding:4px 11px;border-radius:999px;background:var(--accent);color:var(--ink);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
-.plan h3{font-size:16px;font-weight:700}
-.plan .pr{font-size:38px;font-weight:800;letter-spacing:-.04em}
-.plan .pr small{font-size:14px;color:var(--faint);font-weight:600;letter-spacing:0;margin-left:4px}
-.plan .tag{color:var(--dim);font-size:14px;min-height:44px}
-.plan ul{list-style:none;padding:0;margin:0;display:grid;gap:9px;font-size:14px;flex:1}
-.plan li{display:flex;gap:9px}.plan li svg{color:var(--brand);width:17px;height:17px;margin-top:3px}
-.freebar{margin-top:22px;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 24px;border-radius:18px;border:1px dashed var(--line-2);background:#fff;flex-wrap:wrap}
-/* faq */
-.faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 48px;margin-top:40px}
-.faq details{border-top:1px solid var(--line);padding:18px 0}
-.faq summary{cursor:pointer;font-weight:700;font-size:16px;list-style:none;display:flex;justify-content:space-between;gap:16px}
-.faq summary::after{content:"+";color:var(--brand);font-size:22px;line-height:1}
+.looks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:44px}
+.look{border-radius:12px;overflow:hidden;background:#000;position:relative;aspect-ratio:9/14}
+.look img{width:100%;height:100%;object-fit:cover;display:block}
+.look span{position:absolute;left:12px;bottom:12px;padding:4px 10px;border-radius:6px;background:#fff;color:var(--text);font-size:13px;font-weight:500}
+.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:44px}
+.plan{position:relative;background:#fff;border:1px solid var(--line);border-radius:12px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.plan.hot{border-color:var(--ink)}
+.plan .rib{position:absolute;top:-11px;left:20px;padding:2px 9px;border-radius:999px;background:var(--ink);color:#fff;font-size:11.5px;font-weight:500}
+.plan h3{font-size:15px;font-weight:600}
+.plan .pr{font-size:32px;font-weight:700;letter-spacing:-.03em}
+.plan .pr small{font-size:14px;color:var(--dim);font-weight:400;letter-spacing:0;margin-left:3px}
+.plan .tag{color:var(--dim);font-size:14px}
+.plan ul{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:14px;color:var(--dim);flex:1}
+.plan li{display:flex;gap:8px}.plan li svg{width:15px;height:15px;margin-top:4px;color:var(--text)}
+.freebar{margin-top:18px;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 20px;border-radius:12px;border:1px solid var(--line);background:var(--sunk);flex-wrap:wrap}
+.faq{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 48px;margin-top:36px}
+.faq details{border-top:1px solid var(--line);padding:16px 0}
+.faq summary{cursor:pointer;font-weight:600;font-size:15.5px;list-style:none;display:flex;justify-content:space-between;gap:16px}
+.faq summary::after{content:"+";color:var(--dim);font-size:20px;line-height:1}
 .faq details[open] summary::after{content:"–"}
 .faq p{color:var(--dim);margin-top:8px;font-size:15px}
-/* cta + footer */
-.cta{margin:0 24px 96px;border-radius:28px;background:radial-gradient(50% 80% at 100% 0%,rgba(198,244,50,.25),rgba(198,244,50,0) 60%),linear-gradient(135deg,#2A1C78,#0D0B1A);color:#fff;text-align:center;padding:72px 24px}
-.cta h2{font-size:clamp(28px,4vw,46px);font-weight:800;letter-spacing:-.04em}
-.cta p{color:#C3BEE3;margin:14px auto 28px;max-width:520px}
-footer{background:var(--ink);color:#9F99C8;font-size:14px;padding:44px 0}
+.cta{margin:0 24px 88px;border-radius:16px;background:var(--ink);color:#fff;text-align:center;padding:64px 24px}
+.cta h2{font-size:clamp(26px,3.6vw,38px);font-weight:700;letter-spacing:-.03em}
+.cta p{color:#B5B4AE;margin:12px auto 26px;max-width:520px}
+.cta .btn.lime{background:#fff;color:var(--ink);border-color:#fff}
+footer{border-top:1px solid var(--line);color:var(--dim);font-size:14px;padding:32px 0}
 footer .wrap{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
-footer img{height:26px}
-footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
-@media (max-width:960px){.hero .wrap{grid-template-columns:1fr;padding-top:48px}.phone{width:250px}.f1,.f2,.f3{display:none}
-  .feats,.steps,.looks{grid-template-columns:1fr 1fr}.plans{grid-template-columns:1fr 1fr}header.nav nav{display:none}}
-@media (max-width:620px){.feats,.steps,.looks,.plans,.faq{grid-template-columns:1fr}.linkform{flex-direction:column}.linkform input{height:44px}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+footer img{height:22px}
+footer nav{display:flex;gap:20px}footer a:hover{color:var(--text)}
+@media (max-width:960px){.hero .wrap{grid-template-columns:1fr;padding-top:48px}.phone{width:240px}.feats,.steps,.looks{grid-template-columns:1fr 1fr}.feat{border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}.plans{grid-template-columns:1fr 1fr}header.nav nav{display:none}}
+@media (max-width:620px){.feats,.steps,.looks,.plans,.faq{grid-template-columns:1fr}.linkform{flex-direction:column}}
 </style>
 </head>
 <body>
 <header class="nav"><div class="wrap">
-  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf2" alt="ClipForge"></a>
+  <a href="/" aria-label="ClipForge home"><img src="/brand/logo.svg?v=cf3" alt="ClipForge"></a>
   <nav aria-label="Sections"><a href="#features">Features</a><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></nav>
   <span class="sp"></span>
   <a class="signin" href="/login" data-auth="in">Sign in</a>
@@ -141,7 +120,7 @@ footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
 
 <section class="hero"><div class="wrap">
   <div>
-    <span class="kicker"><b>NEW</b>Facecam layouts and Hinglish captions</span>
+    <span class="kicker"><b>New</b>Facecam layouts and Hinglish captions</span>
     <h1>Turn long videos into <em>viral shorts.</em> Automatically.</h1>
     <p class="lead">Paste a stream, podcast or video. ClipForge finds the moments people will actually watch, frames them for 9:16, and adds captions that pop.</p>
     <form class="linkform"><input name="link" placeholder="Paste a YouTube, Twitch or Kick link" aria-label="Video link" autocomplete="off"><button class="btn primary" type="submit">Find my clips</button></form>
@@ -150,7 +129,7 @@ footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
       <span><svg viewBox="0 0 256 256"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>Plans from ₹49</span></div>
   </div>
   <div class="phone">
-    <video src="/brand/demo-hype.mp4" poster="/brand/demo-hype.jpg" autoplay muted loop playsinline aria-label="An example clip"></video>
+    <video src="/brand/demo-hype.mp4?v=cf3" poster="/brand/demo-hype.jpg?v=cf3" autoplay muted loop playsinline aria-label="An example clip"></video>
     <div class="float f1"><i class="l">91</i>Viral score</div>
     <div class="float f2"><i>◎</i>Facecam found</div>
     <div class="float f3"><i>Aa</i>Hinglish captions</div>
@@ -164,7 +143,7 @@ footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
   <h2>Everything a clipper does by hand, done in minutes.</h2>
   <p class="sub">Built for gaming streamers, podcasters and creators who post shorts every day, at a price that makes sense in India.</p>
   <div class="feats">
-    <div class="feat star"><div class="ic"><svg viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144Z"/></svg></div>
+    <div class="feat"><div class="ic"><svg viewBox="0 0 256 256"><path d="M208,144a15.78,15.78,0,0,1-10.42,14.94L146,178l-19,51.62a15.92,15.92,0,0,1-29.88,0L78,178l-51.62-19a15.92,15.92,0,0,1,0-29.88L78,110l19-51.62a15.92,15.92,0,0,1,29.88,0L146,110l51.62,19A15.78,15.78,0,0,1,208,144Z"/></svg></div>
       <h3>Finds the moments that hit</h3><p>AI reads the transcript, loudness and chat spikes, then scores every moment on its hook, payoff and whether it works on its own.</p></div>
     <div class="feat"><div class="ic"><svg viewBox="0 0 256 256"><path d="M216,40H40A16,16,0,0,0,24,56V200a16,16,0,0,0,16,16H216a16,16,0,0,0,16-16V56A16,16,0,0,0,216,40Zm0,64H40V56H216Z"/></svg></div>
       <h3>Facecam on top, gameplay below</h3><p>Your webcam is found automatically and placed on top. Health bars and minimaps stay in the frame.</p></div>
@@ -193,9 +172,9 @@ footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
   <span class="eyebrow">Caption styles</span>
   <h2>Pick a look. Every clip matches it.</h2>
   <div class="looks">
-    <div class="look"><img src="/brand/demo-bounce.jpg" alt="Bounce caption style" loading="lazy"><span>Bounce</span></div>
-    <div class="look"><img src="/brand/demo-hype.jpg" alt="Hype caption style" loading="lazy"><span>Hype</span></div>
-    <div class="look"><img src="/brand/demo-clean.jpg" alt="Clean caption style" loading="lazy"><span>Clean</span></div>
+    <div class="look"><img src="/brand/demo-bounce.jpg?v=cf3" alt="Bounce caption style" loading="lazy"><span>Bounce</span></div>
+    <div class="look"><img src="/brand/demo-hype.jpg?v=cf3" alt="Hype caption style" loading="lazy"><span>Hype</span></div>
+    <div class="look"><img src="/brand/demo-clean.jpg?v=cf3" alt="Clean caption style" loading="lazy"><span>Clean</span></div>
   </div>
 </div></section>
 
@@ -235,7 +214,7 @@ footer nav{display:flex;gap:20px}footer a:hover{color:#fff}
 
 <section class="cta"><h2>Your next viral clip is already recorded.</h2><p>Find it in minutes. Free previews, no card needed.</p><a class="btn lime" href="/signup" data-auth="up3">Get started free</a></section>
 
-<footer><div class="wrap"><img src="/brand/logo-light.svg?v=cf2" alt="ClipForge"><nav><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/acceptable-use">Acceptable use</a><a href="/login">Sign in</a></nav><span>© 2026 ClipForge</span></div></footer>
+<footer><div class="wrap"><img src="/brand/logo.svg?v=cf3" alt="ClipForge"><nav><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/acceptable-use">Acceptable use</a><a href="/login">Sign in</a></nav><span>© 2026 ClipForge</span></div></footer>
 
 <script>
 const $$ = s => [...document.querySelectorAll(s)];

@@ -570,6 +570,8 @@ def _fetch_piece(job, clip, full_audio):
         part = media.load_audio(wav)
         wav.unlink(missing_ok=True)
         meta = media.probe(piece)
+        if meta["height"] and meta["height"] < min(int(o["quality"]), 720) * 0.75:
+            job["low_quality"] = meta["height"]      # the site gave less than asked for (on YouTube: no Deno here)
         off = media.find_offset(full_audio, part, want)
         clip.update(src=str(piece), src_offset=round(off, 2), src_end=round(off + meta["duration"], 2),
                     src_w=meta["width"], src_h=meta["height"])

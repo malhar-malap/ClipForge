@@ -360,7 +360,7 @@ def _render_in(work: Path, src: Path, out_dir: Path, name: str, start, end, layo
     encoders = []
     if _qsv_ok is not False:
         encoders.append(("qsv", ["nv12", "-c:v", "h264_qsv", "-global_quality", "23", "-preset", "fast"]))
-    encoders.append(("x264", ["yuv420p", "-c:v", "libx264", "-crf", "21", "-preset", "veryfast"]))
+    encoders.append(("x264", ["yuv420p", "-c:v", "libx264", "-crf", "19", "-preset", "fast", "-profile:v", "high"]))
     err = None
     for label, enc in encoders:
         p = subprocess.run(base + enc + [f"{name}.mp4"], cwd=work, capture_output=True, text=True,
