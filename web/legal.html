@@ -7,7 +7,7 @@
 <meta name="description" content="{{DESC}}">
 <link rel="canonical" href="{{SITE}}/{{PAGE_PATH}}">
 <meta name="robots" content="index,follow">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf4">
 <style>
 :root{--brand:#191917;--ink:#17123A;--deep:#191917;--muted:#F5F4FA;--line:#ECEAF4;--text:#15132A;--dim:#5F5C78;--faint:#9C99B3;color-scheme:light}
 *{box-sizing:border-box}
@@ -51,19 +51,27 @@ article{animation:legalin .35s ease both}
 @media (prefers-reduced-motion:reduce){article{animation:none}}
 
 
-/* ClipForge calm look */
-:root{--brand:#191917;--brand-hi:#33332f;--ink:#191917;--soft:#F1F1EE;--line-b:#D8D7D2;--deep:#191917;--brand-press:#33332f;--brand-ink:#191917;--brand-soft:#F1F1EE;--brand-line:#D8D7D2;--brand-deep:#191917;
-  --frame:#191917;--frame-2:#262624;--frame-text:#F2F2EF;--frame-dim:#A3A29C;--muted:#F7F7F5;--line:#E7E6E2;--line-2:#D8D7D2;--text:#191917;--dim:#6B6A65;--faint:#9C9B95}
-body{font-family:Inter,system-ui,-apple-system,sans-serif!important}
-.btn.primary{background:#191917!important;border-color:#191917!important;color:#fff!important;box-shadow:none!important;filter:none!important}
-.btn.primary:hover{background:#33332f!important}
-.btn{border-radius:8px}
-input:focus,select:focus,textarea:focus{border-color:#2C5BE8!important;box-shadow:0 0 0 3px #EEF2FD!important}
+
+/* ClipForge editorial look */
+:root{--brand:#1C1B19;--brand-hi:#3A3834;--ink:#1C1B19;--soft:#FBE7DE;--line-b:#D6CBB8;--deep:#1C1B19;--brand-press:#3A3834;--brand-ink:#1C1B19;--brand-soft:#FBE7DE;--brand-line:#F3C8B6;--brand-deep:#E4572E;
+  --frame:#1C1B19;--frame-2:#2B2A27;--frame-text:#F6F1E8;--frame-dim:#A29C91;--muted:#F1EADF;--line:#E6DDCE;--line-2:#D6CBB8;--text:#1C1B19;--dim:#6E6A62;--faint:#A29C91}
+body{font-family:"Inter Tight",Inter,system-ui,-apple-system,sans-serif!important;background:#F6F1E8!important}
+h1{font-family:"Instrument Serif",Georgia,serif!important;font-weight:400!important;letter-spacing:-.02em!important;font-size:clamp(38px,5vw,52px)!important;line-height:1!important}
+h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.btn{border-radius:999px!important;transition:transform .2s cubic-bezier(.2,.8,.2,1),background-color .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:#1C1B19!important;border-color:#1C1B19!important;color:#F6F1E8!important;box-shadow:0 10px 22px -14px rgba(28,27,25,.8)!important;filter:none!important}
+.btn.primary:hover{background:#3A3834!important}
+input:not([type=checkbox]),select,textarea{border-radius:12px!important;background:#FFFDF9!important}
+input:focus,select:focus,textarea:focus{border-color:#E4572E!important;box-shadow:0 0 0 4px rgba(228,87,46,.14)!important}
 a{color:inherit}
+main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body data-page="{{PAGE}}">
-<header><div class="bar"><a href="/" aria-label="ClipForge home"><img src="/brand/logo.svg?v=cf3" alt="ClipForge" width="120" height="30"></a>
+<header><div class="bar"><a href="/" aria-label="ClipForge home"><img src="/brand/logo.svg?v=cf4" alt="ClipForge" width="120" height="30"></a>
   <nav aria-label="Legal pages"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/acceptable-use">Acceptable use</a></nav></div></header>
 <main>
 
@@ -227,7 +235,7 @@ a{color:inherit}
 </main>
 <footer class="site"><div class="fwrap">
   <div class="fgrid">
-    <div class="fbrand"><a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf3" alt="ClipForge" width="120" height="30"></a>
+    <div class="fbrand"><a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf4" alt="ClipForge" width="120" height="30"></a>
       <p>AI clipping for Twitch, Kick and YouTube streams. Captioned vertical clips while the stream is still live. Free and open source.</p>
       <a class="fcta" href="/signup">Sign up</a></div>
     <div><h4>Product</h4><ul><li><a href="/#how">How it works</a></li><li><a href="/#features">Features</a></li><li><a href="/#live">Live clipping</a></li><li><a href="/#open">Open source</a></li><li><a href="/#faq">FAQ</a></li></ul></div>

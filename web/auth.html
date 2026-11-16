@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in to ClipForge</title>
 <meta name="description" content="Sign in or create your ClipForge account.">
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--brand:#191917;--brand-hi:#191917;--ink:#17123A;--soft:#191917;--line-b:#191917;--deep:#191917;
   --frame:#0D0B1A;--frame-2:#1A1730;--frame-text:#ECEAFB;--frame-dim:#8D89AB;
@@ -74,20 +74,28 @@ input::placeholder{color:var(--faint)}
 @media (max-width:860px){body{grid-template-columns:1fr;background:#fff}.side{display:none}.main{margin:0;border-radius:0;min-height:100vh;align-content:center}.mobile-logo{display:block;height:34px;margin-bottom:28px}}
 
 
-/* ClipForge calm look */
-:root{--brand:#191917;--brand-hi:#33332f;--ink:#191917;--soft:#F1F1EE;--line-b:#D8D7D2;--deep:#191917;--brand-press:#33332f;--brand-ink:#191917;--brand-soft:#F1F1EE;--brand-line:#D8D7D2;--brand-deep:#191917;
-  --frame:#191917;--frame-2:#262624;--frame-text:#F2F2EF;--frame-dim:#A3A29C;--muted:#F7F7F5;--line:#E7E6E2;--line-2:#D8D7D2;--text:#191917;--dim:#6B6A65;--faint:#9C9B95}
-body{font-family:Inter,system-ui,-apple-system,sans-serif!important}
-.btn.primary{background:#191917!important;border-color:#191917!important;color:#fff!important;box-shadow:none!important;filter:none!important}
-.btn.primary:hover{background:#33332f!important}
-.btn{border-radius:8px}
-input:focus,select:focus,textarea:focus{border-color:#2C5BE8!important;box-shadow:0 0 0 3px #EEF2FD!important}
+
+/* ClipForge editorial look */
+:root{--brand:#1C1B19;--brand-hi:#3A3834;--ink:#1C1B19;--soft:#FBE7DE;--line-b:#D6CBB8;--deep:#1C1B19;--brand-press:#3A3834;--brand-ink:#1C1B19;--brand-soft:#FBE7DE;--brand-line:#F3C8B6;--brand-deep:#E4572E;
+  --frame:#1C1B19;--frame-2:#2B2A27;--frame-text:#F6F1E8;--frame-dim:#A29C91;--muted:#F1EADF;--line:#E6DDCE;--line-2:#D6CBB8;--text:#1C1B19;--dim:#6E6A62;--faint:#A29C91}
+body{font-family:"Inter Tight",Inter,system-ui,-apple-system,sans-serif!important;background:#F6F1E8!important}
+h1{font-family:"Instrument Serif",Georgia,serif!important;font-weight:400!important;letter-spacing:-.02em!important;font-size:clamp(38px,5vw,52px)!important;line-height:1!important}
+h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.btn{border-radius:999px!important;transition:transform .2s cubic-bezier(.2,.8,.2,1),background-color .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn.primary{background:#1C1B19!important;border-color:#1C1B19!important;color:#F6F1E8!important;box-shadow:0 10px 22px -14px rgba(28,27,25,.8)!important;filter:none!important}
+.btn.primary:hover{background:#3A3834!important}
+input:not([type=checkbox]),select,textarea{border-radius:12px!important;background:#FFFDF9!important}
+input:focus,select:focus,textarea:focus{border-color:#E4572E!important;box-shadow:0 0 0 4px rgba(228,87,46,.14)!important}
 a{color:inherit}
+main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
 <aside class="side">
-  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf3" alt="ClipForge"></a>
+  <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf4" alt="ClipForge"></a>
   <div>
     <h1>Clips from every stream, <em>without watching all of it.</em></h1>
     <ul>
@@ -99,7 +107,7 @@ a{color:inherit}
   <small>© <span id="year"></span> ClipForge · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></small>
 </aside>
 <main class="main"><div class="card">
-  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf3" alt="ClipForge"></a>
+  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf4" alt="ClipForge"></a>
   <h2 id="h"></h2><p id="p"></p>
   <a class="btn" id="google" href="/auth/google/start" hidden>
     <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.2.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>

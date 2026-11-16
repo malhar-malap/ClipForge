@@ -4,20 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ClipForge</title>
-<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf3">
+<link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#F7F7F5;--panel:#FFFFFF;--sunk:#F1F1EE;--line:#E7E6E2;--line-2:#D8D7D2;
-  --text:#191917;--dim:#6B6A65;--faint:#9C9B95;--ink:#191917;
-  --accent:#2C5BE8;--accent-soft:#EEF2FD;
+  --bg:#F6F1E8;--panel:#FFFDF9;--sunk:#F1EADF;--line:#E6DDCE;--line-2:#D6CBB8;
+  --text:#1C1B19;--dim:#6E6A62;--faint:#A29C91;--ink:#1C1B19;
+  --accent:#E4572E;--accent-soft:#FBE7DE;--peach:#F7D7C2;--sage:#D8E2CF;--lilac:#E2DCEF;--butter:#F3E3B3;--sky:#D3E3EC;
+  --serif:"Instrument Serif",Georgia,serif;--ease:cubic-bezier(.2,.8,.2,1);
   --good:#1E7F4F;--good-soft:#E8F4EC;--warn:#8A5A00;--warn-soft:#FBF3E2;--bad:#C2352B;--bad-soft:#FBECEA;
   --r:8px;--r-lg:12px;color-scheme:light}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14.5px/1.5 "Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4,p{margin:0}
 a{color:inherit}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -174,15 +175,115 @@ dialog .dl{padding:20px;display:grid;gap:12px}dialog h2{font-size:16px;font-weig
 .spin{width:18px;height:18px;border-radius:50%;border:2px solid #555;border-top-color:#fff;animation:sp .8s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
+
+/* ================================================================ ClipForge: type, colour and motion */
+.ph h1,.now h2,.sect h2.big{font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;letter-spacing:-.02em}
+.ph h1 em,.now h2 em{font-style:italic;color:var(--accent)}
+.ph p{font-size:15px}
+.btn{border-radius:999px;transition:transform .2s var(--ease),background-color .2s,box-shadow .2s}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:translateY(0) scale(.98)}
+.btn.primary{box-shadow:0 8px 18px -12px rgba(28,27,25,.8)}
+.btn.icon{border-radius:50%}
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea{border-radius:10px;background:#FFFDF9}
+.panel{border-radius:18px;box-shadow:0 1px 0 rgba(28,27,25,.03)}
+header.top{background:rgba(246,241,232,.82)}
+header.top .logo img{height:26px}
+header.top nav{position:relative;padding:3px;border-radius:999px;background:var(--sunk);gap:0}
+header.top nav a{position:relative;z-index:1;height:30px;border-radius:999px;transition:color .25s}
+header.top nav a.on{background:transparent;color:var(--text)}
+header.top nav .pill{position:absolute;z-index:0;top:3px;height:30px;border-radius:999px;background:var(--panel);box-shadow:0 2px 6px -2px rgba(28,27,25,.25);transition:left .4s var(--ease),width .4s var(--ease)}
+.mins{background:var(--panel)}
+.mins b{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--accent)}
+.avatar{background:var(--accent);transition:transform .2s var(--ease)}.avatar:hover{transform:scale(1.06)}
+.menu{border-radius:16px;animation:pop .22s var(--ease)}
+@keyframes pop{from{opacity:0;transform:translateY(-6px) scale(.98)}}
+.notice{border-radius:14px;border-left-width:4px;animation:slide .45s var(--ease) both}
+@keyframes slide{from{opacity:0;transform:translateY(-6px)}}
+/* page entrance and staggered items */
+.enter>*{animation:rise .6s var(--ease) both}
+.enter>*:nth-child(2){animation-delay:.06s}.enter>*:nth-child(3){animation-delay:.12s}.enter>*:nth-child(4){animation-delay:.18s}.enter>*:nth-child(5){animation-delay:.24s}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+.stagger>*{animation:rise .55s var(--ease) both}
+.stagger>*:nth-child(1){animation-delay:.04s}.stagger>*:nth-child(2){animation-delay:.08s}.stagger>*:nth-child(3){animation-delay:.12s}.stagger>*:nth-child(4){animation-delay:.16s}.stagger>*:nth-child(5){animation-delay:.2s}.stagger>*:nth-child(6){animation-delay:.24s}.stagger>*:nth-child(7){animation-delay:.28s}.stagger>*:nth-child(n+8){animation-delay:.32s}
+.calm .stagger>*,.calm.enter>*{animation:none}
+/* new project panel */
+.new{position:relative;overflow:hidden;padding:22px;background:linear-gradient(135deg,#FFFDF9 0%,#FBF3EA 100%)}
+.new::before{content:"";position:absolute;width:340px;height:340px;right:-120px;top:-180px;border-radius:50%;background:var(--peach);filter:blur(50px);opacity:.7;pointer-events:none;animation:drift 16s ease-in-out infinite alternate}
+.new::after{content:"";position:absolute;width:260px;height:260px;left:30%;bottom:-200px;border-radius:50%;background:var(--sage);filter:blur(50px);opacity:.6;pointer-events:none;animation:drift 20s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(-40px,30px) scale(1.1)}}
+.new>*{position:relative;z-index:1}
+.new h2{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.05;margin-bottom:14px}
+.new h2 em{font-style:italic;color:var(--accent)}
+.seg{border-radius:999px;background:rgba(241,234,223,.8)}
+.seg button{border-radius:999px;transition:background .25s,color .25s}
+.newrow input{height:48px;border-radius:999px;padding:0 20px;font-size:15px}
+.newrow .btn{height:48px;padding:0 22px}
+.drop{border-radius:18px;background:rgba(255,253,249,.6);transition:border-color .2s,background .2s,transform .2s}
+.drop.over{transform:scale(1.01)}
+.drop svg{width:26px;height:26px;margin-bottom:6px;color:var(--accent)}
+/* projects list */
+.lrow{transition:background .2s}
+.lrow .faint svg{transition:transform .3s var(--ease)}
+.lrow:hover .faint svg{transform:translateX(4px);color:var(--accent)}
+.lrow:hover{background:#FCF6EE}
+.thumb{border-radius:10px;transition:transform .35s var(--ease)}
+.lrow:hover .thumb{transform:scale(1.04) rotate(-1deg)}
+.badge.blue{background:var(--accent-soft);color:var(--accent)}
+.badge.blue .dot,.badge.bad .dot{animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{50%{opacity:.25}}
+.badge.good{background:#E3EEDB;color:#2F6B3A}.badge.warn{background:#F8ECCB;color:#8A6200}
+.bar{height:6px;border-radius:6px;background:var(--sunk)}
+.bar i{background:linear-gradient(90deg,var(--accent),#F08A5D,var(--accent));background-size:200% 100%;animation:flow 2s linear infinite}
+@keyframes flow{to{background-position:-200% 0}}
+.empty b{font-family:var(--serif);font-weight:400;font-size:28px;margin-bottom:6px}
+/* workspace */
+.ci{transition:background .2s,border-color .2s,transform .25s var(--ease);border-radius:12px}
+.ci:hover{transform:translateX(3px)}
+.ci.on{background:var(--accent-soft);border-color:#F3C8B6}
+.ci .cv{border-radius:7px}
+.score{font-family:var(--serif);font-size:17px;font-weight:400;color:var(--accent)}
+.stage{border-radius:22px;box-shadow:0 30px 60px -34px rgba(28,27,25,.55);animation:rise .6s var(--ease) both}
+.form h3{color:var(--accent);letter-spacing:.1em}
+.why{border-radius:12px;background:#FBF1E6;border:1px solid #F1DFCB}
+.why .score{font-size:20px}
+.ck input{accent-color:var(--accent)}
+/* live */
+.ch{transition:transform .3s var(--ease),box-shadow .3s}.ch:hover{transform:translateY(-3px);box-shadow:0 24px 40px -30px rgba(28,27,25,.45)}
+.ch h3{font-family:var(--serif);font-weight:400;font-size:26px}
+.stats b{font-family:var(--serif);font-weight:400;font-size:24px}
+.stats{border-radius:14px}
+/* plans */
+.now{position:relative;overflow:hidden;background:var(--ink);color:#F6F1E8;border-color:var(--ink)}
+.now .muted,.now .small{color:#C9C2B5!important}
+.now::after{content:"";position:absolute;width:300px;height:300px;right:-80px;top:-140px;border-radius:50%;background:var(--accent);filter:blur(60px);opacity:.35}
+.now>*{position:relative;z-index:1}
+.now .big{font-family:var(--serif);font-weight:400;font-size:64px;color:#F3B79E}
+.now .bar{background:rgba(255,255,255,.12)}
+.plan{transition:transform .35s var(--ease),box-shadow .35s}.plan:hover{transform:translateY(-4px);box-shadow:0 26px 50px -34px rgba(28,27,25,.5)}
+.plan .pr{font-family:var(--serif);font-weight:400;font-size:46px;letter-spacing:-.02em}
+.plan:nth-child(1){background:#FBF3EA}.plan:nth-child(2){background:#FCEFE7}.plan:nth-child(3){background:#F1F4EC}.plan:nth-child(4){background:#F2EFF7}
+.plan.mine{border:1.5px solid var(--accent)}
+.plan li svg{color:var(--accent)}
+.faq b{font-family:var(--serif);font-weight:400;font-size:21px}
+/* settings */
+.set nav a{border-radius:999px;transition:background .2s,color .2s}
+.set nav a.on{border-color:var(--line);background:var(--panel)}
+.sect h2{font-family:var(--serif);font-weight:400;font-size:24px}
+dialog{border-radius:22px;animation:pop .25s var(--ease)}
+dialog h2{font-family:var(--serif);font-weight:400;font-size:26px}
+.toast{border-radius:999px;padding:10px 18px;animation:toast .35s var(--ease) both}
+@keyframes toast{from{opacity:0;transform:translateY(12px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (max-width:980px){.ws{grid-template-columns:1fr}.clips{position:static;max-height:none;display:flex;overflow-x:auto;gap:6px}.ci{min-width:240px}
   .edit{grid-template-columns:1fr}.stage{max-width:340px;margin:0 auto}.plans{grid-template-columns:1fr 1fr}.set{grid-template-columns:1fr}.set nav{position:static;display:flex;overflow:auto}}
-@media (max-width:700px){header.top nav a{padding:0 8px}.mins{display:none}.lrow,.lhead{grid-template-columns:72px minmax(0,1fr) 36px}.lrow>:nth-child(3),.lrow>:nth-child(4),.lhead>:nth-child(3),.lhead>:nth-child(4){display:none}.thumb{width:72px}
+@media (max-width:700px){header.top .in{padding:0 12px;gap:4px}header.top .logo{margin-right:6px}header.top .logo img{height:22px}#topright{flex-wrap:nowrap}#topright .btn.icon{display:none}header.top nav a{padding:0 9px;font-size:13.5px}.ph h1{font-size:36px}.mins{display:none}.lrow,.lhead{grid-template-columns:72px minmax(0,1fr) 36px}.lrow>:nth-child(3),.lrow>:nth-child(4),.lhead>:nth-child(3),.lhead>:nth-child(4){display:none}.thumb{width:72px}
   .plans,.faq{grid-template-columns:1fr}.now{grid-template-columns:1fr}.now .big{text-align:left}.newrow{flex-direction:column}.stats{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <header class="top"><div class="in">
-  <a class="logo" href="/app" data-go="/app"><img src="/brand/logo.svg?v=cf3" alt="ClipForge"></a>
+  <a class="logo" href="/app" data-go="/app"><img src="/brand/logo.svg?v=cf4" alt="ClipForge"></a>
   <nav id="nav"></nav><span class="grow"></span>
   <div class="row" id="topright"></div>
 </div></header>
@@ -236,15 +337,20 @@ function route() {
   $("#menu").hidden = true;
   drawTop(); drawNotices();
   const [v] = S.route;
+  const view = $("#view"); view.classList.remove("calm", "enter"); void view.offsetWidth; view.classList.add("enter");
   ({projects: drawProjects, project: drawProject, live: drawLive, plans: drawPlans, settings: drawSettings}[v] || drawProjects)(true);
   scrollTo(0, 0);
+  setTimeout(() => view.classList.add("calm"), 900);             // later redraws (live updates) don't replay the animation
 }
 
 /* ---------------------------------------------------------------- top bar and notices */
 function drawTop() {
   const v = S.route[0], me = S.status.user || {};
   const link = (href, label, on) => `<a href="${href}" data-go="${href}" class="${on ? "on" : ""}">${label}</a>`;
-  $("#nav").innerHTML = link("/app", "Projects", v === "projects" || v === "project") + link("/app/live", "Live", v === "live") + (billingOn() ? link("/app/plans", "Plans", v === "plans") : "");
+  const pv = S.ui.pill || {l: 0, w: 0};
+  $("#nav").innerHTML = `<span class="pill" style="left:${pv.l}px;width:${pv.w}px"></span>` + link("/app", "Projects", v === "projects" || v === "project") + link("/app/live", "Live", v === "live") + (billingOn() ? link("/app/plans", "Plans", v === "plans") : "");
+  requestAnimationFrame(() => { const on = $("#nav a.on"), pill = $("#nav .pill"); if (!pill) return;
+    if (!on) { pill.style.width = "0"; return; } S.ui.pill = {l: on.offsetLeft, w: on.offsetWidth}; pill.style.left = on.offsetLeft + "px"; pill.style.width = on.offsetWidth + "px"; });
   const p = B().plan;
   $("#topright").innerHTML = (billingOn() ? `<a class="mins" href="/app/plans" data-go="/app/plans">${p ? `<b>${Math.round(p.left).toLocaleString()}</b> min left · ${esc(p.label)}` : `<b>${B().previews_left ?? 0}</b> free previews today`}</a>` : "")
     + `<a class="btn ghost icon" href="/app/settings" data-go="/app/settings" title="Settings" aria-label="Settings">${ic("cog")}</a>`
@@ -280,8 +386,8 @@ function statusBadge(j) {
 function drawProjects() {
   const o = S.ui;
   const list = [...S.jobs].sort((a, b) => b.created - a.created);
-  $("#view").innerHTML = `<div class="ph"><div><h1>Projects</h1><p>Each video you clip becomes a project.</p></div></div>
-    <section class="panel new">
+  $("#view").innerHTML = `<div class="ph"><div><h1>Your <em>projects</em></h1><p>Each video you clip becomes a project.</p></div></div>
+    <section class="panel new"><h2>What are we <em>clipping</em> today?</h2>
       <div class="row"><div class="seg" role="tablist"><button class="${o.mode === "link" ? "on" : ""}" data-act="mode" data-m="link">Paste a link</button><button class="${o.mode === "file" ? "on" : ""}" data-act="mode" data-m="file">Upload a file</button></div>
         <span class="grow"></span><button class="btn ghost sm" data-act="opts">${ic("sliders")}${o.opts ? "Hide options" : "Options"}</button></div>
       ${o.mode === "link" ? `<form class="newrow" id="linkform"><input id="url" placeholder="https://www.youtube.com/watch?v=…   (YouTube, Twitch or Kick)" autocomplete="off" aria-label="Video link"><button class="btn primary">${ic("scissors")}Find clips</button></form>`
@@ -297,7 +403,7 @@ function drawProjects() {
       </div>
       <div class="ups" id="ups"></div>
     </section>
-    <div class="panel list">${list.length ? `<div class="lhead"><span></span><span>Video</span><span>Status</span><span>Clips</span><span></span></div>` + list.map(j => `
+    <div class="panel list stagger">${list.length ? `<div class="lhead"><span></span><span>Video</span><span>Status</span><span>Clips</span><span></span></div>` + list.map(j => `
       <a class="lrow" href="/app/p/${esc(j.id)}" data-go="/app/p/${esc(j.id)}">
         <span class="thumb">${j.thumb ? `<img src="/media/${esc(j.id)}/thumb.jpg" alt="" loading="lazy">` : ic(j.source?.type === "file" ? "film" : "link")}</span>
         <span style="min-width:0"><div class="t">${esc(j.title || j.source?.name || "Untitled")}</div><div class="m">${[j.uploader, j.duration ? fmt(j.duration) : "", ago(j.created)].filter(Boolean).map(esc).join(" · ")}</div></span>
@@ -370,7 +476,7 @@ function drawProject(first) {
   }).join("");
   if (keepWs) { $("#view").querySelector(".phead").innerHTML = head; $("#clist").innerHTML = items; return; }
   S.ui.wsig = wsig;
-  $("#view").innerHTML = `<div class="phead">${head}</div><div class="ws"><div class="panel clips" id="clist">${items}</div><div class="panel" id="wsform">${c ? workspace(j, c) : ""}</div></div>`;
+  $("#view").innerHTML = `<div class="phead">${head}</div><div class="ws"><div class="panel clips stagger" id="clist">${items}</div><div class="panel" id="wsform">${c ? workspace(j, c) : ""}</div></div>`;
   if (c && c.status === "preview") mountPreview(j, c);
 }
 function workspace(j, c) {
@@ -454,9 +560,9 @@ function mountPreview(j, c) {
 function drawLive() {
   const cs = S.creators || [];
   const PL = {youtube: "YouTube", twitch: "Twitch", kick: "Kick"};
-  $("#view").innerHTML = `<div class="ph"><div><h1>Live</h1><p>Record a channel's live stream and get clips while it is still running.</p></div>
+  $("#view").innerHTML = `<div class="ph"><div><h1>Go <em>live</em></h1><p>Record a channel's live stream and get clips while it is still running.</p></div>
       <button class="btn primary" data-act="newch">${ic("plus")}Add channel</button></div>
-    ${cs.length ? `<div class="chs">${cs.map(c => {
+    ${cs.length ? `<div class="chs stagger">${cs.map(c => {
       const job = c.live_job && jobOf(c.live_job), L = job?.live || {};
       const onAir = Object.entries(c.profiles || {}).filter(([k, p]) => p.live);
       return `<div class="panel ch"><div class="row"><h3>${esc(c.name)}</h3><span class="grow"></span>${job ? `<span class="badge bad"><span class="dot"></span>Recording</span>` : onAir.length ? `<span class="badge good"><span class="dot"></span>Live now</span>` : `<span class="badge">Offline</span>`}</div>
@@ -493,7 +599,7 @@ async function drawPlans() {
   S.status.billing = b; drawTop();
   if (!b.billing) { $("#view").innerHTML = `<div class="empty panel"><b>No plans on this server</b>Everything is included.</div>`; return; }
   const p = b.plan, pct = p ? Math.max(1, Math.round(p.left / Math.max(1, p.minutes) * 100)) : 0, needKey = p && (p.ai === "own" || p.status === "waiting_key");
-  $("#view").innerHTML = `<div class="ph"><div><h1>Plans</h1><p>Prices in rupees, GST included. Minutes are the length of the clips you get. No auto-renewal.</p></div></div>
+  $("#view").innerHTML = `<div class="ph"><div><h1>Plans &amp; <em>minutes</em></h1><p>Prices in rupees, GST included. Minutes are the length of the clips you get. No auto-renewal.</p></div></div>
     <section class="panel now"><div><span class="small faint">${p ? "Current plan" : "You're on"}</span><h2>${p ? esc(p.label) : "Free previews"}</h2>
       <p class="muted">${p ? (p.status === "waiting_key" ? "Paid. Starts when your AI key passes its test below." : "Active until " + esc(when(p.ends_at)) + ".") : `Preview the best ${b.preview_clips || 3} clips of up to ${b.previews_left ?? 0} more videos today.`}</p>
       ${p ? `<div class="bar"><i style="width:${pct}%"></i></div><span class="small muted">${Math.round(p.used).toLocaleString()} minutes used</span>` : ""}</div>
@@ -503,7 +609,7 @@ async function drawPlans() {
         <label class="f">Model<input id="own_model" placeholder="e.g. claude-haiku-5-5" value="${esc((own.models || []).join(", "))}"></label>
         <label class="f">Key<input id="own_key" type="password" autocomplete="off" placeholder="${own.saved ? "Paste a new key to replace it" : "Paste your key"}"></label></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="saveownkey">Test and save</button>${own.saved ? `<button class="btn ghost" data-act="delownkey">Remove key</button>` : ""}</div></section>` : ""}
-    <div class="plans">${b.plans.filter(x => !(x.id === "trial" && b.trial_used && p?.plan !== "trial")).map(x => { const info = PLAN_INFO[x.id] || {feats: []}, mine = p?.plan === x.id;
+    <div class="plans stagger">${b.plans.filter(x => !(x.id === "trial" && b.trial_used && p?.plan !== "trial")).map(x => { const info = PLAN_INFO[x.id] || {feats: []}, mine = p?.plan === x.id;
       return `<div class="panel plan ${mine ? "mine" : ""}"><div class="row"><b>${esc(x.label)}</b><span class="grow"></span>${mine ? `<span class="badge good">Current</span>` : x.id === "creator" ? `<span class="badge">Popular</span>` : ""}</div>
         <div class="pr">₹${x.price.toLocaleString("en-IN")}<small>${x.days === 7 ? "once" : "/ month"}</small></div><p class="small muted">${esc(info.tag)}</p>
         <ul>${info.feats.map(f => `<li>${ic("check")}<span>${esc(f)}</span></li>`).join("")}</ul>
@@ -526,7 +632,7 @@ async function drawSettings() {
   const tab = S.route[1] || "account", me = S.status.user || {};
   const tabs = [["account", "Account", "user"], ["accounts", "Connected accounts", "send"], ...(me.is_admin ? [["ai", "AI service", "bolt"], ["usage", "AI usage", "chart"]] : [])];
   const nav = `<nav>${tabs.map(([k, l, i]) => `<a href="/app/settings/${k}" data-go="/app/settings/${k}" class="${k === tab ? "on" : ""}">${ic(i)}${l}</a>`).join("")}</nav>`;
-  $("#view").innerHTML = `<div class="ph"><div><h1>Settings</h1></div></div><div class="set">${nav}<div id="sbody"><div class="muted">Loading…</div></div></div>`;
+  $("#view").innerHTML = `<div class="ph"><div><h1><em>Settings</em></h1></div></div><div class="set">${nav}<div id="sbody"><div class="muted">Loading…</div></div></div>`;
   const body = $("#sbody");
   try {
     if (tab === "account") {
