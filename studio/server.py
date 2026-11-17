@@ -1013,6 +1013,13 @@ def preview_media(jid: str, cid: str):
     return FileResponse(f, media_type="video/mp4", headers={"Cache-Control": "private, max-age=600"})
 
 
+@app.post("/api/jobs/{jid}/cancel")
+def cancel_job(jid: str):
+    """Stop a video right away (Find clips pressed by mistake). Nothing finished: the project is removed."""
+    _job_or_404(jid)
+    return {"result": jobs.cancel(jid)}
+
+
 @app.delete("/api/jobs/{jid}")
 def delete_job(jid: str):
     job = _job_or_404(jid)

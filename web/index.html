@@ -429,7 +429,8 @@ const opt = (pairs, v) => pairs.map(([k, l]) => `<option value="${esc(k)}" ${Str
 function statusBadge(j) {
   if (j.status === "live") return `<span class="badge bad"><span class="dot"></span>Recording</span>`;
   if (j.status === "queued") return `<span class="badge">Waiting</span>`;
-  if (j.status === "running") return `<span class="badge blue">${Math.round((j.progress || 0) * 100)}%</span>`;
+  if (j.cancel) return `<span class="badge"><span class="spin"></span>Cancelling</span>`;
+  if (j.status === "running") return `<span class="badge blue" data-prog="${esc(j.id)}">${Math.floor(shownP(j) * 100)}%</span>`;
   if (j.status === "error") return `<span class="badge bad">Failed</span>`;
   if (j.clips.some(c => isPreviewState(c.status))) return `<span class="badge warn">Preview</span>`;
   return `<span class="badge good">Ready</span>`;
@@ -469,6 +470,32 @@ function pickRows(v, attr) {   // v: {cam, style, capbg}; attr(name) gives the h
     <div class="pickrow"><h4>Captions</h4>${picker("style", v.style, attr("style"), other)}</div>
     <div class="pickrow"><h4>Caption background</h4>${picker("capbg", v.capbg, attr("capbg"), other)}</div>`;
 }
+// ---- Find clips waits a moment after a link is pasted: the preview and style options show first, so nobody
+// starts a video before seeing (and choosing) how the clips will look
+function findBtn() {
+  return `<button class="btn primary" id="findbtn" ${S.ui.looking ? "disabled" : ""}>${S.ui.looking ? `<span class="spin"></span>Getting the preview…` : `${ic("scissors")}Find clips`}</button>`;
+}
+function setLooking(on) {
+  S.ui.looking = on;
+  const b = $("#findbtn"); if (b) b.outerHTML = findBtn();
+  const u = $("[data-act=startup]"); if (u && !on) drawProjects();
+}
+function settle() {          // the preview is on screen: give people a second to see it before Find clips works
+  clearTimeout(settle.t); settle.t = setTimeout(() => setLooking(false), 1000);
+}
+// ---- progress that never looks stuck: the bar follows the server, and between its updates creeps on slowly
+// (never past the next step) so people can see work is happening
+function shownP(j) { const s = S.ui.shown?.[j.id]; return Math.max(j.progress || 0, s || 0); }
+setInterval(() => {
+  S.ui.shown = S.ui.shown || {};
+  for (const j of S.jobs || []) {
+    if (j.status !== "running") { delete S.ui.shown[j.id]; continue; }
+    const p = j.progress || 0, cap = Math.min(0.99, p + 0.06), cur = Math.max(p, S.ui.shown[j.id] || 0);
+    S.ui.shown[j.id] = cur + Math.max(0, cap - cur) * 0.012;
+    const pct = Math.floor(shownP(j) * 100) + "%";
+    document.querySelectorAll(`[data-prog="${j.id}"]`).forEach(el => { if (el.tagName === "I") el.style.width = pct; else el.textContent = pct; });
+  }
+}, 400);
 function formVal(id, fallback) { const v = S.ui.form?.[id]; return v != null ? v : fallback; }
 function drawProjects() {
   const o = S.ui;
@@ -484,10 +511,10 @@ function drawProjects() {
       <div class="newgrid ${o.frame ? "has" : ""}"><div style="min-width:0">
       <div class="row"><div class="seg" role="tablist"><button class="${o.mode === "link" ? "on" : ""}" data-act="mode" data-m="link">Paste a link</button><button class="${o.mode === "file" ? "on" : ""}" data-act="mode" data-m="file">Upload a file</button></div>
         <span class="grow"></span><button class="btn ghost sm" data-act="opts">${ic("sliders")}${showOpts ? "Hide style" : "Style and options"}</button></div>
-      ${o.mode === "link" ? `<form class="newrow" id="linkform"><input id="url" value="${esc(o.url || "")}" placeholder="https://www.youtube.com/watch?v=…   (YouTube, Twitch or Kick)" autocomplete="off" aria-label="Video link"><button class="btn primary">${ic("scissors")}Find clips</button></form>
+      ${o.mode === "link" ? `<form class="newrow" id="linkform"><input id="url" value="${esc(o.url || "")}" placeholder="https://www.youtube.com/watch?v=…   (YouTube, Twitch or Kick)" autocomplete="off" aria-label="Video link">${findBtn()}</form>
           ${o.lookup ? `<p class="small muted" style="margin-top:8px">${esc(o.lookup)}</p>` : ""}`
         : `${o.pending?.length ? `<div class="pend">${o.pending.map(f => `<span class="badge">${ic("film")}${esc(f.name)}</span>`).join("")}<button class="btn ghost sm" data-act="clearpend">Clear</button></div>
-            <div class="newrow"><button class="btn primary" data-act="startup">${ic("scissors")}Find clips in ${o.pending.length} video${o.pending.length === 1 ? "" : "s"}</button></div>`
+            <div class="newrow"><button class="btn primary" data-act="startup" ${o.looking ? "disabled" : ""}>${o.looking ? `<span class="spin"></span>Getting the preview…` : `${ic("scissors")}Find clips in ${o.pending.length} video${o.pending.length === 1 ? "" : "s"}`}</button></div>`
           : `<div class="drop" data-act="pick" id="drop">${ic("up")}<div><b>Choose video files</b> or drop them here</div><div class="small faint">MP4, MOV, MKV or WebM. Pick a style, then press Find clips.</div></div>`}`}
       <div class="optwrap" ${showOpts ? "" : "hidden"} id="opts">
         ${pickRows({cam: formVal("o_cam", def.cam_style || "split"), style: formVal("o_style", def.style || "bounce"), capbg: formVal("o_capbg", def.cap_bg || "none")},
@@ -545,14 +572,17 @@ function frameFromFile(file) {
 let lookupT = 0;
 function onLinkTyped(v) {
   S.ui.url = v; clearTimeout(lookupT);
-  if (!/^https?:\/\/\S+\.\S+/.test(v)) return;
+  if (!/^https?:\/\/\S+\.\S+/.test(v)) { if (S.ui.looking) setLooking(false); return; }
+  if (!S.ui.looking) setLooking(true);
   lookupT = setTimeout(async () => {
     S.ui.lookup = "Looking at the video…"; const p = $("#linkform")?.nextElementSibling; if (p && p.tagName === "P") p.textContent = S.ui.lookup;
     try {
       const r = await api("/api/preview?url=" + encodeURIComponent(v));
       S.ui.lookup = `${r.title}${r.uploader ? " · " + r.uploader : ""}${r.duration ? " · " + fmt(r.duration) : ""}`;
-      if (r.thumb) await useFrame(r.thumb, r.title); else drawProjects();
+      if (r.thumb) await useFrame(r.thumb, r.title); else { S.ui.opts = true; drawProjects(); }
     } catch (e) { S.ui.lookup = e.message; drawProjects(); }
+    settle();
+    $("#opts")?.scrollIntoView({behavior: "smooth", block: "nearest"});
     const u = $("#url"); if (u) { u.focus(); u.setSelectionRange(u.value.length, u.value.length); }
   }, 650);
 }
@@ -647,7 +677,7 @@ function drawProject(first) {
         ${locked && !busy ? `<button class="btn primary sm" data-act="unlockall" data-j="${esc(j.id)}">${ic("down")}Get all ${locked} clips</button>` : ""}
         ${done ? `<a class="btn sm" href="/api/clips.zip?ids=${encodeURIComponent(j.clips.filter(x => x.status === "done").map(x => j.id + "." + x.id).join(","))}">${ic("down")}Download ${done}</a>` : ""}
         ${!busy && j.status !== "live" ? `<button class="btn ghost icon" data-act="deljob" data-j="${esc(j.id)}" title="Delete project" aria-label="Delete project">${ic("trash")}</button>` : ""}</div></div>
-    ${busy ? `<div class="panel" style="padding:14px 16px;margin-bottom:18px"><div class="row" style="margin-bottom:8px"><b>${esc(j.stage || "Working")}</b><span class="grow"></span><span class="muted">${Math.round((j.progress || 0) * 100)}%</span></div><div class="bar"><i style="width:${Math.round((j.progress || 0) * 100)}%"></i></div></div>` : ""}
+    ${busy ? `<div class="panel" style="padding:14px 16px;margin-bottom:18px"><div class="row" style="margin-bottom:8px"><b>${esc(j.stage || "Working")}</b><span class="grow"></span><span class="muted" data-prog="${esc(j.id)}">${Math.floor(shownP(j) * 100)}%</span>${j.cancel ? "" : `<button class="btn sm" data-act="canceljob" data-j="${esc(j.id)}" style="margin-left:12px">${ic("x")}Cancel</button>`}</div><div class="bar"><i data-prog="${esc(j.id)}" style="width:${Math.floor(shownP(j) * 100)}%"></i></div><p class="small faint" style="margin-top:8px">${j.status === "queued" ? "Waiting for a free slot. It starts by itself." : "Clips show up below as soon as each one is ready. You can leave this page; it keeps going."}</p></div>` : ""}
     ${j.error ? `<div class="notice warn">${ic("warn")}<span>${esc(j.error)}</span></div>` : ""}
     ${j.low_quality ? `<div class="notice warn">${ic("warn")}<span>The site only gave this video in ${j.low_quality}p, so clips are softer than usual.${S.status.user?.is_admin ? " " + esc(S.status.youtube_help || "") : ""}</span></div>` : ""}
     ${j.ai?.note ? `<div class="notice">${ic("bolt")}<span>${esc(j.ai.note)}</span></div>` : ""}`;
@@ -882,6 +912,13 @@ document.addEventListener("click", async e => {
     if (a === "startup") { const files = S.ui.pending || []; S.ui.pending = []; S.ui.frame = null; drawProjects(); files.forEach(uploadFile); return; }
     if (a === "pick") return $("#file").click();
     if (a === "pickclip") { S.sel[S.route[1]] = d.c; history.replaceState(null, "", `/app/p/${S.route[1]}/${d.c}`); S.route = parse(location.pathname); return drawProject(true); }
+    if (a === "canceljob") {
+      const done = busy(b, "Cancelling…");
+      try { const r = await send(`/api/jobs/${d.j}/cancel`);
+        toast(r.result === "stopped" ? "Stopped. The clips made so far are kept." : "Cancelled. Nothing was used from your plan.");
+        await tick(true); if (r.result !== "stopped") go("/app"); } finally { done(); }
+      return;
+    }
     if (a === "deljob") { if (!await ask("Delete this project?", "Its clips are deleted too. This can't be undone.", "Delete", true)) return; await api(`/api/jobs/${d.j}`, {method: "DELETE"}); await tick(true); return go("/app"); }
     if (a === "delclip") { if (!await ask("Delete this clip?", "This can't be undone.", "Delete", true)) return; await api(`/api/jobs/${d.j}/clips/${d.c}`, {method: "DELETE"}); delete S.sel[d.j]; await tick(true); return drawProject(true); }
     if (a === "unlock" || a === "unlockall") {
@@ -940,7 +977,7 @@ document.addEventListener("click", async e => {
 document.addEventListener("submit", async e => {
   if (e.target.id !== "linkform") return;
   e.preventDefault();
-  const url = $("#url").value.trim(); if (!url) return;
+  const url = $("#url").value.trim(); if (!url || S.ui.looking) return;
   const btn = e.target.querySelector("button"); btn.disabled = true;
   try { const j = await send("/api/jobs", {url, options: jobOptions(), creator: S.ui.ws || undefined}); S.ui.url = ""; S.ui.frame = null; S.ui.lookup = ""; await tick(true); go(`/app/p/${j.id}`); }
   catch (err) { toast(err.message, true); if (err.status === 402) go("/app/plans"); }
@@ -948,8 +985,9 @@ document.addEventListener("submit", async e => {
 });
 async function pickFiles(files) {
   files = files.filter(f => f.type.startsWith("video/") || /\.(mp4|mov|mkv|webm|m4v)$/i.test(f.name)); if (!files.length) return;
-  S.ui.mode = "file"; S.ui.pending = files; drawProjects();
-  const fr = await frameFromFile(files[0]); if (fr) await useFrame(fr, files[0].name);
+  S.ui.mode = "file"; S.ui.pending = files; S.ui.looking = true; drawProjects();
+  const fr = await frameFromFile(files[0]); if (fr) await useFrame(fr, files[0].name); else { S.ui.opts = true; drawProjects(); }
+  settle();
 }
 $("#file").addEventListener("change", e => { pickFiles([...e.target.files]); e.target.value = ""; });
 document.addEventListener("input", e => { if (e.target.id === "url") onLinkTyped(e.target.value.trim()); });

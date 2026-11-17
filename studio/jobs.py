@@ -187,10 +187,43 @@ def save(job):
         tmp.replace(d / "job.json")
 
 
+class Cancelled(Exception):
+    """The person pressed Cancel. Raised at the next step the video reaches, so work stops right away."""
+
+
 def _set(job, **kw):
     with _lock:
         job.update(kw)
     save(job)
+    if job.get("cancel") and kw.get("status") not in ("done", "error", "cancelled"):
+        raise Cancelled()
+
+
+def cancel(jid) -> str:
+    """Stop a video that is waiting or being worked on. Returns "deleted" when nothing was finished (the project
+    goes away, as if Find clips was never pressed) or "stopped" when some clips were already made and are kept."""
+    job = _jobs.get(jid)
+    if not job or job.get("status") not in ("queued", "running"):
+        return "nothing"
+    with _lock:
+        job["cancel"] = True
+        job["stage"] = "Cancelling"
+    if job["status"] == "queued":
+        return _wrap_up_cancel(job)
+    save(job)
+    ctx.bump(job["user"])
+    return "deleted" if not any(c.get("status") == "done" for c in job["clips"]) else "stopped"
+
+
+def _wrap_up_cancel(job) -> str:
+    """After a cancel: unfinished clips are dropped; the project stays only if some clips were finished."""
+    kept = [c for c in job["clips"] if c.get("status") in ("done",) + PREVIEW_STATES and c.get("status") != "found"]
+    if not kept:
+        delete(job["id"])
+        return "deleted"
+    job["clips"] = kept
+    _set(job, status="done", stage="Stopped early: the clips made so far are kept", progress=1.0, cancel=False)
+    return "stopped"
 
 
 def _remap(path, folder: Path):
@@ -495,7 +528,7 @@ def render_one(job, clip, words):
                 pass
         # the last word on it: whatever was said, nothing is drawn in Hindi or Urdu script
         near = [dict(w, s=w["s"] - off, e=w["e"] - off) for w in roman.words(raw)]
-        if billing.on() and not clip.get("charged"):
+        if billing.on() and not clip.get("charged") and not job.get("cancel"):
             billing.charge(job["user"], clip["end"] - clip["start"], clip.get("title") or clip["id"])
             clip["charged"] = True             # re-making the same clip later is free
         out = render.render_clip(src, d / "clips", clip["id"], local, near,
@@ -527,7 +560,17 @@ def _wait_for_clips(job, futures, began, workers):
     failed after CLIP_MINUTES and the video finishes with the clips that did work."""
     left, given_up = list(futures), 0
     late = "This clip took too long and was stopped. Open it and press Save and re-make to try again."
+    total = max(1, len(futures))
     while left:
+        if job.get("cancel"):
+            raise Cancelled()
+        # progress keeps moving while clips render: finished clips count whole, ones being made count by time taken
+        ready = total - len(left)
+        part = sum(min(0.9, (time.time() - began[c["id"]]) / (25 + 1.5 * (c["end"] - c["start"])))
+                   for _, c in left if began.get(c["id"]))
+        p = round(0.8 + 0.19 * min(1.0, (ready + part) / total), 3)
+        if p > job["progress"] + 0.004:
+            _set(job, progress=p, stage=f"Making the clips: {ready} of {total} ready")
         still = []
         for f, clip in left:
             if f.done():
@@ -723,6 +766,8 @@ def _run_job(job):
     began = {}      # clip id -> when work on it started
 
     def make(clip, words_now):
+        if job.get("cancel"):
+            return                              # cancelled: clips still waiting are not made
         began[clip["id"]] = time.time()
         if src["type"] == "url" and (pieces or not whole_video()):
             _fetch_piece(job, clip, audio)
@@ -787,7 +832,7 @@ def _run_job(job):
             def tp(p, i=i, a_=a_, b_=b_):
                 if now_on[0] == i and p - last[0] > 0.05:      # only the part being shown moves the bar
                     last[0] = p
-                    _set(job, progress=max(job["progress"], 0.14 + 0.78 * ((a_ - lo) + p * (b_ - a_)) / max(1, hi - lo)))
+                    _set(job, progress=max(job["progress"], 0.14 + 0.66 * ((a_ - lo) + p * (b_ - a_)) / max(1, hi - lo)))
             heard[i] = ahead.submit(ctx.bind(transcribe.transcribe), audio[a_:b_], tp, job.get("lang") or "")
 
     for bi, (a, b) in enumerate(blocks):
@@ -804,7 +849,7 @@ def _run_job(job):
             hear(bi)
             hear(bi + 1)
             bw = heard.pop(bi).result()
-        _set(job, progress=max(job["progress"], 0.14 + 0.78 * (b - lo) / max(1, hi - lo)))
+        _set(job, progress=max(job["progress"], 0.14 + 0.66 * (b - lo) / max(1, hi - lo)))
         words += [dict(w, s=round(w["s"] + shift, 2), e=round(w["e"] + shift, 2)) for w in bw]
         (d / "words.json").write_text(json.dumps(words), encoding="utf-8")
         _set(job, stage="Finding the best moments" + where, word_count=len(words))
@@ -842,7 +887,7 @@ def _run_job(job):
     if job.get("preview"):
         _finish_preview(job, audio, words)
     if futures:
-        _set(job, stage="Finishing the clips", progress=max(job["progress"], 0.92))
+        _set(job, stage="Making the clips", progress=max(job["progress"], 0.8))
     _wait_for_clips(job, futures, began, renders._max_workers)
     if exact:           # keep our own words for the clips in the saved transcript, so editing a clip later uses them
         for a_s, b_s, tw in exact.values():
@@ -893,13 +938,24 @@ def _worker(quick_only=False):
             continue
         token = ctx._uid.set(job["user"])  # everything this job does runs as its owner
         try:
-            if kind == "job":
+            if kind == "job" and job.get("cancel"):
+                _wrap_up_cancel(job)
+            elif kind == "job":
                 _run_job(job)
             else:
                 words = json.loads((Path(job["dir"]) / "words.json").read_text(encoding="utf-8"))
                 clip = next(c for c in job["clips"] if c["id"] == cid)
                 render_one(job, clip, words)
+        except Cancelled:
+            try:
+                _wrap_up_cancel(job)
+                creators.log(job["creator"], "Video cancelled")
+            except Exception:  # noqa: BLE001
+                traceback.print_exc()
         except Exception as e:  # noqa: BLE001
+            if kind == "job" and job.get("cancel"):      # a download or tool stopped by the cancel, in its own words
+                _wrap_up_cancel(job)
+                continue
             (Path(job["dir"]) / "error.log").write_text(traceback.format_exc(), encoding="utf-8")
             if kind == "job":
                 for c in job["clips"]:
