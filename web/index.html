@@ -93,8 +93,8 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .pa-face{position:absolute;display:grid;place-items:end center;overflow:hidden;background:var(--peach)}
 .pa-face svg{width:70%;fill:#C9876A}
 .pa-face.top{left:0;right:0;top:0;height:50%}.pa-face.top svg{width:42%}
-.pa-face.circ{width:26px;height:26px;right:5px;bottom:9px;border-radius:50%;box-shadow:0 0 0 2px #fff}
-.pa-face.win{width:28px;height:20px;right:5px;bottom:9px;border-radius:4px;box-shadow:0 0 0 2px #fff}
+.pa-face.circ{width:24px;height:24px;left:17px;top:9px;border-radius:50%;box-shadow:0 0 0 2px #fff}
+.pa-face.win{width:30px;height:21px;left:14px;top:9px;border-radius:4px;box-shadow:0 0 0 2px #fff}
 .pa.cap{width:124px;height:70px;display:grid;place-items:center}
 .pa-words{color:#fff;font-size:15px;line-height:1.1;text-align:center;-webkit-text-stroke:.6px #000;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .pa-words.box{padding:4px 8px;border-radius:7px;background:rgba(255,255,255,.14);-webkit-text-stroke:0}
@@ -575,23 +575,24 @@ function drawStylePreview() {
   const box = $("#spv"), F = S.ui.frame; if (!box || !F) return;
   const seen = previewSeen(F.seen || {}), lay = curLayout(seen), sa = (seen.w || 16) / (seen.h || 9);
   const W = box.clientWidth || 230, H = W * 16 / 9, panels = [];
+  let floatB = 0;                                     // bottom of the floating facecam at the top centre, if there is one
   const gameRect = (pw, ph) => { const fw = Math.min(1, (pw / ph) / sa); let x = (1 - fw) / 2;
     if (seen.cam) { const r = seen.cam[0] + seen.cam[2], l = seen.cam[0]; if (x < r && r <= .5 && r + fw <= 1) x = r; else if (x + fw > l && l >= .5 && l - fw >= 0) x = l - fw; } return [x, 0, fw, 1]; };
   const camH = seen.cam ? Math.min(H * .47, Math.max(H * .29, W / ((seen.cam[2] * sa) / seen.cam[3]))) : H / 3;
   if (lay === "split" && seen.cam) panels.push([0, 0, W, camH, seen.cam, ""], [0, camH, W, H - camH, gameRect(W, H - camH), ""]);
   else if (lay === "gamefocus" && seen.cam) { const f = seen.face || seen.cam, side = Math.min(1, Math.max(f[2] * sa, f[3]) * 2.6), sw = side / sa;
-    panels.push([0, 0, W, H, gameRect(W, H), ""], [W * .58, H * .7, W * .37, W * .37, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); }
-  else if (lay === "pip" && seen.cam) { const pw = W * .44, ph = pw * (seen.cam[3]) / (seen.cam[2] * sa); panels.push([0, 0, W, H, gameRect(W, H), ""], [W - pw - W * .05, H * .7, pw, ph, seen.cam, "pipw"]); }
+    panels.push([0, 0, W, H, gameRect(W, H), ""], [W * .315, H * .078, W * .37, W * .37, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); floatB = H * .078 + W * .37; }
+  else if (lay === "pip" && seen.cam) { const pw = W * .44, ph = pw * (seen.cam[3]) / (seen.cam[2] * sa); panels.push([0, 0, W, H, gameRect(W, H), ""], [(W - pw) / 2, H * .078, pw, ph, seen.cam, "pipw"]); floatB = H * .078 + ph; }
   else if (lay === "game") panels.push([0, 0, W, H, gameRect(W, H), ""]);
   else if (lay === "face" || lay === "crop") { const cx = lay === "face" ? (seen.cx ?? .5) : .5, fw = Math.min(1, (9 / 16) / sa); panels.push([0, 0, W, H, [Math.min(Math.max(0, cx - fw / 2), 1 - fw), 0, fw, 1], ""]); }
   else { const fh = W / sa; panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, (H - fh) / 2, W, fh, [0, 0, 1, 1], ""]); }
   const st = CAPLOOK[$("#o_style")?.value] || CAPLOOK.bounce, bg = $("#o_capbg")?.value || "none";
   const words = ["this", "is", "the", "one"].map(x => st.up ? x.toUpperCase() : x), active = 3;
-  const capTop = lay === "split" ? camH + (H - camH) * .6 : ["gamefocus", "pip"].includes(lay) ? H * .6 : H * .7;
+  const capTop = lay === "split" ? camH + (H - camH) * .6 : ["gamefocus", "pip"].includes(lay) ? H * .73 : H * .7;
   const cap = words.map((w, i) => i === active ? (bg === "word" ? `<span class="pvw on box" style="background:${st.hl}">${w}</span>` : `<span class="pvw on" style="color:${st.hl}">${w}</span>`) : `<span class="pvw">${w}</span>`).join(" ");
   box.innerHTML = panels.map(([x, y, w, h, r, cls]) => { const vw = Math.max(w / r[2], h * sa / r[3]), vh = vw / sa;
       return `<div class="pv-p ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"><img src="${F.img}" alt="" style="position:absolute;max-width:none;width:${vw}px;height:${vh}px;left:${w / 2 - (r[0] + r[2] / 2) * vw}px;top:${h / 2 - (r[1] + r[3] / 2) * vh}px"></div>`; }).join("")
-    + `<div class="pv-hook" style="top:${lay === "split" ? camH / H * 100 : 15}%">NO WAY HE DID THAT</div>`
+    + `<div class="pv-hook" style="top:${lay === "split" ? camH / H * 100 : floatB ? (floatB + H * .02) / H * 100 : 15}%">NO WAY HE DID THAT</div>`
     + `<div class="spcap ${bg === "box" ? "box" : ""}" style="top:${capTop}px;font-family:${st.font};font-weight:${st.w}">${cap}</div>`;
 }
 
@@ -713,14 +714,14 @@ function mountPreview(j, c) {
   const gameRect = (pw, ph, sa) => { const fw = Math.min(1, (pw / ph) / sa), hud = seen.hud || [false, false]; if (hud[0] && hud[1]) return [0, 0, 1, 1]; return [hud[0] ? 0 : hud[1] ? 1 - fw : (1 - fw) / 2, 0, fw, 1]; };
   const build = sa => {
     if (lay === "split" && seen.cam) panels.push([0, 0, W, H / 3, seen.cam, ""], [0, H / 3, W, H * 2 / 3, gameRect(W, H * 2 / 3, sa), ""]);
-    else if (lay === "pip" && seen.cam) panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .5, H * .66, W * .44, W * .44 * (seen.cam[3] * 9) / (seen.cam[2] * 16), seen.cam, "pipw"]);
+    else if (lay === "pip" && seen.cam) panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .28, H * .078, W * .44, W * .44 * (seen.cam[3] * 9) / (seen.cam[2] * 16), seen.cam, "pipw"]);
     else if (lay === "game") panels.push([0, 0, W, H, gameRect(W, H, sa), ""]);
     else if (lay === "gamefocus" && seen.face) { const f = seen.face, side = Math.min(1, Math.max(f[2] * sa, f[3]) * 2.4), sw = side / sa;
-      panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .62, H * .69, W * .33, W * .33, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); }
+      panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .315, H * .078, W * .37, W * .37, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); }
     else if (lay === "face" || lay === "crop") { const cx = lay === "face" ? (seen.cx ?? .5) : .5, fw = Math.min(1, (9 / 16) / sa); panels.push([0, 0, W, H, [Math.min(Math.max(0, cx - fw / 2), 1 - fw), 0, fw, 1], ""]); }
     else { const fh = W / sa; panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, (H - fh) / 2, W, fh, [0, 0, 1, 1], ""]); }
   };
-  st.innerHTML = `<div class="pv-wm">PREVIEW</div>${c.hook ? `<div class="pv-hook" style="top:${lay === "split" ? 37 : 14}%">${esc(c.hook)}</div>` : ""}<div class="pv-cap" style="top:${lay === "split" ? 74 : lay === "gamefocus" ? 56 : 70}%"></div><div class="pv-play"><span>${ic("play")}</span></div>`;
+  st.innerHTML = `<div class="pv-wm">PREVIEW</div>${c.hook ? `<div class="pv-hook" style="top:${lay === "split" ? 37 : lay === "gamefocus" || lay === "pip" ? 33 : 14}%">${esc(c.hook)}</div>` : ""}<div class="pv-cap" style="top:${lay === "split" ? 74 : 73}%"></div><div class="pv-play"><span>${ic("play")}</span></div>`;
   const probe = document.createElement("video"); probe.preload = "metadata"; probe.muted = true; probe.src = src;
   probe.addEventListener("loadedmetadata", () => {
     build((probe.videoWidth || 16) / (probe.videoHeight || 9));

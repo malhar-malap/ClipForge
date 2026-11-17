@@ -25,6 +25,16 @@ check("auto turns a facecam into the split layout", vision.choose_layout("auto",
 moving = [[(0.1 + 0.06 * i, 0.4, 0.05, 0.09)] for i in range(12)]
 check("a face that never changes (a sticker, an emote, a printed score face) is not a facecam",
       vision.decide([[(420 / 480, 210 / 270, 30 / 480, 30 / 270)]] * 12, frozen, 1920, 1080)["kind"] != "facecam")
+cutout = blank.copy()                                     # a cut-out face sticker: the middle never changes...
+cutout[:, 50:70, 40:60] = np.linspace(60, 200, 400).reshape(20, 20).astype(np.uint8)   # ...but its box corners show the video behind
+check("a cut-out face sticker with the video moving behind its corners is not a facecam",
+      vision.decide([[(36 / 480, 46 / 270, 28 / 480, 28 / 270)]] * 12, cutout, 1920, 1080)["kind"] != "facecam")
+check("the AI pointing at a sticker is not believed",
+      vision.decide([[(36 / 480, 46 / 270, 28 / 480, 28 / 270)]] * 12, cutout, 1920, 1080,
+                    {"scene": "gameplay", "facecam": {"x": 0.05, "y": 0.15, "w": 0.1, "h": 0.15}})["kind"] != "facecam")
+_, _, hook_y, cap_y = render.geometry(1920, 1080, "gamefocus", seen)
+check("a floating circle facecam sits at the top centre, the hook just under it and the captions low",
+      (hook_y > render.FLOAT_TOP + render.BUBBLE, cap_y > 1300), (True, True))
 check("when the AI looked and saw no webcam, a small face is not used as one",
       vision.decide(per, blank, 1920, 1080, {"scene": "gameplay", "facecam": None})["kind"], "none")
 check("a small face that moves around (a game character) is not a facecam", vision.decide(moving, blank, 1920, 1080)["kind"] != "facecam")

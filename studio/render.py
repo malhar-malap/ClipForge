@@ -88,6 +88,7 @@ LAYOUTS = {"auto": "Auto (finds the facecam, the speaker or the action)",
 CAM_H = 640                    # split layout: the facecam panel on top (its height follows the webcam's shape)
 BUBBLE = 400                   # gamefocus layout: the round facecam, in pixels
 PIP_W = 470                    # pip layout: the floating facecam window's width
+FLOAT_TOP = 150                # the floating facecam sits at the top centre, below the apps' own top buttons
 CAP_BGS = {"none": "Outline only", "box": "Dark box behind the words", "word": "Highlight box on the spoken word"}
 
 
@@ -134,8 +135,8 @@ def geometry(src_w, src_h, layout, seen=None):
     if layout == "split":
         ch = cam_height(seen, src_w, src_h)
         return layout, H, ch, ch + int((H - ch) * 0.6)  # hook sits on the seam, captions over the gameplay
-    if layout in ("gamefocus", "pip"):
-        return layout, H, 300, 1180                  # captions above the floating facecam in the lower corner
+    if layout in ("gamefocus", "pip"):            # facecam floats at the top centre: hook just under it, captions low
+        return layout, H, FLOAT_TOP + float_height(layout, seen, src_w, src_h) + 40, 1400
     if layout in ("face", "game"):
         return layout, H, 300, 1380
     if layout == "blur":
@@ -148,6 +149,16 @@ def geometry(src_w, src_h, layout, seen=None):
     if layout == "crop":
         return layout, fg_h, 300, 1380
     return layout, fg_h, max(230, top - 190), min(1640, top + fg_h + 180)
+
+
+def float_height(layout, seen, src_w, src_h) -> int:
+    """How tall the floating facecam is on the 1080x1920 frame (circle or window, white border included)."""
+    if layout == "gamefocus":
+        return BUBBLE + 14
+    cam = (seen or {}).get("cam")
+    if not cam or not src_w or not src_h:
+        return 300
+    return _even(PIP_W * cam[3] * src_h / max(1, cam[2] * src_w)) + 12
 
 
 def _rrect(x0, y0, x1, y1, r) -> str:
@@ -364,8 +375,8 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
                     + f"[{L('c')}]crop={side}:{side}:{bx}:{by},scale={BUBBLE}:{BUBBLE},format=yuva420p,"
                     f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='if(lte(hypot(X-{r},Y-{r}),{r - 1}),255,0)'[{L('bub')}];"
                     f"color=c=white:s={2 * ring}x{2 * ring},format=yuva420p,geq=lum=255:cb=128:cr=128:a='if(lte(hypot(X-{ring},Y-{ring}),{ring}),255,0)'[{L('ring')}];"
-                    f"[{L('game')}][{L('ring')}]overlay={W - 2 * ring - 50}:{H - 2 * ring - 170}:shortest=1[{L('gr')}];"
-                    f"[{L('gr')}][{L('bub')}]overlay={W - BUBBLE - 57}:{H - BUBBLE - 177}:format=auto,setsar=1[{out}];")
+                    f"[{L('game')}][{L('ring')}]overlay={(W - 2 * ring) // 2}:{FLOAT_TOP}:shortest=1[{L('gr')}];"
+                    f"[{L('gr')}][{L('bub')}]overlay={(W - BUBBLE) // 2}:{FLOAT_TOP + 7}:format=auto,setsar=1[{out}];")
         ph = _even(PIP_W * chh / max(1, cw))           # the webcam as a floating window with rounded corners
         rr = 26
         a = (f"if(gt(abs(X-W/2),W/2-{rr})*gt(abs(Y-H/2),H/2-{rr}),"
@@ -373,7 +384,7 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
         return (f"{head},split=2[{L('c')}][{L('g')}];" + game
                 + f"[{L('c')}]crop={cw}:{chh}:{cx}:{cy},scale={PIP_W}:{ph},pad={PIP_W + 12}:{ph + 12}:6:6:white,format=yuva420p,"
                 f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='{a}'[{L('pip')}];"
-                f"[{L('game')}][{L('pip')}]overlay={W - PIP_W - 60}:{H - ph - 190}:format=auto,setsar=1[{out}];")
+                f"[{L('game')}][{L('pip')}]overlay={(W - PIP_W - 12) // 2}:{FLOAT_TOP}:format=auto,setsar=1[{out}];")
     if layout == "face" and (seen.get("cx") is not None or seen.get("face")):
         cxf = seen.get("cx")
         if cxf is None:

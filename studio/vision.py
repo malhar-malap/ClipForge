@@ -79,16 +79,25 @@ def _faces(frames):
 
 def _alive(box, frames) -> bool:
     """Is this face live? A webcam face moves, talks and blinks; a sticker, an emote or a face printed in a score
-    overlay is the same pixels in every frame. The picture inside the box must change over the clip."""
+    overlay is the same pixels in every frame. Only the middle of the face is compared: a cut-out sticker's box
+    corners show the gameplay moving behind it, which made stickers look alive. A real face changes there in
+    almost every frame; a sticker stays the same in most of them."""
     if frames is None or len(frames) < 4:
         return True
     h, w = frames.shape[1], frames.shape[2]
-    x0, y0 = int(box[0] * w), int(box[1] * h)
-    x1, y1 = max(x0 + 2, int((box[0] + box[2]) * w)), max(y0 + 2, int((box[1] + box[3]) * h))
-    patch = frames[:, y0:y1, x0:x1].astype(np.float32)
-    if patch.size == 0:
+    cx, cy = (box[0] + box[2] / 2) * w, (box[1] + box[3] / 2) * h
+    hw, hh = max(2.0, box[2] * w * 0.3), max(2.0, box[3] * h * 0.3)
+    x0, x1 = max(0, int(cx - hw)), min(w, int(cx + hw))
+    y0, y1 = max(0, int(cy - hh)), min(h, int(cy + hh))
+    core = frames[:, y0:y1, x0:x1].astype(np.float32)
+    if core.size == 0 or core.shape[1] < 3 or core.shape[2] < 3:
         return True
-    return float(patch.std(axis=0).mean()) >= 3.5
+    change = np.abs(core - np.median(core, axis=0)).mean(axis=(1, 2))     # how far each frame is from the usual picture
+    return float((change < STILL_CHANGE).mean()) < STILL_SHARE
+
+
+STILL_CHANGE = 3.5     # a face this close to its usual picture (0-255 grey levels) has not moved in that frame
+STILL_SHARE = 0.5      # still in at least half the frames: a sticker, not a person
 
 
 def _clusters(per_frame):
@@ -211,7 +220,9 @@ Answer in JSON with exactly these keys:
 - "scene": one of gameplay, just_chatting, podcast, screen_share, irl, other.
 - "facecam": the streamer's webcam overlay as {"x","y","w","h"} (fractions 0-1 of the frame, the whole webcam
   rectangle including its border, not just the face), or null if there is no separate webcam overlay. A person who
-  fills most of the frame (just chatting, podcast, IRL) is not a facecam overlay: use null.
+  fills most of the frame (just chatting, podcast, IRL) is not a facecam overlay: use null. A sticker, emote,
+  cartoon, avatar, logo or still photo of a face (for example a face cut-out next to a scoreboard) is not a facecam:
+  only live camera video of a real person counts. If unsure, use null.
 - "subject": where the main action is, as {"x","y","w","h"} fractions: the gameplay area (excluding the webcam), the
   window being shown in a screen share, or the speaking person.
 - "speaker_x": for just_chatting/podcast/irl, the horizontal centre (0-1) of the person to keep in frame, else null.
@@ -276,7 +287,11 @@ def decide(per_frame, frames, src_w, src_h, ai_look=None):
     # 1. a webcam overlay: a face inside a rectangle that is not the whole picture (small or large webcam alike)
     cam_face, cam = None, None
     ai_says_none = bool(look) and look.get("facecam") is None
-    clusters = [c for c in clusters if _alive(c[1], frames)]          # stickers and printed faces never count
+    live = [_alive(c[1], frames) for c in clusters]
+    dead = [c for c, ok in zip(clusters, live) if not ok]
+    clusters = [c for c, ok in zip(clusters, live) if ok]               # stickers and printed faces never count
+    if ai_cam and any(_inside(c[1], ai_cam, 0.0) for c in dead) and not any(_inside(c[1], ai_cam, 0.0) for c in clusters):
+        ai_cam = None                                                    # the AI pointed at a sticker
     for share, box, boxes in clusters:
         if share < 0.4 or (ai_cam and not _inside(box, ai_cam, 0.05)):
             continue
