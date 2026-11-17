@@ -84,6 +84,7 @@ LAYOUTS = {"auto": "Auto (finds the facecam, the speaker or the action)",
            "pip": "Gameplay with a floating facecam window",
            "game": "Gameplay only, framed on the action",
            "face": "Follow the speaker's face",
+           "duo": "Two people, one above the other (podcasts)",
            "blur": "Full frame + blurred fill", "zoom": "Zoomed in + blurred fill", "crop": "Fill the screen (centre crop)"}
 CAM_H = 640                    # split layout: the facecam panel on top (its height follows the webcam's shape)
 BUBBLE = 400                   # gamefocus layout: the round facecam, in pixels
@@ -139,6 +140,8 @@ def geometry(src_w, src_h, layout, seen=None):
         return layout, H, FLOAT_TOP + float_height(layout, seen, src_w, src_h) + 40, 1400
     if layout in ("face", "game"):
         return layout, H, 300, 1380
+    if layout == "duo":                           # hook above the top person, captions on the seam between the two
+        return layout, H, 150, H // 2
     if layout == "blur":
         fg_h = min(H, int(round(W * src_h / src_w / 2)) * 2)
     elif layout == "zoom":
@@ -385,6 +388,20 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
                 + f"[{L('c')}]crop={cw}:{chh}:{cx}:{cy},scale={PIP_W}:{ph},pad={PIP_W + 12}:{ph + 12}:6:6:white,format=yuva420p,"
                 f"geq=lum='lum(X,Y)':cb='cb(X,Y)':cr='cr(X,Y)':a='{a}'[{L('pip')}];"
                 f"[{L('game')}][{L('pip')}]overlay={(W - PIP_W - 12) // 2}:{FLOAT_TOP}:format=auto,setsar=1[{out}];")
+    if layout == "duo" and len(seen.get("faces") or []) == 2:
+        ph = H // 2                                    # each person gets half the screen, their face a little above centre
+        crops = []
+        for fx, fy, fw, fh in seen["faces"]:
+            cw = _even(min(src_w * 0.5, max(fw * src_w * 3.0, src_h * 0.5 * W / ph)))
+            chh = _even(min(src_h, cw * ph / W))
+            cw = _even(chh * W / ph)
+            x = min(max(0, _even((fx + fw / 2) * src_w - cw / 2)), _even(src_w - cw))
+            y = min(max(0, _even((fy + fh / 2) * src_h - chh * 0.42)), _even(src_h - chh))
+            crops.append((cw, chh, x, y))
+        (aw, ah, ax, ay), (bw, bh, bx, by) = crops
+        return (f"{head},split=2[{L('pa')}][{L('pb')}];"
+                f"[{L('pa')}]crop={aw}:{ah}:{ax}:{ay},scale={W}:{ph}[{L('ta')}];[{L('pb')}]crop={bw}:{bh}:{bx}:{by},scale={W}:{ph}[{L('tb')}];"
+                f"[{L('ta')}][{L('tb')}]vstack=inputs=2,setsar=1[{out}];")
     if layout == "face" and (seen.get("cx") is not None or seen.get("face")):
         cxf = seen.get("cx")
         if cxf is None:
@@ -396,7 +413,7 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
     if layout == "game":
         return (f"{head}[{L('g')}];" + _panel(L("g"), L("gp"), src_w, src_h, W, H, seen.get("hud"), _action_cx(seen, W / H, src_w, src_h))
                 + f"[{L('gp')}]setsar=1[{out}];")
-    if layout in ("split", "gamefocus", "pip", "face"):
+    if layout in ("split", "gamefocus", "pip", "face", "duo"):
         layout, fg_h = "blur", min(H, int(round(W * src_h / max(1, src_w) / 2)) * 2) if src_w else H
     if layout == "crop":
         return f"{head},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[{out}];"
@@ -434,16 +451,17 @@ def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, sr
     start, end = clip["start"], clip["end"]
     wanted = clip.get("layout", "blur")
     cam_style = clip.get("cam_style") or "split"
+    ctype, react = clip.get("content") or "", bool(clip.get("reaction"))
     seen, parts = {}, None
-    if wanted in ("auto", "split", "gamefocus", "pip", "game", "face"):
+    if wanted in ("auto", "split", "gamefocus", "pip", "game", "face", "duo"):
         from . import vision
         seen = clip.get("seen") or vision.analyze(src, start, end, src_w, src_h)
         if seen.get("kind") == "multi":
-            parts = [(g["t0"], g["t1"], vision.choose_layout(wanted, g, cam_style), g) for g in seen["segments"]]
+            parts = [(g["t0"], g["t1"], vision.choose_layout(wanted, g, cam_style, ctype, react), g) for g in seen["segments"]]
             main = max(parts, key=lambda q: q[1] - q[0])          # captions sit where the longest scene wants them
             wanted, main_seen = main[2], main[3]
         else:
-            wanted, main_seen = vision.choose_layout(wanted, seen, cam_style), seen
+            wanted, main_seen = vision.choose_layout(wanted, seen, cam_style, ctype, react), seen
     else:
         main_seen = {}
     layout, fg_h, hook_y, cap_y = geometry(src_w, src_h, wanted, main_seen)

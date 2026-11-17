@@ -105,6 +105,10 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .pa-face.top{left:0;right:0;top:0;height:50%}.pa-face.top svg{width:42%}
 .pa-face.circ{width:24px;height:24px;left:17px;top:9px;border-radius:50%;box-shadow:0 0 0 2px #fff}
 .pa-face.win{width:30px;height:21px;left:14px;top:9px;border-radius:4px;box-shadow:0 0 0 2px #fff}
+.pa-face.bot{left:0;right:0;bottom:0;height:50%;border-top:2px solid #1C1B19}.pa-face.bot svg,.pa-face.top svg{width:42%}
+.pa-face.full{inset:0}.pa-face.full svg{width:66%}
+.pa-auto{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--ink);color:#F6F1E8}.pa-auto b{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--accent)}.pa-auto small{font-size:10px;opacity:.7}
+.pa-field{background:repeating-linear-gradient(0deg,#3E7A3A 0 12px,#478A42 12px 24px)}.pa-field i{position:absolute;left:8px;right:8px;top:50%;height:2px;background:rgba(255,255,255,.7)}.pa-field i.ball{left:24px;right:auto;top:30px;width:9px;height:9px;border-radius:50%;background:#fff}
 .pa.cap{width:124px;height:70px;display:grid;place-items:center}
 .pa-words{color:#fff;font-size:15px;line-height:1.1;text-align:center;-webkit-text-stroke:.6px #000;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .pa-words.box{padding:4px 8px;border-radius:7px;background:rgba(255,255,255,.14);-webkit-text-stroke:0}
@@ -433,7 +437,7 @@ function drawNotices() {
 }
 
 /* ---------------------------------------------------------------- projects */
-const LAYOUT_SHORT = {auto: "Auto (recommended)", split: "Facecam on top", gamefocus: "Floating circle facecam", pip: "Floating window facecam", game: "Gameplay only", face: "Follow the speaker", blur: "Full frame, blurred fill", zoom: "Zoomed in", crop: "Centre crop"};
+const LAYOUT_SHORT = {auto: "Auto (recommended)", split: "Facecam on top", gamefocus: "Floating circle facecam", pip: "Floating window facecam", game: "Gameplay only", face: "Follow the speaker", duo: "Two people stacked", blur: "Full frame, blurred fill", zoom: "Zoomed in", crop: "Centre crop"};
 const LANGS = [["auto", "Detect automatically"], ["en", "English"], ["hi", "Hindi / Hinglish"], ["ur", "Urdu"], ["bn", "Bengali"], ["ta", "Tamil"], ["te", "Telugu"], ["mr", "Marathi"], ["es", "Spanish"], ["pt", "Portuguese"], ["ar", "Arabic"]];
 const opt = (pairs, v) => pairs.map(([k, l]) => `<option value="${esc(k)}" ${String(k) === String(v) ? "selected" : ""}>${esc(l)}</option>`).join("");
 function statusBadge(j) {
@@ -448,10 +452,19 @@ function statusBadge(j) {
 const wsOf = id => (S.creators || []).find(c => c.id === id);
 const CAPLOOK = {bounce: {font: "'Poppins',sans-serif", w: 800, hl: "#FFF000", up: true}, hype: {font: "'Anton',sans-serif", w: 400, hl: "#FF3C3C", up: true}, clean: {font: "'Poppins',sans-serif", w: 800, hl: "#FFD76B", up: false}};
 // ---- style pickers: every choice shown as a small picture of how it looks, not a dropdown
-const PICK_LABEL = {cam: {split: "Top half", circle: "Circle", rect: "Window", none: "Gameplay only"},
+const PICK_LABEL = {content: {auto: "Auto-detect", gaming: "Gaming", podcast: "Podcast", sports: "Sports", talking: "Vlog / IRL"},
+                    cam: {split: "Top half", circle: "Circle", rect: "Window", none: "Gameplay only"},
                     capbg: {none: "Outline", box: "Dark box", word: "Word highlight"}};
 function pickArt(g, v, other) {
   const frame = S.ui.frame?.img;
+  if (g === "content") {
+    const head = `<svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="4"/><path d="M2 20c0-5 4-7 8-7s8 2 8 7"/></svg>`;
+    if (v === "auto") return `<span class="pa cam pa-auto"><b>AI</b><small>picks</small></span>`;
+    if (v === "gaming") return `<span class="pa cam"><i class="pa-face top">${head}</i><i class="pa-game half"></i></span>`;
+    if (v === "podcast") return `<span class="pa cam"><i class="pa-face top">${head}</i><i class="pa-face bot">${head}</i></span>`;
+    if (v === "sports") return `<span class="pa cam pa-field"><i></i><i class="ball"></i></span>`;
+    return `<span class="pa cam"><i class="pa-face full">${head}</i></span>`;
+  }
   if (g === "cam") {
     const game = `<i class="pa-game" ${frame ? `style="background-image:url(${frame})"` : ""}></i>`;
     const face = cls => `<i class="pa-face ${cls}"><svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="4"/><path d="M2 20c0-5 4-7 8-7s8 2 8 7"/></svg></i>`;
@@ -464,19 +477,27 @@ function pickArt(g, v, other) {
 }
 function picker(g, val, attr, other) {
   const items = g === "style" ? Object.entries(S.status.styles || {bounce: "Bounce"})
-    : Object.keys(g === "cam" ? (S.status.cam_styles || PICK_LABEL.cam) : (S.status.cap_bgs || PICK_LABEL.capbg)).map(k => [k, PICK_LABEL[g][k] || k]);
+    : Object.keys(g === "content" ? PICK_LABEL.content : g === "cam" ? (S.status.cam_styles || PICK_LABEL.cam) : (S.status.cap_bgs || PICK_LABEL.capbg)).map(k => [k, PICK_LABEL[g][k] || k]);
   return `<div class="pick" data-g="${g}"><input type="hidden" ${attr} value="${esc(val)}"><div class="tiles">${items.map(([k, l]) =>
     `<button type="button" class="tile ${k === val ? "on" : ""}" data-act="tile" data-v="${esc(k)}" aria-pressed="${k === val}">${pickArt(g, k, other)}<span>${esc(l)}</span></button>`).join("")}</div></div>`;
 }
+const CONTENT_NOTE = {
+  auto: "We listen to the first minutes and look at the title to tell gaming, podcasts, sports and vlogs apart.",
+  gaming: "Clutch plays, fails and rage. The facecam stays on screen.",
+  podcast: "Spicy takes, stories and heated moments. Both people on screen when both are in the shot.",
+  sports: "Big plays, goals and celebrations. The action fills the screen; reaction cams come in only for big reactions.",
+  talking: "Stories, reactions and rants. The camera follows the person talking.",
+};
 function pickVal(root, g) { return root.querySelector(`.pick[data-g="${g}"] input`)?.value; }
 function refreshPicks(root) {
   const other = {style: pickVal(root, "style"), capbg: pickVal(root, "capbg")};
   root.querySelectorAll(".pick").forEach(p => p.querySelectorAll(".tile").forEach(t => {
     const art = t.querySelector(".pa"); if (art) art.outerHTML = pickArt(p.dataset.g, t.dataset.v, other); }));
 }
-function pickRows(v, attr) {   // v: {cam, style, capbg}; attr(name) gives the hidden input's id/name/data-f
+function pickRows(v, attr) {   // v: {content?, cam, style, capbg}; attr(name) gives the hidden input's id/name/data-f
   const other = {style: v.style, capbg: v.capbg};
-  return `<div class="pickrow"><h4>Facecam</h4>${picker("cam", v.cam, attr("cam"), other)}</div>
+  return (v.content != null ? `<div class="pickrow"><h4>Content</h4>${picker("content", v.content, attr("content"), other)}<p class="small faint" style="margin-top:6px">${CONTENT_NOTE[v.content] || ""}</p></div>` : "")
+    + `<div class="pickrow"><h4>Facecam</h4>${picker("cam", v.cam, attr("cam"), other)}</div>
     <div class="pickrow"><h4>Captions</h4>${picker("style", v.style, attr("style"), other)}</div>
     <div class="pickrow"><h4>Caption background</h4>${picker("capbg", v.capbg, attr("capbg"), other)}</div>`;
 }
@@ -582,8 +603,8 @@ function drawProjects() {
       ${o.dur ? timelineHtml() : ""}
       <p class="small muted useline" id="useline">${useLine()}</p>
       <div class="optwrap" ${showOpts ? "" : "hidden"} id="opts">
-        ${pickRows({cam: formVal("o_cam", def.cam_style || "split"), style: formVal("o_style", def.style || "bounce"), capbg: formVal("o_capbg", def.cap_bg || "none")},
-                   g => `id="${{cam: "o_cam", style: "o_style", capbg: "o_capbg"}[g]}"`)}
+        ${pickRows({content: formVal("o_content", def.content || "auto"), cam: formVal("o_cam", def.cam_style || "split"), style: formVal("o_style", def.style || "bounce"), capbg: formVal("o_capbg", def.cap_bg || "none")},
+                   g => `id="${{content: "o_content", cam: "o_cam", style: "o_style", capbg: "o_capbg"}[g]}"`)}
         <div class="opts">
         <label class="f">Layout<select id="o_layout">${opt(layouts, formVal("o_layout", def.layout || "auto"))}</select></label>
         <label class="f">Language spoken<select id="o_lang">${opt(LANGS, formVal("o_lang", def.language || "auto"))}</select></label>
@@ -662,9 +683,10 @@ function previewSeen(seen) {
   return seen;
 }
 function curLayout(seen) {
-  const lay = $("#o_layout")?.value || "auto", cam = $("#o_cam")?.value || "split", k = seen?.kind || "none";
+  const lay = $("#o_layout")?.value || "auto", cam = $("#o_cam")?.value || "split", k = seen?.kind || "none", ct = $("#o_content")?.value || "auto";
   const camLay = {split: "split", circle: "gamefocus", rect: "pip", none: "game"}[cam];
-  if (lay === "auto") return k === "facecam" ? camLay : k === "head" ? "face" : "blur";
+  if (lay === "auto") return k === "duo" ? (["gaming", "sports"].includes(ct) ? "face" : "duo") : k === "facecam" ? (ct === "sports" ? "game" : camLay) : k === "head" ? "face" : "blur";
+  if (lay === "duo") return k === "duo" ? "duo" : "face";
   if (["split", "gamefocus", "pip"].includes(lay)) return k === "facecam" ? lay : "game";
   return lay;
 }
@@ -681,11 +703,13 @@ function drawStylePreview() {
     panels.push([0, 0, W, H, gameRect(W, H), ""], [W * .315, H * .078, W * .37, W * .37, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); floatB = H * .078 + W * .37; }
   else if (lay === "pip" && seen.cam) { const pw = W * .44, ph = pw * (seen.cam[3]) / (seen.cam[2] * sa); panels.push([0, 0, W, H, gameRect(W, H), ""], [(W - pw) / 2, H * .078, pw, ph, seen.cam, "pipw"]); floatB = H * .078 + ph; }
   else if (lay === "game") panels.push([0, 0, W, H, gameRect(W, H), ""]);
+  else if (lay === "duo" && seen.faces) seen.faces.forEach((f, i) => { const ph = H / 2, fw = Math.min(.5, Math.max(f[2] * 3, .5 * (W / ph) / sa)), fh = fw * sa * ph / W;
+    panels.push([0, i * ph, W, ph, [Math.min(Math.max(0, f[0] + f[2] / 2 - fw / 2), 1 - fw), Math.min(Math.max(0, f[1] + f[3] / 2 - fh * .42), Math.max(0, 1 - fh)), fw, fh], ""]); });
   else if (lay === "face" || lay === "crop") { const cx = lay === "face" ? (seen.cx ?? .5) : .5, fw = Math.min(1, (9 / 16) / sa); panels.push([0, 0, W, H, [Math.min(Math.max(0, cx - fw / 2), 1 - fw), 0, fw, 1], ""]); }
   else { const fh = W / sa; panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, (H - fh) / 2, W, fh, [0, 0, 1, 1], ""]); }
   const st = CAPLOOK[$("#o_style")?.value] || CAPLOOK.bounce, bg = $("#o_capbg")?.value || "none";
   const words = ["this", "is", "the", "one"].map(x => st.up ? x.toUpperCase() : x), active = 3;
-  const capTop = lay === "split" ? camH + (H - camH) * .6 : ["gamefocus", "pip"].includes(lay) ? H * .73 : H * .7;
+  const capTop = lay === "split" ? camH + (H - camH) * .6 : lay === "duo" ? H / 2 : ["gamefocus", "pip"].includes(lay) ? H * .73 : H * .7;
   const cap = words.map((w, i) => i === active ? (bg === "word" ? `<span class="pvw on box" style="background:${st.hl}">${w}</span>` : `<span class="pvw on" style="color:${st.hl}">${w}</span>`) : `<span class="pvw">${w}</span>`).join(" ");
   box.innerHTML = panels.map(([x, y, w, h, r, cls]) => { const vw = Math.max(w / r[2], h * sa / r[3]), vh = vw / sa;
       return `<div class="pv-p ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"><img src="${F.img}" alt="" style="position:absolute;max-width:none;width:${vw}px;height:${vh}px;left:${w / 2 - (r[0] + r[2] / 2) * vw}px;top:${h / 2 - (r[1] + r[3] / 2) * vh}px"></div>`; }).join("")
@@ -696,7 +720,7 @@ function drawStylePreview() {
 function jobOptions() {
   const n = id => Number($(id)?.value) || undefined;
   return {max_clips: n("#o_max"), min_len: n("#o_min"), max_len: n("#o_maxlen"), layout: $("#o_layout")?.value, style: $("#o_style")?.value,
-          cam_style: $("#o_cam")?.value, cap_bg: $("#o_capbg")?.value, language: $("#o_lang")?.value, quality: n("#o_quality"),
+          cam_style: $("#o_cam")?.value, cap_bg: $("#o_capbg")?.value, content: $("#o_content")?.value, language: $("#o_lang")?.value, quality: n("#o_quality"),
           ...(S.ui.dur && S.ui.range ? {range_start: S.ui.range[0] > 1 ? Math.round(S.ui.range[0]) : undefined,
                                         range_end: S.ui.range[1] < S.ui.dur - 1 ? Math.round(S.ui.range[1]) : undefined} : {})};
 }
@@ -741,7 +765,7 @@ function drawProject(first) {
   S.ui.psig = sig;
   const head = `<div class="crumb"><a href="/app" data-go="/app">Projects</a> /</div>
     <div class="ph"><div style="min-width:0"><h1 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:760px">${esc(j.title || j.source?.name || "Untitled")}</h1>
-      <p>${[j.uploader, j.duration ? fmt(j.duration) + " long" : "", j.clips.length ? j.clips.length + " clips" : "", j.lang ? "language: " + j.lang : ""].filter(Boolean).map(esc).join(" · ")}</p></div>
+      <p>${[j.uploader, j.duration ? fmt(j.duration) + " long" : "", j.clips.length ? j.clips.length + " clips" : "", j.lang ? "language: " + j.lang : "", j.content_type ? (PICK_LABEL.content[j.content_type] || j.content_type) + " video" : ""].filter(Boolean).map(esc).join(" · ")}</p></div>
       <div class="row">${statusBadge(j)}
         ${locked && !busy ? `<button class="btn primary sm" data-act="unlockall" data-j="${esc(j.id)}">${ic("down")}Get all ${locked} clips</button>` : ""}
         ${done ? `<a class="btn sm" href="/api/clips.zip?ids=${encodeURIComponent(j.clips.filter(x => x.status === "done").map(x => j.id + "." + x.id).join(","))}">${ic("down")}Download ${done}</a>` : ""}
@@ -802,7 +826,9 @@ const mainSeen = c => c.seen?.kind === "multi" ? [...c.seen.segments].sort((a, b
 function pvLayout(c) {
   c = Object.assign({}, c, {seen: mainSeen(c)});
   const k = c.seen?.kind || "none";
-  if (c.layout === "auto") return k === "facecam" ? ({circle: "gamefocus", rect: "pip", none: "game"}[c.cam_style] || "split") : k === "head" ? "face" : (c.seen?.scene === "gameplay" ? "game" : "blur");
+  if (c.layout === "auto") return k === "duo" ? (["gaming", "sports"].includes(c.content) ? "face" : "duo")
+    : k === "facecam" ? (c.content === "sports" && !c.reaction ? (c.seen?.scene === "gameplay" || c.seen?.subject ? "game" : "blur") : ({circle: "gamefocus", rect: "pip", none: "game"}[c.cam_style] || "split"))
+    : k === "head" ? "face" : (c.seen?.scene === "gameplay" || c.content === "gaming" ? "game" : "blur");
   if ((c.layout === "split" || c.layout === "gamefocus") && k !== "facecam") return "blur";
   return c.layout || "blur";
 }
@@ -975,6 +1001,7 @@ document.addEventListener("click", async e => {
       const p = b.closest(".pick"), inp = p.querySelector("input");
       inp.value = d.v; p.querySelectorAll(".tile").forEach(t => { t.classList.toggle("on", t === b); t.setAttribute("aria-pressed", t === b); });
       refreshPicks(b.closest("form, #opts, .form") || document);
+      if (p.dataset.g === "content") { const n = p.parentElement.querySelector("p"); if (n) n.textContent = CONTENT_NOTE[d.v] || ""; }
       inp.dispatchEvent(new Event("change", {bubbles: true})); return;
     }
     if (a === "opts") { S.ui.opts = !S.ui.opts; $("#opts").hidden = !S.ui.opts; b.innerHTML = ic("sliders") + (S.ui.opts ? "Hide style" : "Style and options"); return; }
@@ -1072,7 +1099,7 @@ function wsDialog(ws) {
   d.innerHTML = `<form class="dl" id="wsform" style="max-width:520px"><h2>${ws ? "Workspace settings" : "New workspace"}</h2>
     <p class="muted small">A workspace keeps one kind of content together (say "Valorant streams" or "Podcast"), with its own default style.</p>
     <label class="f">Name<input name="name" value="${esc(v.name || "")}" placeholder="Valorant streams" required maxlength="60"></label>
-    ${pickRows({cam: v.cam_style || "split", style: v.style || "bounce", capbg: v.cap_bg || "none"}, g => `name="${{cam: "cam_style", style: "style", capbg: "cap_bg"}[g]}"`)}
+    ${pickRows({content: v.content || "auto", cam: v.cam_style || "split", style: v.style || "bounce", capbg: v.cap_bg || "none"}, g => `name="${{content: "content", cam: "cam_style", style: "style", capbg: "cap_bg"}[g]}"`)}
     <div class="formgrid" style="grid-template-columns:1fr 1fr">
       <label class="f">Layout<select name="layout">${opt(layouts, v.layout || "auto")}</select></label>
       <label class="f">Language spoken<select name="language">${opt(LANGS, v.language || "auto")}</select></label>

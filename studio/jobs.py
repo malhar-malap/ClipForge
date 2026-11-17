@@ -110,7 +110,7 @@ on_clip_ready: list = []   # callbacks (job, clip), run once when a clip first f
 
 DEFAULTS = {"max_clips": 6, "min_len": 15, "max_len": 60, "style": "bounce", "layout": "auto", "quality": 1080,
             "range_start": None, "range_end": None, "language": "auto",
-            "cam_style": "split", "cap_bg": "none"}
+            "cam_style": "split", "cap_bg": "none", "content": "auto"}
 
 
 LIMITS = {"max_clips": (1, 20), "min_len": (5, 120), "max_len": (10, 180), "quality": (360, 1080)}
@@ -131,6 +131,8 @@ def clean_options(options) -> dict:
             v = v if v in render.LAYOUTS else DEFAULTS["layout"]
         elif k == "cam_style":                   # how a facecam is shown: split, circle, rect, none
             v = v if v in ("split", "circle", "rect", "none") else DEFAULTS["cam_style"]
+        elif k == "content":                     # the kind of video: auto, gaming, podcast, sports, talking, other
+            v = v if v in brain.CONTENT_TYPES else "auto"
         elif k == "cap_bg":                      # what sits behind the captions: none, box, word
             v = v if v in render.CAP_BGS else DEFAULTS["cap_bg"]
         elif k == "language":                    # "auto", or a language code such as en, hi, ur, es
@@ -323,7 +325,7 @@ def create(source: dict, options: dict, enqueue=True, creator=None, kind="video"
     c = creators.get(creator) if creator else None
     if c:
         d = creators.root(c["id"]) / ("live" if kind == "live" else "videos") / jid
-        base = {**DEFAULTS, **{k: c[k] for k in ("max_clips", "min_len", "max_len", "style", "layout", "cam_style", "cap_bg", "language") if k in c}}
+        base = {**DEFAULTS, **{k: c[k] for k in ("max_clips", "min_len", "max_len", "style", "layout", "cam_style", "cap_bg", "language", "content") if k in c}}
     else:
         d, base, creator = config.user_dir(ctx.uid()) / "jobs" / jid, dict(DEFAULTS), None
     d.mkdir(parents=True)
@@ -888,9 +890,14 @@ def _run_job(job):
             continue
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         s0 = int((a - lo) / 16000)
+        if not job.get("content_type"):    # the kind of video, once: chosen on the form, or worked out here
+            chosen = o.get("content") or "auto"
+            job["content_type"] = chosen if chosen != "auto" else brain.detect_content(job["title"], job["uploader"], bw)
+            save(job)
         two_pass = _two_pass(job)          # paid jobs: the quick model finds twice as many, a stronger one picks
         found, ai = brain.find_clips(bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000, job["title"],
-                                     job["uploader"], quota * 2 if two_pass else quota, int(o["min_len"]), int(o["max_len"]), notes.append)
+                                     job["uploader"], quota * 2 if two_pass else quota, int(o["min_len"]), int(o["max_len"]), notes.append,
+                                     content=job["content_type"])
         if two_pass and ai.get("model") and len(found) > 1:
             _set(job, stage="Ranking the best moments" + where)
             found, spent = brain.rank_clips(found, bw, job["title"], job["uploader"], quota)
@@ -903,7 +910,7 @@ def _run_job(job):
         for c in found:
             c.update(id=f"clip{len(job['clips']) + 1:02d}", start=round(c["start"] + shift, 2),
                      end=round(c["end"] + shift, 2), style=o["style"], layout=o["layout"], cam_style=o.get("cam_style", "split"),
-                     cap_bg=o.get("cap_bg", "none"), status="queued", version=0)
+                     cap_bg=o.get("cap_bg", "none"), content=job["content_type"], status="queued", version=0)
             job["clips"].append(c)
             if job.get("preview"):
                 c["status"] = "found"          # previews are prepared once every part has been read

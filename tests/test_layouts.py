@@ -58,6 +58,23 @@ check("a HUD on the left pulls the gameplay crop to the left", render._game_wind
 check("a HUD on the right pulls it to the right", render._game_window(1920, 1080, 1080 / 1280, [False, True])[0] + render._game_window(1920, 1080, 1080 / 1280, [False, True])[1], 1920)
 check("HUDs on both sides show the whole width", render._game_window(1920, 1080, 1080 / 1280, [True, True]), None)
 
+# ---- the kind of video changes the framing
+check("sports: a normal moment shows the action, not the reaction cam", vision.choose_layout("auto", seen, "split", "sports", False) != "split")
+check("sports: a moment where reactions are the point brings the facecam in", vision.choose_layout("auto", seen, "split", "sports", True), "split")
+check("gaming keeps the facecam as before", vision.choose_layout("auto", seen, "split", "gaming", False), "split")
+two = [[(0.18, 0.25, 0.11, 0.2), (0.66, 0.27, 0.1, 0.19)] for _ in range(12)]
+seen_two = vision.decide(two, blank, 1920, 1080)
+check("two people in the shot all clip long are a duo", (seen_two["kind"], len(seen_two.get("faces", []))), ("duo", 2))
+check("a podcast with both people in the shot shows them one above the other", vision.choose_layout("auto", seen_two, "split", "podcast"), "duo")
+check("...a gaming video follows one face instead", vision.choose_layout("auto", seen_two, "split", "gaming"), "face")
+check("asking for the duo layout with one person falls back to following them", vision.choose_layout("duo", seen_head), "face")
+from studio import brain
+check("titles give a fair guess at the kind of video without an AI",
+      [brain.detect_content(t) for t in ("Beat Neymar, Win $500,000", "Valorant ranked grind", "The Diary Of A CEO Ep 212", "LA trip vlog")],
+      ["sports", "gaming", "podcast", "talking"])
+check("each kind of video gets its own idea of a good moment", "spicy or controversial" in brain._head("podcast", title="t", uploader="u", n=2)
+      and "goals, big plays" in brain._head("sports", title="t", uploader="u", n=2))
+
 # ---- rendering every layout for real
 work = Path(tempfile.mkdtemp(prefix="cf-layouts-media-"))
 src = work / "game.mp4"
@@ -68,7 +85,8 @@ render.install_fonts()
 words = [{"w": w, "s": 0.5 + i * 0.4, "e": 0.8 + i * 0.4} for i, w in enumerate("that was a clean clutch".split())]
 cases = {"split": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, False]},
          "gamefocus": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, True]},
-         "face": {"kind": "head", "cx": 0.3, "face": [0.25, 0.2, 0.1, 0.2]}}
+         "face": {"kind": "head", "cx": 0.3, "face": [0.25, 0.2, 0.1, 0.2]},
+         "duo": {"kind": "duo", "faces": [[0.18, 0.25, 0.11, 0.2], [0.66, 0.27, 0.1, 0.19]], "face": [0.18, 0.25, 0.11, 0.2]}}
 for lay, s in cases.items():
     try:
         out = render.render_clip(src, work / "out", f"c_{lay}", {"start": 0, "end": 3, "hook": "NO WAY", "layout": lay, "seen": s},

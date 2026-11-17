@@ -284,14 +284,26 @@ def decide(per_frame, frames, src_w, src_h, ai_look=None):
     if len(frames):
         gx, gy = _edge_maps(frames)
 
-    # 1. a webcam overlay: a face inside a rectangle that is not the whole picture (small or large webcam alike)
-    cam_face, cam = None, None
-    ai_says_none = bool(look) and look.get("facecam") is None
     live = [_alive(c[1], frames) for c in clusters]
     dead = [c for c, ok in zip(clusters, live) if not ok]
     clusters = [c for c, ok in zip(clusters, live) if ok]               # stickers and printed faces never count
     if ai_cam and any(_inside(c[1], ai_cam, 0.0) for c in dead) and not any(_inside(c[1], ai_cam, 0.0) for c in clusters):
         ai_cam = None                                                    # the AI pointed at a sticker
+
+    # 0. two people in the picture at once (a podcast or interview wide shot): both, one above the other.
+    # Checked before the webcam: two lasting faces of a similar size side by side are people, not an overlay.
+    big = sorted([c for c in clusters if c[0] >= 0.35 and c[1][2] * c[1][3] > 0.006], key=lambda c: -c[0])[:2]
+    if len(big) == 2 and not ai_cam:
+        (a_, b_) = (big[0][1], big[1][1])
+        similar = max(a_[2] * a_[3], b_[2] * b_[3]) < 2.5 * min(a_[2] * a_[3], b_[2] * b_[3])
+        if similar and abs((a_[0] + a_[2] / 2) - (b_[0] + b_[2] / 2)) > 0.18:
+            pair = sorted((a_, b_), key=lambda b: b[0])
+            return {"kind": "duo", "faces": [[round(v, 4) for v in b] for b in pair], "face": [round(v, 4) for v in pair[0]],
+                    "cx": round(pair[0][0] + pair[0][2] / 2, 4), "scene": scene or "podcast", "source": "ai" if look else "cv"}
+
+    # 1. a webcam overlay: a face inside a rectangle that is not the whole picture (small or large webcam alike)
+    cam_face, cam = None, None
+    ai_says_none = bool(look) and look.get("facecam") is None
     for share, box, boxes in clusters:
         if share < 0.4 or (ai_cam and not _inside(box, ai_cam, 0.05)):
             continue
@@ -313,7 +325,7 @@ def decide(per_frame, frames, src_w, src_h, ai_look=None):
             out["subject"] = [round(v, 4) for v in subject]
         return out
 
-    # 2. a person who is the picture (just chatting, podcast, IRL): keep them centred
+    # 3. a person who is the picture (just chatting, podcast, IRL): keep them centred
     if clusters:
         share, box, _ = max(clusters, key=lambda c: c[0] * (c[1][2] * c[1][3]) ** 0.5)
         big = box[2] * box[3] > SMALL_FACE
@@ -322,7 +334,7 @@ def decide(per_frame, frames, src_w, src_h, ai_look=None):
             return {"kind": "head", "cx": round(float(min(max(cx, 0.0), 1.0)), 4), "face": [round(v, 4) for v in box],
                     "scene": scene or "just_chatting", "source": "ai" if look else "cv"}
 
-    # 3. gameplay or a screen with no webcam: frame the action
+    # 4. gameplay or a screen with no webcam: frame the action
     hud = _hud(frames)
     out = {"kind": "none", "hud": list(hud), "scene": scene or "other", "source": "ai" if look else "cv"}
     if subject:
@@ -420,19 +432,28 @@ def analyze(src, start, end, src_w, src_h, use_ai=True) -> dict:
 CAM_STYLES = {"split": "Facecam on top half", "circle": "Floating circle", "rect": "Floating rectangle", "none": "No facecam"}
 
 
-def choose_layout(requested: str, seen: dict, cam_style: str = "split") -> str:
-    """What `auto` becomes for this clip, and whether a chosen layout can work at all."""
+def choose_layout(requested: str, seen: dict, cam_style: str = "split", content: str = "", reaction: bool = False) -> str:
+    """What `auto` becomes for this clip, and whether a chosen layout can work at all. `content` is the kind of video
+    (gaming, podcast, sports, talking, other): sports show the action and bring the reaction cam in only for moments
+    where reactions are the point; podcasts show both people when both are in the shot."""
     kind = (seen or {}).get("kind", "none")
     scene = (seen or {}).get("scene")
+    action = "game" if scene in ("gameplay", "screen_share") or (seen or {}).get("subject") else "blur"
     if requested == "auto":
+        if kind == "duo":
+            return "face" if content in ("gaming", "sports") else "duo"
         if kind == "facecam":
+            if content == "sports" and not reaction:
+                return action                  # sports: the play matters, the reaction cam only when it is the point
             return {"split": "split", "circle": "gamefocus", "rect": "pip", "none": "game"}.get(cam_style, "split")
         if kind == "head":
             return "face"
-        return "game" if scene in ("gameplay", "screen_share") or (seen or {}).get("subject") else "blur"
+        return "game" if content == "gaming" or scene in ("gameplay", "screen_share") or (seen or {}).get("subject") else "blur"
+    if requested == "duo" and kind != "duo":
+        return "face" if kind in ("head", "facecam") else "blur"
     if requested in ("split", "gamefocus", "pip") and kind != "facecam":
         return "game" if scene == "gameplay" else "blur"
-    if requested == "face" and kind not in ("head", "facecam"):
+    if requested == "face" and kind not in ("head", "facecam", "duo"):
         return "crop"
     return requested
 
@@ -451,6 +472,10 @@ def look_at_image(jpeg: bytes) -> dict:
     faces = _faces(np.stack([img]))[0]
     if not faces:
         return {"kind": "none", "w": w, "h": h}
+    bigs = sorted([b for b in faces if b[2] * b[3] > SMALL_FACE * 0.5], key=lambda b: -b[2] * b[3])[:2]
+    if len(bigs) == 2 and abs((bigs[0][0] + bigs[0][2] / 2) - (bigs[1][0] + bigs[1][2] / 2)) > 0.18:
+        pair = sorted(bigs, key=lambda b: b[0])
+        return {"kind": "duo", "faces": [[round(v, 4) for v in b] for b in pair], "face": [round(v, 4) for v in pair[0]], "w": w, "h": h}
     box = max(faces, key=lambda b: b[2] * b[3])
     if box[2] * box[3] > SMALL_FACE:
         return {"kind": "head", "cx": round(box[0] + box[2] / 2, 4), "face": [round(v, 4) for v in box], "w": w, "h": h}
