@@ -344,6 +344,13 @@ def create(source: dict, options: dict, enqueue=True, creator=None, kind="video"
             raise
         job["preview"] = True                              # clips are found and previewed, not rendered
         opts["quality"] = 360                              # previews play small pieces; full quality comes on unlock
+    elif billing.on() and kind == "video":
+        free = billing.clips_left(job["user"]) - reserved(job["user"])
+        if free < int(opts["max_clips"]):
+            shutil.rmtree(d, ignore_errors=True)
+            raise billing.BillingError(
+                f"Your plan has {max(0, free)} clip{'s' if free != 1 else ''} left" + (" (some are set aside for videos still being made)" if reserved(job["user"]) else "")
+                + (f". Ask for {free} or fewer clips, or upgrade your plan." if free > 0 else ". Upgrade your plan to make more."))
     with _lock:
         _jobs[jid] = job
         _by_user.setdefault(job["user"], {})[jid] = job
@@ -426,14 +433,35 @@ def request_render(jid, cid, changes: dict):
 PREVIEW_STATES = ("preview", "locked", "found")
 
 
+def reserved(uid) -> int:
+    """Clips set aside for this user's videos still being made: asked for, not made (or counted) yet."""
+    n = 0
+    for j in list(_by_user.get(uid, {}).values()):
+        if j.get("status") in ("queued", "running") and not j.get("preview") and j.get("kind", "video") == "video":
+            n += max(0, int(j["options"].get("max_clips", 0)) - sum(1 for c in j["clips"] if c.get("charged")))
+    return n
+
+
 def _preview_length_ok(job, duration):
-    if not job.get("preview"):
+    """Each plan reads at most a set length of one video (free previews too). A longer video is never refused:
+    the part chosen on the timeline is used, and with no choice made, the start of the video up to the limit."""
+    limit = (config.PREVIEW_MAX_MINUTES if job.get("preview") else billing.part_minutes(job["user"])) * 60
+    if not limit or not duration:
         return
     o = job["options"]
-    span = (o.get("range_end") or duration or 0) - (o.get("range_start") or 0)
-    if span > config.PREVIEW_MAX_MINUTES * 60:
-        raise RuntimeError(f"Free previews are for videos up to {config.PREVIEW_MAX_MINUTES:g} minutes. Choose a part of "
-                           "it under Options, or pick a plan to clip the whole video.")
+    start = min(float(o.get("range_start") or 0), max(0.0, duration - 60))
+    end = min(float(o.get("range_end") or duration), duration)
+    if end - start > limit + 1:
+        end = start + limit
+        h = f"{limit / 3600:g} hour" + ("" if limit == 3600 else "s") if limit >= 3600 else f"{limit / 60:g} minutes"
+        job["part_note"] = (f"Clips come from {_hms(start)} to {_hms(end)}: your plan reads up to {h} of a video at a time. "
+                            "Choose another part on the timeline when you start the next one.")
+    o["range_start"], o["range_end"] = (start or None), (end if end < duration else None)
+
+
+def _hms(t):
+    t = int(t)
+    return f"{t // 3600}:{t % 3600 // 60:02d}:{t % 60:02d}" if t >= 3600 else f"{t // 60}:{t % 60:02d}"
 
 
 def _job_audio(job):
@@ -529,7 +557,7 @@ def render_one(job, clip, words):
         # the last word on it: whatever was said, nothing is drawn in Hindi or Urdu script
         near = [dict(w, s=w["s"] - off, e=w["e"] - off) for w in roman.words(raw)]
         if billing.on() and not clip.get("charged") and not job.get("cancel"):
-            billing.charge(job["user"], clip["end"] - clip["start"], clip.get("title") or clip["id"])
+            billing.use_clip(job["user"], clip.get("title") or clip["id"])
             clip["charged"] = True             # re-making the same clip later is free
         out = render.render_clip(src, d / "clips", clip["id"], local, near,
                                  clip.get("src_w") or job["width"], clip.get("src_h") or job["height"])

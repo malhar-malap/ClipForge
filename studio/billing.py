@@ -1,11 +1,15 @@
-"""ClipForge plans: the trial week, Creator, Creator BYOK and Pro; minutes; payments through Razorpay.
+"""ClipForge plans: the trial week, Creator, Creator BYOK and Pro; clips; payments through Razorpay.
 
 Only active when CLIPFORGE_BILLING=1. With it off (a self-hosted copy) every check here says yes.
 
 Rules:
-- Previews are free for anyone signed in (a few a day). Rendering a clip in full quality and downloading it needs
-  an active plan, and uses the clip's length from the plan's minutes.
-- Prices and minutes live only here, on the server. A browser can ask for a plan by name, never set a price.
+- Previews are free for anyone signed in (a few a day). Making a clip in full quality needs an active plan and
+  uses one clip from it, whatever the clip's length. Clips that fail, or are never made, are not counted, and
+  re-making a clip is free.
+- Each plan reads at most a set length of one video (its "longest part"); a longer video is clipped from the part
+  the person chooses on the timeline.
+- Prices are before GST; GST is added at checkout. Prices and clips live only here, on the server. A browser can
+  ask for a plan by name, never set a price.
 - A payment counts only after Razorpay's signature on it checks out (the browser's callback or the webhook).
   Activating is idempotent: the same payment can arrive twice and is counted once.
 - Creator BYOK waits for a working AI key ("waiting_key") and turns active when the key passes a test call.
@@ -23,13 +27,25 @@ import sqlalchemy as sa
 from . import config, db
 
 DAY = 86400
-# price in paise (Rs 1 = 100 paise, GST included), minutes, days, and whose AI key is used
+GST_PERCENT = 18
+# price in paise before GST (Rs 1 = 100 paise), clips per plan, the longest part of one video it reads (minutes),
+# days, and whose AI key is used
 PLANS = {
-    "trial":   {"label": "Trial week",    "price": 4900,  "minutes": 120,  "days": 7,  "ai": "ours", "once": True},
-    "creator": {"label": "Creator",       "price": 39900, "minutes": 600,  "days": 30, "ai": "ours"},
-    "byok":    {"label": "Creator BYOK",  "price": 19900, "minutes": 600,  "days": 30, "ai": "own"},
-    "pro":     {"label": "Pro",           "price": 99900, "minutes": 2000, "days": 30, "ai": "ours"},
+    "trial":   {"label": "Trial week",    "price": 4900,  "clips": 20,   "part_minutes": 60, "days": 7,  "ai": "ours", "once": True},
+    "creator": {"label": "Creator",       "price": 39900, "clips": 300,  "part_minutes": 60, "days": 30, "ai": "ours"},
+    "byok":    {"label": "Creator BYOK",  "price": 19900, "clips": 300,  "part_minutes": 60, "days": 30, "ai": "own"},
+    "pro":     {"label": "Pro",           "price": 99900, "clips": 2000, "part_minutes": 90, "days": 30, "ai": "ours"},
 }
+
+
+def gst(plan) -> int:
+    """GST on a plan, in paise."""
+    return round(PLANS[plan]["price"] * GST_PERCENT / 100)
+
+
+def total(plan) -> int:
+    """What the customer pays for a plan, GST included, in paise."""
+    return PLANS[plan]["price"] + gst(plan)
 
 plans = sa.Table(
     "plans", db.meta,
@@ -39,8 +55,8 @@ plans = sa.Table(
     sa.Column("status", sa.String(16), nullable=False),          # active | waiting_key | ended
     sa.Column("starts_at", sa.Float, nullable=False),
     sa.Column("ends_at", sa.Float, nullable=False),
-    sa.Column("minutes", sa.Float, nullable=False),
-    sa.Column("used", sa.Float, nullable=False, server_default="0"),
+    sa.Column("minutes", sa.Float, nullable=False),              # the plan's clips (named "minutes" from before)
+    sa.Column("used", sa.Float, nullable=False, server_default="0"),     # clips made so far
     sa.Column("payment_id", sa.String(64), unique=True),         # Razorpay order id, or "grant:..." for an admin grant
     sa.Column("created_at", sa.Float, nullable=False),
 )
@@ -55,7 +71,7 @@ payments = sa.Table(
     sa.Column("created_at", sa.Float, nullable=False),
     sa.Column("paid_at", sa.Float),
 )
-uses = sa.Table(                                                 # minutes taken from a plan: one row per render
+uses = sa.Table(                                                 # clips taken from a plan: one row per clip made
     "plan_uses", db.meta,
     sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
     sa.Column("plan_id", sa.String(32), nullable=False, index=True),
@@ -87,8 +103,8 @@ def on() -> bool:
 def _row(r) -> dict:
     d = dict(r._mapping)
     p = PLANS.get(d["plan"], {})
-    d.update(label=p.get("label", d["plan"]), ai=p.get("ai", "ours"),
-             left=round(max(0.0, d["minutes"] - d["used"]), 1))
+    d.update(label=p.get("label", d["plan"]), ai=p.get("ai", "ours"), clips=int(d["minutes"]), used=int(d["used"]),
+             left=int(max(0.0, d["minutes"] - d["used"])), part_minutes=p.get("part_minutes", 60))
     return d
 
 
@@ -133,8 +149,16 @@ def can_download(uid) -> tuple:
     if p["status"] == "waiting_key":
         return False, "Your Creator BYOK plan starts when your AI key passes its test. Add it under Settings, AI."
     if p["left"] <= 0:
-        return False, "Your plan has no minutes left. Upgrade or wait for it to renew."
+        return False, "Your plan has no clips left. Upgrade or wait for it to renew."
     return True, ""
+
+
+def part_minutes(uid) -> float:
+    """The longest part of one video this user's plan reads, in minutes (free previews have their own limit)."""
+    if not on():
+        return 0                                         # no limit on a self-hosted copy
+    p = current(uid)
+    return p["part_minutes"] if p and p["status"] == "active" else config.PREVIEW_MAX_MINUTES
 
 
 def is_paid(uid) -> bool:
@@ -145,30 +169,37 @@ def is_paid(uid) -> bool:
 def summary(uid) -> dict:
     """What the page shows about plans."""
     p = current(uid) if on() else None
-    return {"billing": on(), "plan": p and {k: p[k] for k in ("plan", "label", "status", "ends_at", "minutes", "used", "left", "ai")},
+    return {"billing": on(), "plan": p and {k: p[k] for k in ("plan", "label", "status", "ends_at", "clips", "used", "left", "ai", "part_minutes")},
+            "gst_percent": GST_PERCENT, "preview_minutes": config.PREVIEW_MAX_MINUTES,
             "trial_used": had_trial(uid) if on() else False,
-            "plans": [{"id": k, "label": v["label"], "price": v["price"] / 100, "minutes": v["minutes"], "days": v["days"],
+            "plans": [{"id": k, "label": v["label"], "price": v["price"] / 100, "gst": gst(k) / 100, "total": total(k) / 100,
+                       "clips": v["clips"], "part_minutes": v["part_minutes"], "days": v["days"],
                        "own_key": v["ai"] == "own"} for k, v in PLANS.items()],
             "razorpay_key": config.RAZORPAY_KEY_ID if on() else "",
             "previews_left": previews_left(uid) if on() and not p else None, "preview_clips": config.PREVIEW_CLIPS}
 
 
 # ---------------------------------------------------------------- minutes and previews
-def charge(uid, seconds: float, what: str = "") -> None:
-    """Take a render's length from the plan. Raises BillingError if the plan cannot cover it."""
+def use_clip(uid, what: str = "") -> None:
+    """Count one clip made in full quality against the plan. Raises BillingError if the plan has none left."""
     if not on():
         return
-    minutes = round(max(0.1, seconds / 60.0), 2)
     with _lock:
         ok, why = can_download(uid)
         if not ok:
             raise BillingError(why)
         p = current(uid)
-        if p["left"] + 0.5 < minutes:                    # half a minute of grace, so a clip never fails by seconds
-            raise BillingError(f"This clip needs {minutes:g} minutes and your plan has {p['left']:g} left.")
         with db.engine.begin() as c:
-            c.execute(plans.update().where(plans.c.id == p["id"]).values(used=plans.c.used + minutes))
-            c.execute(uses.insert().values(plan_id=p["id"], user_id=uid, t=time.time(), minutes=minutes, what=what[:120]))
+            c.execute(plans.update().where(plans.c.id == p["id"]).values(used=plans.c.used + 1))
+            c.execute(uses.insert().values(plan_id=p["id"], user_id=uid, t=time.time(), minutes=1, what=what[:120]))
+
+
+def clips_left(uid) -> int:
+    """Clips this user can still make, or a large number when plans are off."""
+    if not on():
+        return 10 ** 6
+    p = current(uid)
+    return p["left"] if p and p["status"] == "active" else 0
 
 
 def previews_left(uid) -> int:
@@ -198,7 +229,7 @@ def _activate(c, uid, plan, payment_ref) -> str:
     # a new plan replaces the one running now
     c.execute(plans.update().where(plans.c.user_id == uid, plans.c.status != "ended").values(status="ended", ends_at=now))
     c.execute(plans.insert().values(id=secrets.token_hex(8), user_id=uid, plan=plan, status=status, starts_at=now,
-                                    ends_at=now + spec["days"] * DAY, minutes=float(spec["minutes"]), used=0.0,
+                                    ends_at=now + spec["days"] * DAY, minutes=float(spec["clips"]), used=0.0,
                                     payment_id=payment_ref, created_at=now))
     return status
 
@@ -247,7 +278,7 @@ def create_order(uid, plan) -> dict:
     if PLANS[plan].get("once") and had_trial(uid):
         raise BillingError("The trial week is once per account. Choose Creator or Pro.")
     import httpx
-    amount = PLANS[plan]["price"]
+    amount = total(plan)                                   # GST is added on top of the plan's price
     r = httpx.post("https://api.razorpay.com/v1/orders", auth=_rzp_auth(), timeout=20,
                    json={"amount": amount, "currency": "INR", "receipt": f"cf_{secrets.token_hex(6)}",
                          "notes": {"plan": plan, "user": uid}})
@@ -291,8 +322,9 @@ def _receipt(uid, plan, amount_paise, order_id):
         p = current(uid)
         if email and p:
             spec = PLANS[plan]
-            mailer.deliver(email, mailer.m_receipt(spec["label"], amount_paise / 100, spec["minutes"],
-                                                   time.strftime("%d %b %Y", time.gmtime(p["ends_at"])), order_id))
+            base = round(amount_paise * 100 / (100 + GST_PERCENT))
+            mailer.deliver(email, mailer.m_receipt(spec["label"], base / 100, (amount_paise - base) / 100, spec["clips"],
+                                                   spec["part_minutes"], time.strftime("%d %b %Y", time.gmtime(p["ends_at"])), order_id))
     except Exception:  # noqa: BLE001
         pass
 

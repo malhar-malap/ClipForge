@@ -142,10 +142,12 @@ def m_password_changed(when_text):
             "outro": "If it was you, there's nothing else to do."}
 
 
-def m_receipt(plan_label, amount_rupees, minutes, until_text, order_id):
+def m_receipt(plan_label, price_rupees, gst_rupees, clips, part_minutes, until_text, order_id):
+    hours = f"{part_minutes / 60:g} hour" + ("" if part_minutes == 60 else "s")
     return {"subject": f"Your ClipForge {plan_label} plan is active", "kicker": "Payment received", "title": f"You're on {plan_label}", "accent": plan_label,
-            "body": ["Thanks for your payment. Your plan is active and your minutes are ready to use."],
-            "details": [("Plan", plan_label), ("Amount paid", f"₹{amount_rupees:,.0f} (GST included)"), ("Minutes", f"{minutes:,}"),
+            "body": [f"Thanks for your payment. Your plan is active: {clips:,} clips to make, from up to {hours} of any video at a time."],
+            "details": [("Plan", plan_label), ("Price", f"₹{price_rupees:,.2f}"), ("GST (18%)", f"₹{gst_rupees:,.2f}"),
+                        ("Total paid", f"₹{price_rupees + gst_rupees:,.2f}"), ("Clips", f"{clips:,}"),
                         ("Valid until", until_text), ("Order", order_id)],
             "button": "Open ClipForge", "link": config.PUBLIC_URL + "/app",
             "outro": "Plans don't renew by themselves. Keep this email as your receipt.", "why": "You're getting this because you bought a ClipForge plan."}
@@ -167,7 +169,7 @@ def m_test():
 
 KINDS = {"verify": lambda: m_verify(config.PUBLIC_URL + "/auth/verify?t=example"), "reset": lambda: m_reset(config.PUBLIC_URL + "/reset?t=example"),
          "welcome": lambda: m_welcome("Malhar"), "password_changed": lambda: m_password_changed("today at 3:42 PM"),
-         "receipt": lambda: m_receipt("Creator", 399, 600, "16 Dec 2026", "order_ExAmPlE123"),
+         "receipt": lambda: m_receipt("Creator", 399, 71.82, 300, 60, "16 Dec 2026", "order_ExAmPlE123"),
          "clips_ready": lambda: m_clips_ready("I'm Back for Rank 1.", 6, config.PUBLIC_URL + "/app"), "test": m_test}
 
 

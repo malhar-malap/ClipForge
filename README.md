@@ -16,7 +16,7 @@ and adds captions that pop. Built for gaming streams and Indian languages.</p>
 | **Captions that pop** | Word-by-word captions in three styles, with an outline, a dark box or a highlight box behind the spoken word. Hindi and Urdu come out in Roman letters (Hinglish). |
 | **Any language** | English with Parakeet; Hindi, Tamil, Telugu, Spanish and ~100 more with Whisper. YouTube's own captions are used when they exist (never a translated or dubbed track). |
 | **Live clipping** | Records a Twitch, Kick or YouTube stream and clips it while it is still live. |
-| **Plans and payments** | Free previews in the browser, downloads with a plan (Trial, Creator, Creator BYOK, Pro) through Razorpay, minutes per plan, and users' own AI keys stored encrypted. |
+| **Plans and payments** | Free previews in the browser, downloads with a plan (Trial, Creator, Creator BYOK, Pro) through Razorpay, clips per plan, and users' own AI keys stored encrypted. |
 | **Posting** | Connect YouTube, Instagram and TikTok and post clips straight from a project. |
 
 ## Quick start (your own computer)
@@ -69,15 +69,18 @@ python -m studio.admin grant you@example.com
 
 ## Plans
 
-| Plan | Price (GST incl.) | Minutes | Notes |
-|---|---|---|---|
-| Free previews | ₹0 | – | Best 3 clips of up to 2 videos a day, played in the browser |
-| Trial | ₹49 once | 120 | 7 days, once per account |
-| Creator | ₹399 / month | 600 | Stronger AI ranking |
-| Creator BYOK | ₹199 / month | 600 | Runs on the user's own AI key; starts when the key passes a test |
-| Pro | ₹999 / month | 2,000 | Priority queue, live clipping |
+| Plan | Price (+ 18% GST) | Clips | Longest part of a video | Notes |
+|---|---|---|---|---|
+| Free previews | ₹0 | – | 1 hour | Best 3 clips of up to 2 videos a day, played in the browser |
+| Trial | ₹49 once | 20 | 1 hour | 7 days, once per account |
+| Creator | ₹399 / month | 300 | 1 hour | |
+| Creator BYOK | ₹199 / month | 300 | 1 hour | Runs on the user's own AI key; starts when the key passes a test |
+| Pro | ₹999 / month | 2,000 | 1.5 hours | Priority queue, live clipping |
 
-Prices and minutes live only in `studio/billing.py`.
+Every clip made counts as one, whatever its length; failed clips and re-makes are free. A longer video is clipped from
+the part chosen on the timeline.
+
+Prices, clips and limits live only in `studio/billing.py`.
 
 ## How it is built
 

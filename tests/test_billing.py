@@ -1,4 +1,4 @@
-"""ClipForge plans: previews without a plan, the paywall, minutes, the trial, Creator BYOK and payment signatures.
+"""ClipForge plans: previews without a plan, the paywall, clips, the trial, Creator BYOK and payment signatures.
 Runs against the code directly with its own empty data folder and SQLite file. Nothing outside this machine is
 contacted: Razorpay is never called (signatures are checked with made-up test secrets)."""
 import hashlib, hmac, json, os, sys, tempfile, time
@@ -49,12 +49,28 @@ with ctx.as_user(a):
 check("an unknown plan cannot be granted", bool(raises(lambda: billing.grant(a, "gold"), billing.BillingError)))
 check("granting Creator starts it", billing.grant(a, "creator", "test"), "active")
 check("now clips can be downloaded", billing.can_download(a)[0], True)
-check("Creator has 600 minutes", billing.current(a)["minutes"], 600.0)
-billing.charge(a, 90, "a 90 second clip")
-check("a 90 second render uses 1.5 minutes", billing.current(a)["left"], 598.5)
+check("Creator has 300 clips and reads up to 1 hour of a video", (billing.current(a)["clips"], billing.part_minutes(a)), (300, 60))
+billing.use_clip(a, "a 90 second clip")
+billing.use_clip(a, "a 20 second clip")
+check("each clip counts as one, whatever its length", billing.current(a)["left"], 298)
 with db.engine.begin() as c:
-    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=599.9))
-check("a render bigger than what is left is refused", bool(raises(lambda: billing.charge(a, 600, "long"), billing.BillingError)))
+    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=297))
+with ctx.as_user(a):
+    check("asking for more clips than are left is refused before the video starts",
+          bool(raises(lambda: jobs.create({"type": "url", "url": "https://youtu.be/q", "name": "q"}, {"max_clips": 6}, enqueue=False), billing.BillingError)))
+    ok = jobs.create({"type": "url", "url": "https://youtu.be/r", "name": "r"}, {"max_clips": 3}, enqueue=False)
+    check("...and asking for what is left works", ok["status"], "queued")
+    check("clips asked for by a video still being made are set aside", jobs.reserved(a), 3)
+    jobs._jobs.pop(ok["id"]); jobs._by_user[a].pop(ok["id"])
+    long = {"user": a, "options": {"range_start": None, "range_end": None}}
+    jobs._preview_length_ok(long, 3 * 3600)
+    check("a 3 hour video is not refused: the first hour is used", (long["options"]["range_end"], "part_note" in long), (3600, True))
+    part = {"user": a, "options": {"range_start": 4000, "range_end": 6000}}
+    jobs._preview_length_ok(part, 3 * 3600)
+    check("a chosen part inside the limit is kept as chosen", (part["options"]["range_start"], part["options"]["range_end"], "part_note" in part), (4000, 6000, False))
+with db.engine.begin() as c:
+    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=300))
+check("a clip with nothing left is refused", bool(raises(lambda: billing.use_clip(a, "one more"), billing.BillingError)))
 with db.engine.begin() as c:
     c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(ends_at=time.time() - 1))
 check("a plan past its end date stops", billing.current(a), None)
@@ -63,7 +79,8 @@ check("one user's plan is not another's", billing.can_download(b)[0], False)
 # ---- the trial
 billing.grant(b, "trial", "test")
 check("the trial is once per account", bool(raises(lambda: billing.create_order(b, "trial"), billing.BillingError)))
-check("the trial gives 120 minutes for 7 days", (billing.current(b)["minutes"], round((billing.current(b)["ends_at"] - time.time()) / 86400)), (120.0, 7))
+check("the trial gives 20 clips for 7 days", (billing.current(b)["clips"], round((billing.current(b)["ends_at"] - time.time()) / 86400)), (20, 7))
+check("GST is added on top of the price", (billing.total("pro"), billing.gst("pro")), (117882, 17982))
 
 # ---- Creator BYOK
 check("BYOK waits for a tested key", billing.grant(k, "byok", "test"), "waiting_key")
@@ -91,7 +108,7 @@ with ctx.as_user(k):
 
 # ---- payments: only Razorpay's signature counts, once
 with db.engine.begin() as c:
-    c.execute(billing.payments.insert().values(order_id="order_T1", user_id=b, plan="pro", amount=99900, status="created", created_at=time.time()))
+    c.execute(billing.payments.insert().values(order_id="order_T1", user_id=b, plan="pro", amount=117882, status="created", created_at=time.time()))
 sig = hmac.new(b"test-secret-not-real-123", b"order_T1|pay_T1", hashlib.sha256).hexdigest()
 check("a wrong signature is refused", bool(raises(lambda: billing.verify_checkout(b, "order_T1", "pay_T1", "0" * 64), billing.BillingError)))
 check("another user cannot claim the payment", bool(raises(lambda: billing.verify_checkout(a, "order_T1", "pay_T1", sig), billing.BillingError)))
@@ -100,13 +117,13 @@ check("the plan is the one that was ordered, at the server's price", billing.cur
 check("the same payment twice is counted once", billing.verify_checkout(b, "order_T1", "pay_T1", sig), "already")
 
 with db.engine.begin() as c:
-    c.execute(billing.payments.insert().values(order_id="order_T2", user_id=a, plan="creator", amount=39900, status="created", created_at=time.time()))
+    c.execute(billing.payments.insert().values(order_id="order_T2", user_id=a, plan="creator", amount=47082, status="created", created_at=time.time()))
 def hook(payload):
     body = json.dumps(payload).encode()
     return body, hmac.new(b"test-webhook-secret-456", body, hashlib.sha256).hexdigest()
 body, s2 = hook({"event": "payment.captured", "payload": {"payment": {"entity": {"id": "pay_T2", "order_id": "order_T2", "amount": 100}}}})
 check("a webhook with a different amount is refused", bool(raises(lambda: billing.webhook(body, s2), billing.BillingError)))
-body, s2 = hook({"event": "payment.captured", "payload": {"payment": {"entity": {"id": "pay_T2", "order_id": "order_T2", "amount": 39900}}}})
+body, s2 = hook({"event": "payment.captured", "payload": {"payment": {"entity": {"id": "pay_T2", "order_id": "order_T2", "amount": 47082}}}})
 check("a webhook with a bad signature is refused", bool(raises(lambda: billing.webhook(body, "f" * 64), billing.BillingError)))
 check("a signed webhook starts the plan", billing.webhook(body, s2), "active")
 check("...and the same webhook again does nothing new", billing.webhook(body, s2), "already")
