@@ -566,10 +566,10 @@ def _wait_for_clips(job, futures, began, workers):
             raise Cancelled()
         # progress keeps moving while clips render: finished clips count whole, ones being made count by time taken
         ready = total - len(left)
-        part = sum(min(0.9, (time.time() - began[c["id"]]) / (25 + 1.5 * (c["end"] - c["start"])))
-                   for _, c in left if began.get(c["id"]))
+        part = sum(min(0.9, (time.time() - began[c["id"]]) / (25 + 1.5 * max(0, c.get("end", 0) - c.get("start", 0))))
+                   for _, c in left if began.get(c.get("id")))
         p = round(0.8 + 0.19 * min(1.0, (ready + part) / total), 3)
-        if p > job["progress"] + 0.004:
+        if p > (job.get("progress") or 0) + 0.004:
             _set(job, progress=p, stage=f"Making the clips: {ready} of {total} ready")
         still = []
         for f, clip in left:
