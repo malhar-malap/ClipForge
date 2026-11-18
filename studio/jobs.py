@@ -155,9 +155,44 @@ def job_dir(jid) -> Path:
 HIDDEN = ("dir", "user", "source_path", "recover")
 
 
+def original_files(job) -> list:
+    """The big original video of a project (a download or an upload), if it is still kept."""
+    out = []
+    for f in (job.get("source_path"), str(Path(job["dir"]) / "source.mp4")):
+        if f and Path(f).is_file() and Path(f) not in out:
+            out.append(Path(f))
+    return out
+
+
+def free_space(jid) -> int:
+    """Remove a finished project's original video and keep its clips. Returns the megabytes freed. A clip made
+    from a link can still be re-made later (that piece is fetched again); one from an upload cannot."""
+    job = _jobs[jid]
+    if job.get("status") in ("queued", "running", "live"):
+        raise ValueError("This video is still being worked on.")
+    if job["source"]["type"] != "url" and any(c.get("status") in PREVIEW_STATES for c in job["clips"]):
+        raise ValueError("Some clips are still previews: get them first, they are made from the original video.")
+    files = original_files(job)
+    kept = Path(job["dir"]) / "audio.opus"
+    if job["source"]["type"] == "url" and files and not kept.is_file():
+        # a small copy of the sound (a few MB) stays, so a re-made clip's piece can be fetched again and lined up
+        media.run(["ffmpeg", "-y", "-v", "error", "-i", str(files[0]), "-vn", "-ac", "1", "-ar", "16000",
+                   "-c:a", "libopus", "-b:a", "24k", str(kept)])
+    freed = 0
+    for f in files:
+        freed += f.stat().st_size
+        f.unlink(missing_ok=True)
+    job["original_removed"] = True
+    save(job)
+    ctx.bump(job["user"])
+    return round(freed / 1e6)
+
+
 def public(job) -> dict:
     """What the browser may see: no server paths, no owner id."""
     out = {k: v for k, v in job.items() if k not in HIDDEN}
+    if job.get("status") in ("done", "error"):
+        out["original_mb"] = round(sum(f.stat().st_size for f in original_files(job)) / 1e6)
     out["source"] = {k: v for k, v in job["source"].items() if k != "path"}
     out["clips"] = [{k: v for k, v in c.items() if k not in ("src", "fixed_words", "fixed_for")} for c in job["clips"]]
     ai = job.get("ai") or {}
@@ -427,6 +462,10 @@ def request_render(jid, cid, changes: dict):
     if new["start"] != clip["start"] or new["end"] != clip["end"] or new.get("layout") != clip.get("layout"):
         new.pop("seen", None)       # a different stretch or layout: look at the frames again
         clip.pop("seen", None)
+    if job.get("original_removed") and not clip.get("src"):
+        if job["source"]["type"] != "url":
+            raise ValueError("The original video was removed to free up space, so this clip can't be re-made.")
+        new["refetch"] = True                 # a link: that piece of the video is fetched again
     clip.update(new, status="queued")
     save(job)
     _q.put(("clip", jid, cid))

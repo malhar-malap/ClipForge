@@ -64,6 +64,11 @@ and paste:
 
 `AGENTS.md` (also loaded through `CLAUDE.md`) tells the agent how the project is laid out and which rules to keep.
 
+## Sharing it with a few friends from your own computer
+
+No server needed: a free Cloudflare Tunnel brings your friends to ClipForge on your computer, and a guest list of
+their emails keeps everyone else out. [`docs/FRIENDS.md`](docs/FRIENDS.md) has the steps.
+
 ## Running it as a website
 
 Copy `.env.example` to `.env`; every setting is explained there. The ones that matter:

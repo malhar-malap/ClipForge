@@ -81,6 +81,11 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--text)}
 .drop b{color:var(--text)}
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px}
+.selbar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}.selbar.quiet{padding:8px 14px}
+.lrow[data-act=selone]{cursor:pointer}.lrow.picked{background:var(--accent-soft)}
+.thumb{position:relative}.thumb .tick{position:absolute;left:6px;top:6px;width:22px;height:22px;border-radius:7px;border:2px solid #fff;background:rgba(28,27,25,.35);display:grid;place-items:center;z-index:1}
+.thumb .tick.on{background:var(--accent);border-color:var(--accent)}.thumb .tick svg{width:14px;height:14px;fill:#fff}
+.btn.dangertext,.btn.ghost.dangertext{color:var(--bad)}.btn.dangertext:hover{color:var(--bad);background:var(--bad-soft)}
 .useline{margin-top:8px}.useline:empty{display:none}
 .tl{margin-top:14px}.tl-head{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:8px}.tl-head span{color:var(--dim)}
 .tl-track{position:relative;height:40px;border-radius:10px;background:repeating-linear-gradient(90deg,var(--sunk) 0 6px,var(--line) 6px 7px);cursor:pointer;touch-action:none}
@@ -409,9 +414,12 @@ function busy(b, text) {
 }
 function toast(msg, bad) { const t = document.createElement("div"); t.className = "toast" + (bad ? " bad" : ""); t.textContent = msg; $("#toasts").append(t); setTimeout(() => t.remove(), bad ? 6000 : 3000); }
 function ask(title, text, ok = "Confirm", danger) {
-  return new Promise(res => { const d = $("#dlg");
-    d.innerHTML = `<form method="dialog" class="dl"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p><div class="row" style="justify-content:flex-end"><button class="btn" value="no">Cancel</button><button class="btn ${danger ? "danger" : "primary"}" value="yes">${esc(ok)}</button></div></form>`;
-    d.onclose = () => res(d.returnValue === "yes"); d.returnValue = "no"; d.showModal(); });
+  // answers straight from the button press, so it never depends on the dialog's close event arriving
+  return new Promise(res => { const d = $("#dlg"); let done = false;
+    const fin = v => { if (done) return; done = true; if (d.open) d.close(); res(v); };
+    d.innerHTML = `<div class="dl"><h2>${esc(title)}</h2><p class="muted">${esc(text)}</p><div class="row" style="justify-content:flex-end"><button type="button" class="btn" data-ans="no">Cancel</button><button type="button" class="btn ${danger ? "danger" : "primary"}" data-ans="yes">${esc(ok)}</button></div></div>`;
+    d.querySelectorAll("[data-ans]").forEach(x => { x.onclick = () => fin(x.dataset.ans === "yes"); });
+    d.onclose = () => fin(false); d.oncancel = () => fin(false); d.showModal(); d.querySelector("[data-ans=yes]").focus(); });
 }
 
 /* ---------------------------------------------------------------- state */
@@ -675,7 +683,7 @@ function drawProjects() {
   $("#view").innerHTML = `<div class="ph"><div><h1>${ws ? esc(ws.name) : `Your <em>projects</em>`}</h1><p>${ws ? "A workspace: its own projects and its own default style." : "Each video you clip becomes a project. Use workspaces to keep different kinds of content apart."}</p></div></div>
     <div class="wsbar"><button class="wschip ${!o.ws ? "on" : ""}" data-act="ws" data-w="">All projects <span>${S.jobs.length}</span></button>${(S.creators || []).map(c =>
       `<button class="wschip ${o.ws === c.id ? "on" : ""}" data-act="ws" data-w="${esc(c.id)}">${esc(c.name)} <span>${S.jobs.filter(j => j.creator === c.id).length}</span></button>`).join("")}
-      <button class="wschip add" data-act="newws">${ic("plus")}New workspace</button>${ws ? `<button class="btn ghost sm" data-act="editws" data-w="${esc(ws.id)}">${ic("cog")}Workspace settings</button>` : ""}</div>
+      <button class="wschip add" data-act="newws">${ic("plus")}New workspace</button>${ws ? `<button class="btn ghost sm" data-act="editws" data-w="${esc(ws.id)}">${ic("cog")}Workspace settings</button><button class="btn ghost sm dangertext" data-act="delws" data-w="${esc(ws.id)}">${ic("trash")}Delete workspace</button>` : ""}</div>
     <section class="panel new"><h2>What are we <em>clipping</em> today?</h2>
       <div class="newgrid ${o.frame ? "has" : ""}"><div style="min-width:0">
       <div class="row"><div class="seg" role="tablist"><button class="${o.mode === "link" ? "on" : ""}" data-act="mode" data-m="link">Paste a link</button><button class="${o.mode === "file" ? "on" : ""}" data-act="mode" data-m="file">Upload a file</button></div>
@@ -699,16 +707,27 @@ function drawProjects() {
     <div id="plist"></div>`;
   drawProjectList(); drawUploads(); drawStylePreview(); if (o.dur && $("#tlwin")) updateTl();
 }
+const mb = n => n >= 1000 ? (n / 1000).toFixed(1) + " GB" : n + " MB";
 function drawProjectList() {
   const box = $("#plist"); if (!box) return;
   const list = [...S.jobs].filter(j => !S.ui.ws || j.creator === S.ui.ws).sort((a, b) => b.created - a.created);
-  box.innerHTML = `<div class="panel list stagger">${list.length ? `<div class="lhead"><span></span><span>Video</span><span>Status</span><span>Clips</span><span></span></div>` + list.map(j => `
-      <a class="lrow" href="/app/p/${esc(j.id)}" data-go="/app/p/${esc(j.id)}">
-        <span class="thumb">${j.thumb ? `<img src="/media/${esc(j.id)}/thumb.jpg" alt="" loading="lazy">` : ic(j.source?.type === "file" ? "film" : "link")}</span>
-        <span style="min-width:0"><div class="t">${esc(j.title || j.source?.name || "Untitled")}</div><div class="m">${[!S.ui.ws && j.creator ? wsOf(j.creator)?.name : "", j.uploader, j.duration ? fmt(j.duration) : "", ago(j.created)].filter(Boolean).map(esc).join(" · ")}</div></span>
+  const sel = S.ui.sel = S.ui.sel || null, picked = sel ? list.filter(j => sel.has(j.id)) : [];
+  const ready = picked.flatMap(j => j.clips.filter(c => c.status === "done").map(c => j.id + "." + c.id));
+  const bar = !list.length ? "" : sel
+    ? `<div class="selbar"><b>${picked.length} selected</b><button class="btn ghost sm" data-act="selall">${picked.length === list.length ? "Select none" : "Select all"}</button><span class="grow"></span>
+        ${ready.length ? `<a class="btn sm" href="/api/clips.zip?ids=${encodeURIComponent(ready.join(","))}">${ic("down")}Download ${ready.length} clip${ready.length === 1 ? "" : "s"}</a>` : ""}
+        <button class="btn sm danger" data-act="seldel" ${picked.length ? "" : "disabled"}>${ic("trash")}Delete</button><button class="btn ghost sm" data-act="selmode">Done</button></div>`
+    : `<div class="selbar quiet"><span class="small muted">${list.length} project${list.length === 1 ? "" : "s"}${(() => { const t = list.reduce((n, j) => n + (j.original_mb || 0), 0); return t > 50 ? ` · originals use ${mb(t)}` : ""; })()}</span><span class="grow"></span><button class="btn ghost sm" data-act="selmode">${ic("check")}Select</button></div>`;
+  box.innerHTML = `<div class="panel list stagger">${bar}${list.length ? `<div class="lhead"><span></span><span>Video</span><span>Status</span><span>Clips</span><span></span></div>` + list.map(j => {
+    const on = sel && sel.has(j.id), inner = `
+        <span class="thumb">${sel ? `<i class="tick ${on ? "on" : ""}">${on ? ic("check") : ""}</i>` : ""}${j.thumb ? `<img src="/media/${esc(j.id)}/thumb.jpg" alt="" loading="lazy">` : ic(j.source?.type === "file" ? "film" : "link")}</span>
+        <span style="min-width:0"><div class="t">${esc(j.title || j.source?.name || "Untitled")}</div><div class="m">${[!S.ui.ws && j.creator ? wsOf(j.creator)?.name : "", j.uploader, j.duration ? fmt(j.duration) : "", ago(j.created), j.original_mb > 50 ? mb(j.original_mb) : ""].filter(Boolean).map(esc).join(" · ")}</div></span>
         <span>${statusBadge(j)}${j.status === "running" ? `<div class="small faint" style="margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(j.stage)}</div>` : ""}</span>
         <span class="muted">${j.clips.length || "–"}</span>
-        <span class="faint">${ic("arrowr")}</span></a>`).join("") : `<div class="empty"><b>No projects ${S.ui.ws ? "in this workspace " : ""}yet</b>Paste a link or upload a video above to get your first clips.</div>`}</div>`;
+        <span class="faint">${sel ? "" : ic("arrowr")}</span>`;
+    return sel ? `<div class="lrow ${on ? "picked" : ""}" data-act="selone" data-j="${esc(j.id)}" role="checkbox" aria-checked="${!!on}">${inner}</div>`
+               : `<a class="lrow" href="/app/p/${esc(j.id)}" data-go="/app/p/${esc(j.id)}">${inner}</a>`; }).join("")
+    : `<div class="empty"><b>No projects ${S.ui.ws ? "in this workspace " : ""}yet</b>Paste a link or upload a video above to get your first clips.</div>`}</div>`;
 }
 // ---- the live style preview: one frame of the video, laid out the way the clips will be
 async function smallFrame(src) {
@@ -851,6 +870,7 @@ function drawProject(first) {
       <div class="row">${statusBadge(j)}
         ${locked && !busy ? `<button class="btn primary sm" data-act="unlockall" data-j="${esc(j.id)}">${ic("down")}Get all ${locked} clips</button>` : ""}
         ${done ? `<a class="btn sm" href="/api/clips.zip?ids=${encodeURIComponent(j.clips.filter(x => x.status === "done").map(x => j.id + "." + x.id).join(","))}">${ic("down")}Download ${done}</a>` : ""}
+        ${!busy && j.original_mb > 50 ? `<button class="btn ghost sm" data-act="freespace" data-j="${esc(j.id)}" title="Keep the clips, remove the original video">${ic("folder")}Free ${mb(j.original_mb)}</button>` : ""}
         ${!busy && j.status !== "live" ? `<button class="btn ghost icon" data-act="deljob" data-j="${esc(j.id)}" title="Delete project" aria-label="Delete project">${ic("trash")}</button>` : ""}</div></div>
     ${busy ? forgePanel(j) : ""}
     ${j.error ? `<div class="notice warn">${ic("warn")}<span>${esc(j.error)}</span></div>` : ""}
@@ -1110,6 +1130,19 @@ document.addEventListener("click", async e => {
       b.parentElement.querySelectorAll(".chip").forEach(x => x.classList.toggle("on", x === b));
       $("#o_min").dispatchEvent(new Event("change", {bubbles: true})); $("#o_maxlen").dispatchEvent(new Event("change", {bubbles: true})); return;
     }
+    if (a === "selmode") { S.ui.sel = S.ui.sel ? null : new Set(); return drawProjectList(); }
+    if (a === "selone") { S.ui.sel.has(d.j) ? S.ui.sel.delete(d.j) : S.ui.sel.add(d.j); return drawProjectList(); }
+    if (a === "selall") { const ids = S.jobs.filter(j => !S.ui.ws || j.creator === S.ui.ws).map(j => j.id); S.ui.sel = S.ui.sel.size === ids.length ? new Set() : new Set(ids); return drawProjectList(); }
+    if (a === "seldel") {
+      const ids = [...S.ui.sel], n = ids.length;
+      if (!await ask(`Delete ${n} project${n === 1 ? "" : "s"}?`, "Their clips are deleted too. Videos still being made are skipped. This can't be undone.", "Delete", true)) return;
+      const r = await send("/api/bulk/delete", {videos: ids}); S.ui.sel = null; await tick(true); drawProjectList();
+      return toast(`Deleted ${r.videos} project${r.videos === 1 ? "" : "s"}` + (r.skipped ? `; ${r.skipped} still being made, so kept` : ""));
+    }
+    if (a === "freespace") {
+      if (!await ask("Free up space?", "The original video is removed and your clips stay. Clips from a link can still be re-made later; clips from an uploaded file can't.", "Remove original", true)) return;
+      const r = await send(`/api/jobs/${d.j}/free-space`); await tick(true); return toast(`Freed ${mb(r.freed_mb)}`);
+    }
     if (a === "back") { if (navDepth > 0) history.back(); else go(d.to || "/app"); return; }
     if (a === "canceljob") {
       const done = busy(b, "Cancelling…");
@@ -1162,7 +1195,8 @@ document.addEventListener("click", async e => {
       const em = prompt("Type your email address to delete your account for good:"); if (!em) return;
       await send("/api/account/delete", {confirm: em}); location.href = "/"; return;
     }
-    if (a === "delws") { if (!await ask("Delete this workspace?", "Its projects and clips are deleted too. This can't be undone.", "Delete", true)) return;
+    if (a === "delws") { const w = wsOf(d.w), n = S.jobs.filter(j => j.creator === d.w).length;
+      if (!await ask(`Delete “${w?.name || "this workspace"}”?`, `Its ${n} project${n === 1 ? "" : "s"} and every clip in ${n === 1 ? "it" : "them"} are deleted too. Download what you want to keep first. This can't be undone.`, "Delete workspace", true)) return;
       await api(`/api/creators/${d.w}`, {method: "DELETE"}); $("#dlg").open && $("#dlg").close(); S.ui.ws = ""; try { localStorage.setItem("cf_ws", ""); } catch {} await tick(true); return drawProjects(); }
     if (a === "newch") return newChannelDialog();
     if (a === "closedlg") return $("#dlg").close();

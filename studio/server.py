@@ -274,7 +274,24 @@ def _ip(request: Request) -> str:
     named = config.env("PEAKCUT_CLIENT_IP_HEADER")
     if named and request.headers.get(named) and _from_cdn(peer):
         return request.headers[named].split(",")[0].strip()[:64]
+    if _via_tunnel(request) and config.env("PEAKCUT_TUNNEL") == "1":
+        # A Cloudflare Tunnel on this computer hands every visitor over from 127.0.0.1. Cloudflare sets this header
+        # itself and visitors cannot change it, so it names each friend; without it they would all share one address
+        # and one person's wrong passwords would lock everyone out.
+        import ipaddress
+        named_ip = request.headers["cf-connecting-ip"].split(",")[0].strip()
+        try:
+            return str(ipaddress.ip_address(named_ip))
+        except ValueError:
+            return "tunnel"
     return peer
+
+
+def _via_tunnel(request: Request) -> bool:
+    """Did this request arrive through a tunnel on this computer (Cloudflare Tunnel), rather than from someone
+    sitting at it? The tunnel connects from 127.0.0.1 too, but Cloudflare always adds the visitor's address."""
+    host = request.client.host if request.client else ""
+    return host in ("127.0.0.1", "::1") and bool(request.headers.get("cf-connecting-ip"))
 
 
 def _from_here(req, must_say=False) -> bool:
@@ -1013,6 +1030,16 @@ def preview_media(jid: str, cid: str):
     return FileResponse(f, media_type="video/mp4", headers={"Cache-Control": "private, max-age=600"})
 
 
+@app.post("/api/jobs/{jid}/free-space")
+def free_job_space(jid: str):
+    """Keep the clips, remove the original video."""
+    _job_or_404(jid)
+    try:
+        return {"freed_mb": jobs.free_space(jid)}
+    except ValueError as e:
+        raise HTTPException(409, str(e))
+
+
 @app.post("/api/jobs/{jid}/cancel")
 def cancel_job(jid: str):
     """Stop a video right away (Find clips pressed by mistake). Nothing finished: the project is removed."""
@@ -1067,7 +1094,7 @@ def clips_zip(ids: str = ""):
     except ValueError as e:
         raise HTTPException(400, str(e))
     from starlette.background import BackgroundTask
-    return FileResponse(f, filename=f"peakcut-clips-{len(pairs)}.zip", media_type="application/zip",
+    return FileResponse(f, filename=f"clipforge-clips-{len(pairs)}.zip", media_type="application/zip",
                         headers={"Cache-Control": "private, no-store"}, background=BackgroundTask(lambda: f.unlink(missing_ok=True)))
 
 
@@ -1550,7 +1577,8 @@ def public_clip(token: str):
 def _on_this_computer(request: Request) -> bool:
     """Is the person sitting at the computer ClipForge runs on? Only then can a folder window be opened for them."""
     host = request.client.host if request.client else ""
-    return host in ("127.0.0.1", "::1", "localhost") and not config.env("PEAKCUT_TRUST_PROXY")
+    # a visitor coming in through a tunnel also arrives from 127.0.0.1, but is somewhere else entirely
+    return host in ("127.0.0.1", "::1", "localhost") and not config.env("PEAKCUT_TRUST_PROXY") and not _via_tunnel(request)
 
 
 @app.get("/api/storage")
