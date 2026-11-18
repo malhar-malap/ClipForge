@@ -142,7 +142,7 @@ GitHub's security advisories.
 ## Credits and licence
 
 ClipForge is built on [PeakCut](https://github.com/haziqahmedqasmi/PeakCut) and released under the
-[MIT licence](LICENSE). Caption fonts in `studio/fonts/` are under the SIL Open Font License. The YuNet face model in
+[MIT licence](LICENSE). Caption fonts in `studio/fonts/` (Poppins, Anton, Archivo Black, Instrument Serif) are under the SIL Open Font License. The YuNet face model in
 `studio/models/` is MIT licensed (OpenCV Zoo).
 
 Clip videos you made or have permission to use, and follow the terms of the sites you fetch from and post to.
