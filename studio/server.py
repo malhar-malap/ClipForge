@@ -1703,10 +1703,18 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
 
 
 def main():
-    print(f"\n  ClipForge is running:  {config.PUBLIC_URL}\n")
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
-        print("  Sign-in is off, so anyone who can reach this address can use ClipForge and its AI key.\n"
-              "  On a server other people can reach, set PEAKCUT_ACCOUNTS=1 in .env.\n", flush=True)
+        # Without sign-in every visitor is the owner: they could spend the AI key and see every video. So on an
+        # address other machines can reach, ClipForge does not start unless the owner says this is on purpose
+        # (a private network, or a password-protected proxy in front).
+        if config.env("PEAKCUT_OPEN_WITHOUT_SIGNIN") != "1":
+            raise SystemExit("\n  ClipForge did not start: sign-in is off, and this address can be reached from other machines.\n"
+                             "  Anyone who found it could use your AI key and see every video.\n"
+                             "  Set PEAKCUT_ACCOUNTS=1 in .env so everyone signs in. If this server is private to you on purpose\n"
+                             "  (a home network or a password-protected proxy in front), set PEAKCUT_OPEN_WITHOUT_SIGNIN=1 instead.\n")
+        print("\n  Sign-in is off on purpose (PEAKCUT_OPEN_WITHOUT_SIGNIN=1): anyone who can reach this address is the owner.",
+              flush=True)
+    print(f"\n  ClipForge is running:  {config.PUBLIC_URL}\n")
     if config.env("PEAKCUT_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)
         uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="warning", backlog=4096, reload=True,

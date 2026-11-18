@@ -21,26 +21,48 @@ and adds captions that pop. Built for gaming streams and Indian languages.</p>
 
 ## Quick start (your own computer)
 
-You need **Python 3.10+**, **ffmpeg** and, for HD YouTube downloads, **Deno**.
+You need **Python 3.10 or newer**, **ffmpeg** and, for HD YouTube downloads, **Deno**. Check your Python with
+`python3 --version`: the one built into macOS is 3.9, which is too old.
 
 ```bash
 # macOS
-brew install ffmpeg deno
+brew install python@3.12 ffmpeg deno
+# Ubuntu / Debian
+sudo apt install python3 python3-venv ffmpeg
+curl -fsSL https://deno.land/install.sh | sh
 # Windows
+winget install Python.Python.3.12
 winget install Gyan.FFmpeg
 winget install DenoLand.Deno
 ```
 
+Then get ClipForge and start it inside its own Python environment (`.venv`), so its packages stay separate from
+the rest of your computer:
+
 ```bash
 git clone https://github.com/malhar-malap/ClipForge.git
 cd ClipForge
+python3 -m venv .venv                 # on macOS with Homebrew: python3.12 -m venv .venv
+source .venv/bin/activate             # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 python -m studio.server
 ```
 
-Open <http://127.0.0.1:8765>. There is no sign-in on your own computer. Add an AI key under **Settings → AI**
+Open <http://127.0.0.1:8765>. The first start downloads the speech model (about 480 MB), so give it a few minutes.
+Next time, only `source .venv/bin/activate` and `python -m studio.server` are needed. There is no sign-in on your own computer. Add an AI key under **Settings → AI**
 (Claude, Gemini, OpenAI and others work; a vision-capable model also improves framing). Without a key, clips are
 picked by loudness only.
+
+### Setting it up with an AI coding agent
+
+Claude Code, Codex, Cursor and similar agents can do the steps above for you. Open the cloned folder in the agent
+and paste:
+
+> Set up and start this project on my computer by following README.md and AGENTS.md. Use a Python 3.10+ virtual
+> environment in `.venv`, install ffmpeg and Deno if they are missing, run `python tests/run.py`, then start the
+> server and tell me the address to open. Do not put any keys in files; I will add my AI key in Settings → AI.
+
+`AGENTS.md` (also loaded through `CLAUDE.md`) tells the agent how the project is laid out and which rules to keep.
 
 ## Running it as a website
 

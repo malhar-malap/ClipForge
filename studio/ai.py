@@ -134,6 +134,12 @@ def label() -> str:
     return PROVIDERS.get(provider(), ("",))[0]
 
 
+def _same_address(p: str, new: str, saved: str) -> bool:
+    """Is the address on the page the one the key was saved with? An empty box means the service's usual address."""
+    norm = lambda a: (str(a or "").strip().rstrip("/") or PROVIDERS.get(p, ("", ""))[1]).lower()  # noqa: E731
+    return norm(new) == norm(saved)
+
+
 def base_url() -> str:
     c = current()
     return c["base_url"] or PROVIDERS.get(c["provider"], ("", ""))[1]
@@ -175,7 +181,10 @@ def save(provider_id: str, model_ids, address: str = "", new_key=None) -> dict:
     if p == "custom" and not address:
         raise ValueError("A custom service needs its address, for example http://127.0.0.1:1234/v1")
     old = current()
-    k = old["key"] if new_key is None and old["provider"] == p else str(new_key or "").strip()[:400]
+    # The saved key is kept only for the same service at the same address. Changing the address means typing the
+    # key again, so the saved key can never be quietly pointed at some other server.
+    same_place = old["provider"] == p and _same_address(p, address, old["base_url"])
+    k = old["key"] if new_key is None and same_place else str(new_key or "").strip()[:400]
     if not k and p not in NO_KEY:
         raise ValueError("Paste the key for this service.")
     with _lock:
@@ -220,10 +229,15 @@ def list_models(provider_id=None, address=None, with_key=None) -> list:
     p = ALIASES.get(str(provider_id or c["provider"]).lower(), str(provider_id or c["provider"]).lower())
     if p not in PROVIDERS:
         raise ValueError("Choose one of the AI services in the list.")
-    k = str(with_key or "").strip() or (c["key"] if c["provider"] == p else "")
-    base = str(address or "").strip().rstrip("/") or (c["base_url"] if c["provider"] == p else "") or PROVIDERS[p][1]
+    typed = str(address or "").strip().rstrip("/")[:300]
+    if typed and not re.fullmatch(r"https?://[^\s]+", typed):
+        raise ValueError("The address has to start with http:// or https://")
+    base = typed or (c["base_url"] if c["provider"] == p else "") or PROVIDERS[p][1]
     if not base:
         raise ValueError("Enter the service's address first.")
+    # the saved key only ever goes to the address it was saved for; a new address needs the key typed in
+    saved = c["key"] if c["provider"] == p and _same_address(p, typed, c["base_url"]) else ""
+    k = str(with_key or "").strip() or saved
     how = PROVIDERS[p][2]
     if how == "gemini":
         r = httpx.get(base, params={"pageSize": 200}, headers={"x-goog-api-key": k}, timeout=20)

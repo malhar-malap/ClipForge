@@ -4,7 +4,10 @@ A short map for contributors and AI coding assistants.
 
 ## Run and test
 
-- Run: `python -m studio.server` (settings from `.env`; see `.env.example`). Needs Python 3.10+ and `ffmpeg`.
+- First time: `python3 -m venv .venv`, activate it, `pip install -r requirements.txt`. Needs Python 3.10+ (macOS's
+  built-in 3.9 is too old), `ffmpeg`, and Deno for HD YouTube. The README's quick start has the install lines.
+- Run: `python -m studio.server` (settings from `.env`; see `.env.example`). Never put a real key into a tracked file;
+  the AI key goes in Settings → AI or in `.env`, which git ignores.
 - The speech model (about 480 MB) downloads by itself on first start; `python -m studio.fetch_model` gets it ahead of time.
 - Tests: `python tests/run.py`. It starts a throwaway copy on a spare port with an empty data folder. Run it
   before and after any change to `studio/`. No keys needed.
