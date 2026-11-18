@@ -67,7 +67,8 @@ def main() -> int:
                 ("AI settings: Test checks what is on screen", ["tests/test_ai_settings.py"]),
                 ("secrets are encrypted in the data folder", ["tests/test_secrets_at_rest.py"]),
                 ("cancelling a video", ["tests/test_cancel.py"]),
-                ("swear words masked in captions", ["tests/test_profanity.py"])]
+                ("swear words masked in captions", ["tests/test_profanity.py"]),
+                ("YouTube live chat counting", ["tests/test_livechat.py"])]
         for name, args in runs:
             print(f"\n=== {name} ===", flush=True)
             r = subprocess.run([sys.executable, *args], cwd=ROOT, env=env, capture_output=True, text=True, encoding="utf-8", errors="replace")

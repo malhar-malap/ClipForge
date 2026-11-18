@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from . import alerts, auth, brain, config, creators, ctx, jobs, load, media, transcribe, usage
+from . import livechat, alerts, auth, brain, config, creators, ctx, jobs, load, media, transcribe, usage
 
 SESSIONS: dict = {}
 SEG_SEC = 6           # length of each buffer piece
@@ -141,9 +141,12 @@ class Session:
         SESSIONS[self.job["id"]] = self
         threading.Thread(target=ctx.bind(self._ingest), daemon=True).start()
         threading.Thread(target=ctx.bind(self._analyze), daemon=True).start()
-        m = re.match(r"^https?://(?:www\.)?twitch\.tv/([A-Za-z0-9_]+)", self.job["source"]["url"])
+        url = self.job["source"]["url"]
+        m = re.match(r"^https?://(?:www\.)?twitch\.tv/([A-Za-z0-9_]+)", url)
         if m:
             threading.Thread(target=ctx.bind(self._chat), args=(m.group(1).lower(),), daemon=True).start()
+        elif livechat.platform(url) == "youtube":
+            threading.Thread(target=ctx.bind(self._other_chat), args=(url,), daemon=True).start()
 
     def stop(self, note="Stopped by you"):
         """Instant for the user: the card and the creator show as stopped straight away. Clips already being made
@@ -259,6 +262,17 @@ class Session:
                 pass
             self.chat_on = False
             self.stop_flag.wait(5)
+
+    def _count_chat(self):
+        with self.lock:
+            self.chat[int(self.samples / SR)] += 1
+            self.chat_total += 1
+
+    def _other_chat(self, url):
+        """YouTube chat (see livechat.py), counted the same way as Twitch's."""
+        stop = lambda: self.stop_flag.is_set() or self.ended                          # noqa: E731
+        on = lambda v: setattr(self, "chat_on", v)                                    # noqa: E731
+        livechat.read_youtube(url, self._count_chat, stop, self.dir / "chat", on)
 
     def _chat_spike(self, s, e):
         """True if chat was at least 3x busier than usual during (and just after) these seconds."""
