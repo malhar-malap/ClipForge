@@ -12,7 +12,7 @@ import traceback
 import uuid
 from pathlib import Path
 
-from . import billing, brain, config, creators, ctx, load, media, render, roman, safe, transcribe, usage
+from . import billing, brain, config, creators, ctx, load, media, profanity, render, roman, safe, transcribe, usage
 
 class _FairQueue:
     """Whose video is next. Each person has their own line and the lines take turns, so someone who adds ten
@@ -130,7 +130,7 @@ def clean_options(options) -> dict:
         elif k == "layout":
             v = v if v in render.LAYOUTS else DEFAULTS["layout"]
         elif k == "cam_style":                   # how a facecam is shown: split, circle, rect, none
-            v = v if v in ("split", "circle", "rect", "none") else DEFAULTS["cam_style"]
+            v = v if v in ("split", "full", "circle", "rect", "none") else DEFAULTS["cam_style"]
         elif k == "content":                     # the kind of video: auto, gaming, podcast, sports, talking, other
             v = v if v in brain.CONTENT_TYPES else "auto"
         elif k == "cap_bg":                      # what sits behind the captions: none, box, word
@@ -416,7 +416,7 @@ def request_render(jid, cid, changes: dict):
     for k in ("hook", "title", "description", "style", "layout", "cam_style", "cap_bg"):
         if k in changes:
             new[k] = str(changes[k])[:{"hook": 60, "title": 100, "description": 2000}.get(k, 20)]
-    if new.get("cam_style") not in ("split", "circle", "rect", "none"):
+    if new.get("cam_style") not in ("split", "full", "circle", "rect", "none"):
         new["cam_style"] = DEFAULTS["cam_style"]
     if new.get("cap_bg") not in render.CAP_BGS:
         new["cap_bg"] = DEFAULTS["cap_bg"]
@@ -500,7 +500,7 @@ def _finish_preview(job, audio, words):
         if src and w and h and c.get("layout") in ("auto", "split", "gamefocus", "face"):
             c["seen"] = vision.analyze(src, c["start"] - off, c["end"] - off, w, h)
         inside = roman.words([x for x in words if c["start"] <= x["s"] < c["end"]])
-        c["pwords"] = [[x["w"], round(x["s"] - c["start"], 2), round(x["e"] - c["start"], 2)] for x in inside][:400]
+        c["pwords"] = [[profanity.mask_word(x["w"]), round(x["s"] - c["start"], 2), round(x["e"] - c["start"], 2)] for x in inside][:400]
         c["status"] = "preview"
     save(job)
 

@@ -54,13 +54,17 @@ hud_frames[:, 20:120:6, 10:90] = 255                 # a static striped box on t
 check("a static, detailed box on the left edge is a HUD", vision._hud(hud_frames), (True, False))
 check("noise everywhere is not a HUD", vision._hud(np.random.default_rng(2).integers(0, 255, (12, 270, 480)).astype(np.uint8)), (False, False))
 
-check("a HUD on the left pulls the gameplay crop to the left", render._game_window(1920, 1080, 1080 / 1280, [True, False])[0], 0)
-check("a HUD on the right pulls it to the right", render._game_window(1920, 1080, 1080 / 1280, [False, True])[0] + render._game_window(1920, 1080, 1080 / 1280, [False, True])[1], 1920)
+mid = render._game_window(1920, 1080, 1080 / 1280, [False, False])[0]
+check("a HUD on the left nudges the gameplay crop left, keeping the crosshair in view",
+      (render._game_window(1920, 1080, 1080 / 1280, [True, False])[0] < mid, render._game_window(1920, 1080, 1080 / 1280, [True, False])[0] > 0), (True, True))
+x, gw = render._game_window(1920, 1080, 1080 / 1280, [False, True])
+check("a HUD on the right nudges it right, but the middle of the screen stays in the crop", (x > mid, x < 960 < x + gw), (True, True))
 check("HUDs on both sides show the whole width", render._game_window(1920, 1080, 1080 / 1280, [True, True]), None)
 
 # ---- the kind of video changes the framing
 check("sports: a normal moment shows the action, not the reaction cam", vision.choose_layout("auto", seen, "split", "sports", False) != "split")
 check("sports: a moment where reactions are the point brings the facecam in", vision.choose_layout("auto", seen, "split", "sports", True), "split")
+check("the Whole game facecam style puts the facecam over the whole fitted game", vision.choose_layout("auto", seen, "full", "gaming"), "fitcam")
 check("gaming keeps the facecam as before", vision.choose_layout("auto", seen, "split", "gaming", False), "split")
 two = [[(0.18, 0.25, 0.11, 0.2), (0.66, 0.27, 0.1, 0.19)] for _ in range(12)]
 seen_two = vision.decide(two, blank, 1920, 1080)
@@ -83,7 +87,8 @@ subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "lavfi", "-i", "testsrc2=si
                 "-c:a", "aac", "-shortest", str(src)], check=True)
 render.install_fonts()
 words = [{"w": w, "s": 0.5 + i * 0.4, "e": 0.8 + i * 0.4} for i, w in enumerate("that was a clean clutch".split())]
-cases = {"split": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, False]},
+cases = {"fitcam": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [False, False]},
+         "split": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, False]},
          "gamefocus": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, True]},
          "face": {"kind": "head", "cx": 0.3, "face": [0.25, 0.2, 0.1, 0.2]},
          "duo": {"kind": "duo", "faces": [[0.18, 0.25, 0.11, 0.2], [0.66, 0.27, 0.1, 0.19]], "face": [0.18, 0.25, 0.11, 0.2]}}

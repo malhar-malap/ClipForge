@@ -429,7 +429,8 @@ def analyze(src, start, end, src_w, src_h, use_ai=True) -> dict:
         return {"kind": "none"}
 
 
-CAM_STYLES = {"split": "Facecam on top half", "circle": "Floating circle", "rect": "Floating rectangle", "none": "No facecam"}
+CAM_STYLES = {"split": "Facecam on top half", "full": "Facecam on top, whole game below", "circle": "Floating circle",
+              "rect": "Floating rectangle", "none": "No facecam"}
 
 
 def choose_layout(requested: str, seen: dict, cam_style: str = "split", content: str = "", reaction: bool = False) -> str:
@@ -445,13 +446,13 @@ def choose_layout(requested: str, seen: dict, cam_style: str = "split", content:
         if kind == "facecam":
             if content == "sports" and not reaction:
                 return action                  # sports: the play matters, the reaction cam only when it is the point
-            return {"split": "split", "circle": "gamefocus", "rect": "pip", "none": "game"}.get(cam_style, "split")
+            return {"split": "split", "full": "fitcam", "circle": "gamefocus", "rect": "pip", "none": "game"}.get(cam_style, "split")
         if kind == "head":
             return "face"
         return "game" if content == "gaming" or scene in ("gameplay", "screen_share") or (seen or {}).get("subject") else "blur"
     if requested == "duo" and kind != "duo":
         return "face" if kind in ("head", "facecam") else "blur"
-    if requested in ("split", "gamefocus", "pip") and kind != "facecam":
+    if requested in ("split", "gamefocus", "pip", "fitcam") and kind != "facecam":
         return "game" if scene == "gameplay" else "blur"
     if requested == "face" and kind not in ("head", "facecam", "duo"):
         return "crop"

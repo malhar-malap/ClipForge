@@ -108,7 +108,9 @@ with ctx.as_user(u1.id):
     clips, info = brain.find_clips(words, np.zeros(60), 60.0, title="T", uploader="U")
     check("clips come back through the whole path", len(clips) == 1 and clips[0]["hook"] == "WOW" and info["model"] == "model-a", str((clips, info)))
     s = usage.summary({})
-    check("the call is in this user's usage", s["calls_total"] == 1 and s["tokens_total"] == 130 and s["recent"][0]["where"] == "A test video", str(s))
+    check("the calls (finding the moments, then the editor's cut) are in this user's usage",
+          sorted(p[0] for p in s["by_purpose"]) == ["Video: cutting the clips", "Video: finding clips"]
+          and s["recent"][0]["where"] == "A test video", str(s))
     check("usage says which AI is set", s["ready"] and s["provider"] == "Gemini" and s["model"] == "model-a")
 with ctx.as_user(u2.id):
     check("another user sees none of it", usage.summary({})["calls_total"] == 0)

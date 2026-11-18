@@ -80,6 +80,7 @@ def install_fonts():
 
 LAYOUTS = {"auto": "Auto (finds the facecam, the speaker or the action)",
            "split": "Facecam on top, gameplay below",
+           "fitcam": "Facecam on top, the whole game fitted below over a blur",
            "gamefocus": "Gameplay with a floating round facecam",
            "pip": "Gameplay with a floating facecam window",
            "game": "Gameplay only, framed on the action",
@@ -89,6 +90,9 @@ LAYOUTS = {"auto": "Auto (finds the facecam, the speaker or the action)",
 CAM_H = 640                    # split layout: the facecam panel on top (its height follows the webcam's shape)
 BUBBLE = 400                   # gamefocus layout: the round facecam, in pixels
 PIP_W = 470                    # pip layout: the floating facecam window's width
+FIT_CAM_MAX = 700              # fitcam layout: the facecam panel's greatest height
+FIT_GAP = 60                   # fitcam layout: space between the facecam and the game
+HUD_NUDGE = 0.08               # how far a HUD at one side may pull the gameplay crop, as a share of the frame width
 FLOAT_TOP = 150                # the floating facecam sits at the top centre, below the apps' own top buttons
 CAP_BGS = {"none": "Outline only", "box": "Dark box behind the words", "word": "Highlight box on the spoken word"}
 
@@ -136,6 +140,9 @@ def geometry(src_w, src_h, layout, seen=None):
     if layout == "split":
         ch = cam_height(seen, src_w, src_h)
         return layout, H, ch, ch + int((H - ch) * 0.6)  # hook sits on the seam, captions over the gameplay
+    if layout == "fitcam":                        # hook on the seam under the facecam, captions under the game
+        ch = min(cam_height(seen, src_w, src_h), FIT_CAM_MAX)
+        return layout, H, ch, ch + FIT_GAP + _even(W * src_h / max(1, src_w)) + 170
     if layout in ("gamefocus", "pip"):            # facecam floats at the top centre: hook just under it, captions low
         return layout, H, FLOAT_TOP + float_height(layout, seen, src_w, src_h) + 40, 1400
     if layout in ("face", "game"):
@@ -302,12 +309,13 @@ def _game_window(src_w, src_h, aspect, hud, cx=None):
     left, right = (list(hud or []) + [False, False])[:2]
     if left and right:
         return None
+    x = (cx if cx is not None else 0.5) * src_w - gw / 2
+    # A HUD (minimap, kill feed) only nudges the crop towards its side. It used to drag the crop to the edge, which in
+    # shooters cut the crosshair out of the picture; the middle of the screen is where the action is.
     if left:
-        x = 0
+        x -= HUD_NUDGE * src_w
     elif right:
-        x = src_w - gw
-    else:
-        x = (cx if cx is not None else 0.5) * src_w - gw / 2
+        x += HUD_NUDGE * src_w
     return min(max(0, _even(x)), _even(src_w - gw)), gw
 
 
@@ -364,6 +372,15 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
         return (f"{head},split=2[{L('c')}][{L('g')}];[{L('c')}]crop={cw}:{chh}:{cx}:{cy},scale={W}:{ch}:force_original_aspect_ratio=increase,"
                 f"crop={W}:{ch}[{L('cam')}];" + _panel(L("g"), L("game"), src_w, src_h, W, H - ch, seen.get("hud"), _action_cx(seen, W / (H - ch), src_w, src_h))
                 + f"[{L('cam')}][{L('game')}]vstack=inputs=2,setsar=1[{out}];")
+    if layout == "fitcam" and seen.get("cam"):
+        ch = min(cam_height(seen, src_w, src_h), FIT_CAM_MAX)
+        cx, cy, cw, chh = _box_px(seen["cam"], src_w, src_h)
+        gh = _even(W * src_h / max(1, src_w))
+        return (f"{head},split=3[{L('fb')}][{L('fc')}][{L('fg')}];"
+                f"[{L('fb')}]scale=270:480:force_original_aspect_ratio=increase,crop=270:480,boxblur=10:2,scale={W}:{H},eq=brightness=-0.18:saturation=1.1[{L('fbg')}];"
+                f"[{L('fc')}]crop={cw}:{chh}:{cx}:{cy},scale={W}:{ch}:force_original_aspect_ratio=increase,crop={W}:{ch}[{L('fcam')}];"
+                f"[{L('fg')}]scale={W}:{gh}[{L('fgm')}];"
+                f"[{L('fbg')}][{L('fcam')}]overlay=0:0[{L('ft')}];[{L('ft')}][{L('fgm')}]overlay=0:{ch + FIT_GAP},setsar=1[{out}];")
     if layout in ("gamefocus", "pip") and seen.get("cam"):
         cx, cy, cw, chh = _box_px(seen["cam"], src_w, src_h)
         game = _panel(L("g"), L("game"), src_w, src_h, W, H, seen.get("hud"), _action_cx(seen, W / H, src_w, src_h))
@@ -413,7 +430,7 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
     if layout == "game":
         return (f"{head}[{L('g')}];" + _panel(L("g"), L("gp"), src_w, src_h, W, H, seen.get("hud"), _action_cx(seen, W / H, src_w, src_h))
                 + f"[{L('gp')}]setsar=1[{out}];")
-    if layout in ("split", "gamefocus", "pip", "face", "duo"):
+    if layout in ("split", "fitcam", "gamefocus", "pip", "face", "duo"):
         layout, fg_h = "blur", min(H, int(round(W * src_h / max(1, src_w) / 2)) * 2) if src_w else H
     if layout == "crop":
         return f"{head},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},setsar=1[{out}];"
@@ -448,12 +465,15 @@ RENDER_SECONDS = 600      # one clip's video encode; far beyond normal, so a fro
 def render_clip(src: Path, out_dir: Path, name: str, clip: dict, words: list, src_w: int, src_h: int) -> dict:
     """Writes <name>.mp4, <name>.jpg and <name>.ass into out_dir. Returns file names."""
     out_dir.mkdir(parents=True, exist_ok=True)
+    from . import profanity                       # swear words never reach the screen: "f***"
+    words = [w for w in profanity.mask_words(words) if re.search(r"\w", w.get("w", ""))]   # no ">>" speaker marks
+    clip = dict(clip, hook=profanity.mask_text(clip.get("hook") or ""))
     start, end = clip["start"], clip["end"]
     wanted = clip.get("layout", "blur")
     cam_style = clip.get("cam_style") or "split"
     ctype, react = clip.get("content") or "", bool(clip.get("reaction"))
     seen, parts = {}, None
-    if wanted in ("auto", "split", "gamefocus", "pip", "game", "face", "duo"):
+    if wanted in ("auto", "split", "fitcam", "gamefocus", "pip", "game", "face", "duo"):
         from . import vision
         seen = clip.get("seen") or vision.analyze(src, start, end, src_w, src_h)
         if seen.get("kind") == "multi":

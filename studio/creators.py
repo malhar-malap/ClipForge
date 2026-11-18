@@ -75,7 +75,7 @@ def _clean(data: dict) -> dict:
         elif k == "privacy":
             v = v if v in ("public", "unlisted", "private") else "public"
         elif k == "cam_style":
-            v = v if v in ("split", "circle", "rect", "none") else "split"
+            v = v if v in ("split", "full", "circle", "rect", "none") else "split"
         elif k == "cap_bg":
             v = v if v in ("none", "box", "word") else "none"
         elif k == "content":

@@ -99,7 +99,7 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .pa{position:relative;display:block;overflow:hidden;border-radius:9px;background:#1C1B19}
 .pa.cam{width:58px;height:103px}
 .pa-game{position:absolute;inset:0;background:linear-gradient(160deg,#3B4A3A,#2A3340 60%,#4A3A2E);background-size:cover;background-position:center}
-.pa-game.half{top:50%}
+.pa-game.half{top:50%}.pa-game.blurfill{filter:blur(3px) brightness(.6)}.pa-game.fit{top:44%;bottom:auto;height:30%}.pa-face.fittop{height:38%}
 .pa-face{position:absolute;display:grid;place-items:end center;overflow:hidden;background:var(--peach)}
 .pa-face svg{width:70%;fill:#C9876A}
 .pa-face.top{left:0;right:0;top:0;height:50%}.pa-face.top svg{width:42%}
@@ -453,7 +453,7 @@ const wsOf = id => (S.creators || []).find(c => c.id === id);
 const CAPLOOK = {bounce: {font: "'Poppins',sans-serif", w: 800, hl: "#FFF000", up: true}, hype: {font: "'Anton',sans-serif", w: 400, hl: "#FF3C3C", up: true}, clean: {font: "'Poppins',sans-serif", w: 800, hl: "#FFD76B", up: false}};
 // ---- style pickers: every choice shown as a small picture of how it looks, not a dropdown
 const PICK_LABEL = {content: {auto: "Auto-detect", gaming: "Gaming", podcast: "Podcast", sports: "Sports", talking: "Vlog / IRL"},
-                    cam: {split: "Top half", circle: "Circle", rect: "Window", none: "Gameplay only"},
+                    cam: {split: "Top half", full: "Whole game", circle: "Circle", rect: "Window", none: "Gameplay only"},
                     capbg: {none: "Outline", box: "Dark box", word: "Word highlight"}};
 function pickArt(g, v, other) {
   const frame = S.ui.frame?.img;
@@ -468,6 +468,7 @@ function pickArt(g, v, other) {
   if (g === "cam") {
     const game = `<i class="pa-game" ${frame ? `style="background-image:url(${frame})"` : ""}></i>`;
     const face = cls => `<i class="pa-face ${cls}"><svg viewBox="0 0 20 20"><circle cx="10" cy="8" r="4"/><path d="M2 20c0-5 4-7 8-7s8 2 8 7"/></svg></i>`;
+    if (v === "full") return `<span class="pa cam"><i class="pa-game blurfill" ${frame ? `style="background-image:url(${frame})"` : ""}></i>${face("top fittop")}<i class="pa-game fit" ${frame ? `style="background-image:url(${frame})"` : ""}></i></span>`;
     return `<span class="pa cam">${v === "split" ? face("top") + `<i class="pa-game half" ${frame ? `style="background-image:url(${frame})"` : ""}></i>` : game + (v === "circle" ? face("circ") : v === "rect" ? face("win") : "")}</span>`;
   }
   const st = CAPLOOK[g === "style" ? v : other.style] || CAPLOOK.bounce, bg = g === "capbg" ? v : other.capbg;
@@ -684,10 +685,10 @@ function previewSeen(seen) {
 }
 function curLayout(seen) {
   const lay = $("#o_layout")?.value || "auto", cam = $("#o_cam")?.value || "split", k = seen?.kind || "none", ct = $("#o_content")?.value || "auto";
-  const camLay = {split: "split", circle: "gamefocus", rect: "pip", none: "game"}[cam];
+  const camLay = {split: "split", full: "fitcam", circle: "gamefocus", rect: "pip", none: "game"}[cam];
   if (lay === "auto") return k === "duo" ? (["gaming", "sports"].includes(ct) ? "face" : "duo") : k === "facecam" ? (ct === "sports" ? "game" : camLay) : k === "head" ? "face" : "blur";
   if (lay === "duo") return k === "duo" ? "duo" : "face";
-  if (["split", "gamefocus", "pip"].includes(lay)) return k === "facecam" ? lay : "game";
+  if (["split", "fitcam", "gamefocus", "pip"].includes(lay)) return k === "facecam" ? lay : "game";
   return lay;
 }
 function drawStylePreview() {
@@ -698,7 +699,9 @@ function drawStylePreview() {
   const gameRect = (pw, ph) => { const fw = Math.min(1, (pw / ph) / sa); let x = (1 - fw) / 2;
     if (seen.cam) { const r = seen.cam[0] + seen.cam[2], l = seen.cam[0]; if (x < r && r <= .5 && r + fw <= 1) x = r; else if (x + fw > l && l >= .5 && l - fw >= 0) x = l - fw; } return [x, 0, fw, 1]; };
   const camH = seen.cam ? Math.min(H * .47, Math.max(H * .29, W / ((seen.cam[2] * sa) / seen.cam[3]))) : H / 3;
+  const fitCam = Math.min(camH, H * 700 / 1920), fitGame = W / sa, fitTop = fitCam + H * 60 / 1920;
   if (lay === "split" && seen.cam) panels.push([0, 0, W, camH, seen.cam, ""], [0, camH, W, H - camH, gameRect(W, H - camH), ""]);
+  else if (lay === "fitcam" && seen.cam) panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, 0, W, fitCam, seen.cam, ""], [0, fitTop, W, fitGame, [0, 0, 1, 1], ""]);
   else if (lay === "gamefocus" && seen.cam) { const f = seen.face || seen.cam, side = Math.min(1, Math.max(f[2] * sa, f[3]) * 2.6), sw = side / sa;
     panels.push([0, 0, W, H, gameRect(W, H), ""], [W * .315, H * .078, W * .37, W * .37, [f[0] + f[2] / 2 - sw / 2, f[1] + f[3] / 2 - side / 2, sw, side], "bub"]); floatB = H * .078 + W * .37; }
   else if (lay === "pip" && seen.cam) { const pw = W * .44, ph = pw * (seen.cam[3]) / (seen.cam[2] * sa); panels.push([0, 0, W, H, gameRect(W, H), ""], [(W - pw) / 2, H * .078, pw, ph, seen.cam, "pipw"]); floatB = H * .078 + ph; }
@@ -709,11 +712,11 @@ function drawStylePreview() {
   else { const fh = W / sa; panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, (H - fh) / 2, W, fh, [0, 0, 1, 1], ""]); }
   const st = CAPLOOK[$("#o_style")?.value] || CAPLOOK.bounce, bg = $("#o_capbg")?.value || "none";
   const words = ["this", "is", "the", "one"].map(x => st.up ? x.toUpperCase() : x), active = 3;
-  const capTop = lay === "split" ? camH + (H - camH) * .6 : lay === "duo" ? H / 2 : ["gamefocus", "pip"].includes(lay) ? H * .73 : H * .7;
+  const capTop = lay === "fitcam" ? fitTop + fitGame + H * 170 / 1920 : lay === "split" ? camH + (H - camH) * .6 : lay === "duo" ? H / 2 : ["gamefocus", "pip"].includes(lay) ? H * .73 : H * .7;
   const cap = words.map((w, i) => i === active ? (bg === "word" ? `<span class="pvw on box" style="background:${st.hl}">${w}</span>` : `<span class="pvw on" style="color:${st.hl}">${w}</span>`) : `<span class="pvw">${w}</span>`).join(" ");
   box.innerHTML = panels.map(([x, y, w, h, r, cls]) => { const vw = Math.max(w / r[2], h * sa / r[3]), vh = vw / sa;
       return `<div class="pv-p ${cls}" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px"><img src="${F.img}" alt="" style="position:absolute;max-width:none;width:${vw}px;height:${vh}px;left:${w / 2 - (r[0] + r[2] / 2) * vw}px;top:${h / 2 - (r[1] + r[3] / 2) * vh}px"></div>`; }).join("")
-    + `<div class="pv-hook" style="top:${lay === "split" ? camH / H * 100 : floatB ? (floatB + H * .02) / H * 100 : 15}%">NO WAY HE DID THAT</div>`
+    + `<div class="pv-hook" style="top:${lay === "split" ? camH / H * 100 : lay === "fitcam" ? fitCam / H * 100 : floatB ? (floatB + H * .02) / H * 100 : 15}%">NO WAY HE DID THAT</div>`
     + `<div class="spcap ${bg === "box" ? "box" : ""}" style="top:${capTop}px;font-family:${st.font};font-weight:${st.w}">${cap}</div>`;
 }
 
@@ -827,7 +830,7 @@ function pvLayout(c) {
   c = Object.assign({}, c, {seen: mainSeen(c)});
   const k = c.seen?.kind || "none";
   if (c.layout === "auto") return k === "duo" ? (["gaming", "sports"].includes(c.content) ? "face" : "duo")
-    : k === "facecam" ? (c.content === "sports" && !c.reaction ? (c.seen?.scene === "gameplay" || c.seen?.subject ? "game" : "blur") : ({circle: "gamefocus", rect: "pip", none: "game"}[c.cam_style] || "split"))
+    : k === "facecam" ? (c.content === "sports" && !c.reaction ? (c.seen?.scene === "gameplay" || c.seen?.subject ? "game" : "blur") : ({full: "fitcam", circle: "gamefocus", rect: "pip", none: "game"}[c.cam_style] || "split"))
     : k === "head" ? "face" : (c.seen?.scene === "gameplay" || c.content === "gaming" ? "game" : "blur");
   if ((c.layout === "split" || c.layout === "gamefocus") && k !== "facecam") return "blur";
   return c.layout || "blur";
@@ -840,6 +843,7 @@ function mountPreview(j, c) {
   const gameRect = (pw, ph, sa) => { const fw = Math.min(1, (pw / ph) / sa), hud = seen.hud || [false, false]; if (hud[0] && hud[1]) return [0, 0, 1, 1]; return [hud[0] ? 0 : hud[1] ? 1 - fw : (1 - fw) / 2, 0, fw, 1]; };
   const build = sa => {
     if (lay === "split" && seen.cam) panels.push([0, 0, W, H / 3, seen.cam, ""], [0, H / 3, W, H * 2 / 3, gameRect(W, H * 2 / 3, sa), ""]);
+    else if (lay === "fitcam" && seen.cam) { const fc = H * 640 / 1920; panels.push([0, 0, W, H, [0, 0, 1, 1], "bg"], [0, 0, W, fc, seen.cam, ""], [0, fc + H * 60 / 1920, W, W / sa, [0, 0, 1, 1], ""]); }
     else if (lay === "pip" && seen.cam) panels.push([0, 0, W, H, gameRect(W, H, sa), ""], [W * .28, H * .078, W * .44, W * .44 * (seen.cam[3] * 9) / (seen.cam[2] * 16), seen.cam, "pipw"]);
     else if (lay === "game") panels.push([0, 0, W, H, gameRect(W, H, sa), ""]);
     else if (lay === "gamefocus" && seen.face) { const f = seen.face, side = Math.min(1, Math.max(f[2] * sa, f[3]) * 2.4), sw = side / sa;
