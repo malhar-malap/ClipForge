@@ -64,7 +64,7 @@ check("HUDs on both sides show the whole width", render._game_window(1920, 1080,
 # ---- the kind of video changes the framing
 check("sports: a normal moment shows the action, not the reaction cam", vision.choose_layout("auto", seen, "split", "sports", False) != "split")
 check("sports: a moment where reactions are the point brings the facecam in", vision.choose_layout("auto", seen, "split", "sports", True), "split")
-check("the Whole game facecam style puts the facecam over the whole fitted game", vision.choose_layout("auto", seen, "full", "gaming"), "fitcam")
+check("the Whole game facecam style shows the whole frame fitted, without a second facecam", vision.choose_layout("auto", seen, "full", "gaming"), "blur")
 check("gaming keeps the facecam as before", vision.choose_layout("auto", seen, "split", "gaming", False), "split")
 two = [[(0.18, 0.25, 0.11, 0.2), (0.66, 0.27, 0.1, 0.19)] for _ in range(12)]
 seen_two = vision.decide(two, blank, 1920, 1080)
@@ -79,6 +79,16 @@ check("titles give a fair guess at the kind of video without an AI",
 check("each kind of video gets its own idea of a good moment", "spicy or controversial" in brain._head("podcast", title="t", uploader="u", n=2)
       and "goals, big plays" in brain._head("sports", title="t", uploader="u", n=2))
 
+# ---- following the person on screen
+walk = [[(0.15 + 0.05 * i, 0.3, 0.08, 0.15)] for i in range(14)]
+tr = vision._speaker_track(np.random.default_rng(3).integers(0, 255, (14, 270, 480)).astype(np.uint8), walk, [i * 0.5 for i in range(14)], 16 / 9)
+check("a person walking across the frame is followed by the crop", bool(tr) and tr[-1][1] > tr[0][1] + 0.2, True)
+check("the crop moves smoothly in an ffmpeg expression", "if(lt(t" in render._track_x(tr, 1920, 606), True)
+check("in a challenge video, people on screen are followed", vision.choose_layout("auto", {"kind": "none", "track": tr}, "split", "sports"), "face")
+check("...but gameplay with no facecam stays on the action", vision.choose_layout("auto", {"kind": "none", "track": tr, "scene": "gameplay"}, "split", "gaming"), "game")
+from studio import render as _r
+check("the Mix style draws punch words in a second font", "\\fnAnton" in _r.build_ass([{"w": "this", "s": 0, "e": .3}, {"w": "insane", "s": .3, "e": .9}], 0, 2, "H", "mix", ["insane"], 300, 1300), True)
+
 # ---- rendering every layout for real
 work = Path(tempfile.mkdtemp(prefix="cf-layouts-media-"))
 src = work / "game.mp4"
@@ -91,6 +101,7 @@ cases = {"fitcam": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": li
          "split": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, False]},
          "gamefocus": {"kind": "facecam", "cam": [0.8, 0.75, 0.18, 0.2], "face": list(cam_face), "hud": [True, True]},
          "face": {"kind": "head", "cx": 0.3, "face": [0.25, 0.2, 0.1, 0.2]},
+         "face": {"kind": "head", "cx": 0.3, "face": [0.25, 0.2, 0.1, 0.2], "track": [[0, 0.3], [1.5, 0.6], [3, 0.6]]},
          "duo": {"kind": "duo", "faces": [[0.18, 0.25, 0.11, 0.2], [0.66, 0.27, 0.1, 0.19]], "face": [0.18, 0.25, 0.11, 0.2]}}
 for lay, s in cases.items():
     try:

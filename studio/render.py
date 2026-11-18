@@ -18,10 +18,28 @@ STYLES = {
              "strong": "00D7FF", "outline": 7, "pop": 114, "upper": True, "per": 2},
     "clean": {"label": "Clean", "font": "Poppins ExtraBold", "size": 100, "base": "FFFFFF", "active": "6BD7FF",
               "strong": "FFFFFF", "outline": 5, "pop": 106, "upper": False, "per": 4},
+    # The punch words of a clip (picked by the AI) drawn in a second font: bigger, coloured, a change of rhythm.
+    "mix": {"label": "Mix", "font": "Poppins ExtraBold", "size": 104, "base": "FFFFFF", "active": "6BE8FF",
+            "strong": "2EE6FF", "outline": 6, "pop": 108, "upper": False, "per": 3,
+            "accent": {"font": "Anton", "scale": 1.32, "upper": True}},
+    "punch": {"label": "Punch", "font": "Archivo Black", "size": 112, "base": "FFFFFF", "active": "7AFF5B",
+              "strong": "7AFF5B", "outline": 7, "pop": 112, "upper": True, "per": 2},
+    "story": {"label": "Story", "font": "Poppins ExtraBold", "size": 98, "base": "FFFFFF", "active": "9CD7FF",
+              "strong": "9CC8FF", "outline": 5, "pop": 106, "upper": False, "per": 4,
+              "accent": {"font": "Instrument Serif", "scale": 1.5, "upper": False, "italic": True}},
 }
 HOOK = {"font": "Poppins ExtraBold", "size": 96, "ink": "14100E", "box": "FFFFFF", "pad_x": 36, "pad_y": 22, "radius": 26,
         "max_w": 900}
-FONT_FILES = {"Poppins ExtraBold": "Poppins-ExtraBold.ttf", "Anton": "Anton-Regular.ttf", "Archivo Black": "ArchivoBlack-Regular.ttf"}
+FONT_FILES = {"Poppins ExtraBold": "Poppins-ExtraBold.ttf", "Anton": "Anton-Regular.ttf", "Archivo Black": "ArchivoBlack-Regular.ttf",
+              "Instrument Serif": "InstrumentSerif-Italic.ttf"}
+
+
+def _accent(st):
+    """The style's second font for punch words, or None when it has none (or its font file is not bundled)."""
+    a = st.get("accent")
+    if not a or not (Path(__file__).resolve().parent / "fonts" / FONT_FILES.get(a["font"], "-")).is_file():
+        return None
+    return a
 CAP_MAX_W = 960   # captions never run wider than this, whatever is said
 
 
@@ -245,10 +263,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         g_end = min(g[-1]["e"] + 0.25, groups[gi + 1][0]["s"] if gi + 1 < len(groups) else end) - start
         if g_end - g_start < 0.02:
             continue
-        texts = []
+        acc = _accent(st)
+        texts, punch = [], []
         for x in g:
             t = re.sub(r"[.,;:]+$", "", x["w"])
-            texts.append(t.upper() if st["upper"] else t)
+            hit = bool(acc) and _key(x["w"]) in strong
+            punch.append(hit)
+            up = acc.get("upper", st["upper"]) if hit else st["upper"]
+            texts.append(t.upper() if up else t)
         if not all(roman.drawable(t) for t in texts):
             # A script the caption font cannot draw (Japanese, Thai, Chinese...): its words cannot be measured, so
             # they are not placed one by one. The line is drawn whole and centred, in a font the system has for it.
@@ -257,12 +279,14 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             ev.append(f"Dialogue: 1,{_ts(g_start)},{_ts(g_end)},Cap,,60,60,0,,{{\\an5\\pos({W // 2},{cap_y:.0f})\\q0\\fs{fs}}}{line}")
             continue
         size = st["size"]
+        af = _Font.get(acc["font"]) if acc else None
+        wid = lambda t, hit, sz: (af.width(t, sz * acc["scale"]) if hit else f.width(t, sz))   # noqa: E731
         gap = f.width("n n", size) - 2 * f.width("n", size) + (2 * st["outline"] + 6) * size / st["size"]   # a space, plus room for both outlines
-        total = sum(f.width(t, size) for t in texts) + gap * (len(texts) - 1)
+        total = sum(wid(t, h, size) for t, h in zip(texts, punch)) + gap * (len(texts) - 1)
         if total > CAP_MAX_W:                                  # a long phrase: shrink it to fit, never run off the frame
             size = max(36, int(size * CAP_MAX_W / total))
             gap = f.width("n n", size) - 2 * f.width("n", size) + (2 * st["outline"] + 6) * size / st["size"]   # a space, plus room for both outlines
-            total = sum(f.width(t, size) for t in texts) + gap * (len(texts) - 1)
+            total = sum(wid(t, h, size) for t, h in zip(texts, punch)) + gap * (len(texts) - 1)
         cy = cap_y - f.cap_shift(size)
         x = (W - total) / 2
         p = st["pop"]
@@ -271,9 +295,15 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             ev.append(f"Dialogue: 0,{_ts(g_start)},{_ts(g_end)},Cap,,0,0,0,,{{\\an7\\pos(0,0)\\bord0\\shad0\\c&H000000&\\1a&H48&\\p1}}"
                       f"{_rrect(x - 34, cap_y - line_h * 0.62, x + total + 34, cap_y + line_h * 0.62, 26)}{{\\p0}}")
         for i, (w, t) in enumerate(zip(g, texts)):
-            wd = f.width(t, size)
+            hit = punch[i]
+            wd = wid(t, hit, size)
             p = max(104, min(st["pop"], 100 + int(2200 / max(wd, 1))))   # long words grow less, so they never touch their neighbours
-            pos = f"\\an5\\pos({x + wd / 2:.0f},{cy:.0f})\\fs{size}"
+            if hit:                                   # a punch word: its own font, bigger, sitting on the same line
+                asz = size * acc["scale"]
+                pos = (f"\\an5\\pos({x + wd / 2:.0f},{cap_y - af.cap_shift(asz):.0f})\\fn{acc['font']}\\fs{asz:.0f}"
+                       + ("\\i1" if acc.get("italic") else ""))
+            else:
+                pos = f"\\an5\\pos({x + wd / 2:.0f},{cy:.0f})\\fs{size}"
             x += wd + gap
             a = max(g_start, w["s"] - start)
             b = (g[i + 1]["s"] - start) if i + 1 < len(g) else g_end
@@ -360,6 +390,17 @@ def _action_cx(seen, aspect=None, src_w=0, src_h=0):
     return cx
 
 
+def _track_x(keys, src_w, cw):
+    """An ffmpeg expression for the crop's left edge over time, gliding between the tracker's points (smoothstep)."""
+    px = [(float(t), min(max(0.0, c * src_w - cw / 2), src_w - cw)) for t, c in keys]
+    expr = f"{px[-1][1]:.1f}"
+    for (t0, x0), (t1, x1) in reversed(list(zip(px, px[1:]))):
+        d = max(0.05, t1 - t0)
+        k = f"clip((t-{t0:.2f})/{d:.2f},0,1)"
+        expr = f"if(lt(t,{t1:.2f}),{x0:.1f}+({x1 - x0:.1f})*{k}*{k}*(3-2*{k}),{expr})"
+    return f"if(lt(t,{px[0][0]:.2f}),{px[0][1]:.1f},{expr})".replace(",", "\\,")
+
+
 def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
     """The ffmpeg filters that turn input label `inp` into a 1080x1920 picture labelled `out`.
     `t` makes every inner label unique, so several of these can live in one graph (one per scene)."""
@@ -419,6 +460,9 @@ def _chain(inp, out, layout, fg_h, src_w, src_h, seen, t=""):
         return (f"{head},split=2[{L('pa')}][{L('pb')}];"
                 f"[{L('pa')}]crop={aw}:{ah}:{ax}:{ay},scale={W}:{ph}[{L('ta')}];[{L('pb')}]crop={bw}:{bh}:{bx}:{by},scale={W}:{ph}[{L('tb')}];"
                 f"[{L('ta')}][{L('tb')}]vstack=inputs=2,setsar=1[{out}];")
+    if layout == "face" and len(seen.get("track") or []) >= 2:
+        cw = min(_even(src_w), _even(src_h * W / H))     # the crop glides to whoever is talking
+        return f"{head},crop={cw}:{_even(src_h)}:'{_track_x(seen['track'], src_w, cw)}':0,scale={W}:{H},setsar=1[{out}];"
     if layout == "face" and (seen.get("cx") is not None or seen.get("face")):
         cxf = seen.get("cx")
         if cxf is None:

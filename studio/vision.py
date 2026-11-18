@@ -401,12 +401,88 @@ def _segments(per_frame, times, cuts, dur, min_len=3.0):
     return merged
 
 
+def _mouth_motion(grey, faces):
+    """For every frame, each face's mouth movement since the frame before: [[(cx, motion), ...], ...]. The lower
+    middle of the face box is compared with the same spot one frame earlier; head movement is taken off by
+    comparing with the upper face, so a person turning their head does not count as talking."""
+    import cv2
+    out, prev = [], None
+    h, w = grey.shape[1:]
+    def patch(f, x0, y0, x1, y1):
+        x0, x1 = int(max(0, x0) * w), int(min(1, x1) * w)
+        y0, y1 = int(max(0, y0) * h), int(min(1, y1) * h)
+        if x1 - x0 < 3 or y1 - y0 < 3:
+            return None
+        return cv2.resize(f[y0:y1, x0:x1], (24, 16)).astype(np.float32)
+    for i, boxes in enumerate(faces):
+        row = []
+        for (x, y, bw, bh) in boxes:
+            cx = x + bw / 2
+            m = 0.0
+            if prev is not None:
+                mouth = [patch(g, x + bw * .25, y + bh * .62, x + bw * .75, y + bh * .95) for g in (grey[i], prev)]
+                top = [patch(g, x + bw * .2, y + bh * .1, x + bw * .8, y + bh * .45) for g in (grey[i], prev)]
+                if mouth[0] is not None and mouth[1] is not None and top[0] is not None and top[1] is not None:
+                    m = max(0.0, float(np.abs(mouth[0] - mouth[1]).mean() - 0.6 * np.abs(top[0] - top[1]).mean()))
+            row.append((cx, m, bw * bh))
+        out.append(row)
+        prev = grey[i]
+    return out
+
+
+def _speaker_track(grey, faces, times, frame_aspect):
+    """Where a 9:16 crop should sit over time to keep the person talking in view: [[seconds, crop centre 0-1], ...].
+    The talker is the face whose mouth moves most over the last second; the crop switches to someone else only after
+    they have talked for about a second, and only moves when the talker drifts out of its middle. None when no
+    face is seen in most of the frames."""
+    if len(faces) < 3 or sum(1 for b in faces if b) < len(faces) * 0.3:
+        return None
+    motion = _mouth_motion(grey, faces)
+    cw = min(1.0, (9 / 16) / frame_aspect)               # the crop's width, as a share of the frame
+    target, cur, pending = [], None, (None, 0)
+    for i, row in enumerate(motion):
+        if not row:
+            target.append(cur)
+            continue
+        # each face's talking over about a second (this frame and the two before), matched by position
+        def talk(cx):
+            tot = 0.0
+            for k in range(max(0, i - 2), i + 1):
+                near = [m for (x, m, _) in motion[k] if abs(x - cx) < 0.08]
+                tot += max(near) if near else 0.0
+            return tot
+        scored = sorted(((talk(cx) + a * 2, cx) for (cx, _, a) in row), reverse=True)   # bigger faces win a tie
+        best = scored[0][1]
+        if cur is None:
+            cur = best
+        elif abs(best - cur) > 0.08:
+            same = pending[0] is not None and abs(pending[0] - best) < 0.08
+            pending = (best, pending[1] + 1 if same else 1)
+            if pending[1] >= 2:                           # the new talker has held it for about a second: switch
+                cur, pending = best, (None, 0)
+        else:
+            cur, pending = best, (None, 0)               # same person: follow them as they move
+        target.append(cur)
+    first = next((t for t in target if t is not None), 0.5)
+    target = [first if t is None else t for t in target]
+    cam, keys = target[0], []
+    for t, want in zip(times, target):
+        if abs(want - cam) > cw * 0.18:                   # out of the middle of the crop: ease towards them
+            cam += (want - cam) * 0.55
+        c = min(max(cam, cw / 2), 1 - cw / 2)
+        if not keys or abs(keys[-1][1] - c) > 0.004:
+            keys.append([round(t, 2), round(c, 4)])
+    if len(keys) == 1:
+        keys.append([round(times[-1], 2), keys[0][1]])
+    return keys
+
+
 def analyze(src, start, end, src_w, src_h, use_ai=True) -> dict:
     """Look at the clip from `start` to `end` seconds of `src` and say how to frame it. A clip whose picture changes
     (the streamer switches scenes) comes back as {"kind": "multi", "segments": [...]}, each part framed on its own."""
     try:
         dur = max(0.5, end - start)
-        n = int(min(90, max(MAX_SAMPLES, dur)))           # about one frame a second
+        n = int(min(120, max(MAX_SAMPLES, dur * 2)))      # about two frames a second, to see who is talking
         color = _frames(src, start, dur, src_w, src_h, n=n, color=True)
         if len(color) == 0:
             return {"kind": "none"}
@@ -420,6 +496,10 @@ def analyze(src, start, end, src_w, src_h, use_ai=True) -> dict:
         for k, (t0, t1, i, j) in enumerate(segs[:6]):
             look = _ai_look(color[i:j]) if use_ai and k < 4 else None
             seen = decide(faces[i:j], grey[i:j], src_w, src_h, look)
+            if seen.get("kind") in ("head", "duo", "none"):
+                tr = _speaker_track(grey[i:j], faces[i:j], [x - t0 for x in times[i:j]], src_w / max(1, src_h))
+                if tr:
+                    seen["track"] = tr
             out.append(dict(seen, t0=round(t0, 2), t1=round(t1, 2)))
         if len(out) == 1:
             return {k: v for k, v in out[0].items() if k not in ("t0", "t1")}
@@ -429,7 +509,7 @@ def analyze(src, start, end, src_w, src_h, use_ai=True) -> dict:
         return {"kind": "none"}
 
 
-CAM_STYLES = {"split": "Facecam on top half", "full": "Facecam on top, whole game below", "circle": "Floating circle",
+CAM_STYLES = {"split": "Facecam on top half", "full": "The whole frame, fitted (the webcam stays in it)", "circle": "Floating circle",
               "rect": "Floating rectangle", "none": "No facecam"}
 
 
@@ -446,15 +526,17 @@ def choose_layout(requested: str, seen: dict, cam_style: str = "split", content:
         if kind == "facecam":
             if content == "sports" and not reaction:
                 return action                  # sports: the play matters, the reaction cam only when it is the point
-            return {"split": "split", "full": "fitcam", "circle": "gamefocus", "rect": "pip", "none": "game"}.get(cam_style, "split")
+            return {"split": "split", "full": "blur", "circle": "gamefocus", "rect": "pip", "none": "game"}.get(cam_style, "split")
         if kind == "head":
             return "face"
+        if seen.get("track") and content not in ("gaming", ""):
+            return "face"                          # people on screen in a challenge, vlog or sports video: follow them
         return "game" if content == "gaming" or scene in ("gameplay", "screen_share") or (seen or {}).get("subject") else "blur"
     if requested == "duo" and kind != "duo":
         return "face" if kind in ("head", "facecam") else "blur"
     if requested in ("split", "gamefocus", "pip", "fitcam") and kind != "facecam":
         return "game" if scene == "gameplay" else "blur"
-    if requested == "face" and kind not in ("head", "facecam", "duo"):
+    if requested == "face" and kind not in ("head", "facecam", "duo") and not (seen or {}).get("track"):
         return "crop"
     return requested
 
