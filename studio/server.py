@@ -378,10 +378,9 @@ def _pricing_html() -> str:
         tag, feats, cta = _PLAN_COPY.get(k, ("", [], "Choose"))
         hours = f"{v['part_minutes'] / 60:g} hour" + ("" if v["part_minutes"] == 60 else "s")
         lines = [f"{v['clips']:,} clips " + ("in 7 days" if v["days"] == 7 else "a month"), f"Up to {hours} of a video at a time"] + feats
-        total = _b.total(k) / 100
         return (f'<div class="plan{" hot" if hot else ""} reveal">' + ('<span class="rib">Popular</span>' if hot else "")
                 + f'<h3>{_h.escape(v["label"])}</h3><div class="pr">₹{v["price"] / 100:,.0f}<small>{"once" if v["days"] == 7 else "/ month"} + GST</small></div>'
-                + f'<p class="gst">₹{total:,.2f} with GST' + (" · plus your AI provider's charges" if v["ai"] == "own" else "") + "</p>"
+                + ('<p class="gst">Plus your AI provider\'s charges</p>' if v["ai"] == "own" else "")
                 + f'<p class="tagl">{_h.escape(tag)}</p><ul>' + "".join(f"<li>{_TICK}{_h.escape(x)}</li>" for x in lines) + "</ul>"
                 + f'<a class="btn" href="/signup" data-auth="plan">{_h.escape(cta)}' + (' <span class="arr">→</span>' if hot else "") + "</a></div>")
     ours = [card(k, v, k == "creator") for k, v in _b.PLANS.items() if v["ai"] != "own"]

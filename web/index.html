@@ -1027,7 +1027,7 @@ const BYOK_NOTE = `<div class="byok-note"><h3>How BYOK works</h3><ol>
 function planCard(x) {
   const b = S.status.billing || {}, p = b.plan, info = PLAN_INFO[x.id] || {feats: []}, mine = p?.plan === x.id;
   return `<div class="panel plan ${mine ? "mine" : ""}"><div class="row"><b>${esc(x.label)}</b><span class="grow"></span>${mine ? `<span class="badge good">Current</span>` : x.id === "creator" ? `<span class="badge">Popular</span>` : ""}</div>
-    <div class="pr">₹${x.price.toLocaleString("en-IN")}<small>${x.days === 7 ? "once" : "/ month"} + GST</small></div><p class="small faint" style="margin-top:-4px">₹${x.total.toLocaleString("en-IN", {minimumFractionDigits: 2})} with GST${x.own_key ? " · plus your AI provider's charges" : ""}</p><p class="small muted">${esc(info.tag)}</p>
+    <div class="pr">₹${x.price.toLocaleString("en-IN")}<small>${x.days === 7 ? "once" : "/ month"} + GST</small></div>${x.own_key ? `<p class="small faint" style="margin-top:-4px">Plus your AI provider's charges</p>` : ""}<p class="small muted">${esc(info.tag)}</p>
     <ul>${planFeats(x).map(f => `<li>${ic("check")}<span>${esc(f)}</span></li>`).join("")}</ul>
     ${mine ? `<button class="btn" disabled>Active</button>` : `<button class="btn ${x.id === "creator" ? "primary" : ""}" data-act="buy" data-plan="${esc(x.id)}">${p ? "Switch" : "Choose"}</button>`}</div>`;
 }
