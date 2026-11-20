@@ -38,7 +38,8 @@ def _mirror(p):
     job = jobs.get(p["job"])
     clip = next((c for c in job["clips"] if c["id"] == p["clip"]), None) if job else None
     if clip is not None:
-        clip.setdefault("posts", {})[p["id"]] = {k: p.get(k) for k in ("account_name", "platform", "status", "url", "due_at", "error")}
+        clip.setdefault("posts", {})[p["id"]] = {k: p.get(k) for k in ("account_name", "platform", "status", "url", "due_at", "error",
+                                                                         "started_at", "posted_at")}
         jobs.save(job)
 
 
@@ -75,6 +76,8 @@ def enqueue(job, clip, account_ids, now=False) -> list:
         _save()
     for p in made:
         _mirror(p)
+    if now and made:
+        _wake.set()
     return made
 
 
@@ -128,9 +131,13 @@ def _post(p):
     _mirror(p)
 
 
+_wake = threading.Event()        # set by "Post now", so the upload starts at once instead of at the next check
+
+
 def _run():
     while True:
-        time.sleep(15)
+        _wake.wait(15)
+        _wake.clear()
         due = [p for p in list(_posts) if p["status"] == "scheduled" and p["due_at"] <= time.time() and p.get("user")]
         for p in due:
             try:
@@ -141,6 +148,8 @@ def _run():
                         if p["status"] != "scheduled":
                             continue
                         p["status"] = "posting"
+                        p["started_at"] = time.time()
+                    _mirror(p)                      # the clip shows "Uploading…" straight away
                     _post(p)
             except Exception:  # noqa: BLE001
                 pass
