@@ -358,6 +358,41 @@ def _page(name, shared=False):
 
 
 _LANDING: dict = {}
+_TICK = ('<svg viewBox="0 0 256 256"><path d="M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,'
+         '218.34,66.34a8,8,0,0,1,11.32,11.32Z"/></svg>')
+_PLAN_COPY = {   # the words on each plan card of the front page; prices, clips and limits come from billing.PLANS
+    "trial": ("Try everything for a week.", ["Every layout and caption style", "1080p, no watermark"], "Start trial"),
+    "creator": ("For creators posting every week.", ["Facecam, gaming and podcast layouts", "Live stream clipping"], "Get Creator"),
+    "pro": ("For streamers and teams posting every day.", ["Everything in Creator", "Live stream clipping"], "Get Pro"),
+    "byok": ("Creator, with the AI on your own key.", ["Everything in Creator", "AI usage billed by your AI provider"], "Get Creator BYOK"),
+    "byok_pro": ("Pro, with the AI on your own key.", ["Everything in Pro", "AI usage billed by your AI provider"], "Get Pro BYOK"),
+}
+
+
+def _pricing_html() -> str:
+    """The front page's plan cards, built from billing.PLANS so they always match what people are charged."""
+    import html as _h
+    from . import billing as _b
+
+    def card(k, v, hot=False):
+        tag, feats, cta = _PLAN_COPY.get(k, ("", [], "Choose"))
+        hours = f"{v['part_minutes'] / 60:g} hour" + ("" if v["part_minutes"] == 60 else "s")
+        lines = [f"{v['clips']:,} clips " + ("in 7 days" if v["days"] == 7 else "a month"), f"Up to {hours} of a video at a time"] + feats
+        total = _b.total(k) / 100
+        return (f'<div class="plan{" hot" if hot else ""} reveal">' + ('<span class="rib">Popular</span>' if hot else "")
+                + f'<h3>{_h.escape(v["label"])}</h3><div class="pr">₹{v["price"] / 100:,.0f}<small>{"once" if v["days"] == 7 else "/ month"} + GST</small></div>'
+                + f'<p class="gst">₹{total:,.2f} with GST' + (" · plus your AI provider's charges" if v["ai"] == "own" else "") + "</p>"
+                + f'<p class="tagl">{_h.escape(tag)}</p><ul>' + "".join(f"<li>{_TICK}{_h.escape(x)}</li>" for x in lines) + "</ul>"
+                + f'<a class="btn" href="/signup" data-auth="plan">{_h.escape(cta)}' + (' <span class="arr">→</span>' if hot else "") + "</a></div>")
+    ours = [card(k, v, k == "creator") for k, v in _b.PLANS.items() if v["ai"] != "own"]
+    own = [card(k, v) for k, v in _b.PLANS.items() if v["ai"] == "own"]
+    return (f'  <div class="plans">{"".join(ours)}</div>\n'
+            '  <div class="byok reveal"><div class="byok-head"><div><span class="tag">BYOK</span><h3>Bring your own <em>AI key</em>, pay less.</h3></div>'
+            '<ol><li><b>You connect your own AI key</b> from Claude, OpenAI, Gemini, Groq, OpenRouter or xAI.</li>'
+            '<li><b>The AI work for your clips runs on your key, and your AI provider bills you for it directly,</b> on top of the ClipForge price.</li>'
+            '<li><b>The plan starts when your key passes a test</b> and pauses if the key stops working.</li>'
+            '<li><b>Your key is encrypted</b> and never shown again. <a href="/terms">Full BYOK terms</a>.</li></ol></div>'
+            f'<div class="plans two">{"".join(own)}</div></div>')
 
 
 @app.get("/")
@@ -365,7 +400,7 @@ def landing():
     f = WEB / "landing.html"
     m = f.stat().st_mtime
     if _LANDING.get("m") != m:
-        html = f.read_text(encoding="utf-8").replace("{{SITE}}", config.PUBLIC_URL)
+        html = f.read_text(encoding="utf-8").replace("{{SITE}}", config.PUBLIC_URL).replace("{{PRICING}}", _pricing_html())
         _LANDING.update(m=m, html=html, etag='"' + hashlib.md5(html.encode()).hexdigest() + '"')
     # fresh for five minutes; after that a CDN or browser may show its copy while it quietly fetches the new one
     return HTMLResponse(_LANDING["html"], headers={"Cache-Control": "public, max-age=300, stale-while-revalidate=86400",

@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in to ClipForge</title>
-<meta name="description" content="Sign in or create your ClipForge account.">
+<meta name="description" content="Sign in or create your ClipForge account, the automatic AI clipping tool that turns long videos into shorts.">
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Anton&display=swap" rel="stylesheet">
 <style>
 :root{--brand:#191917;--brand-hi:#191917;--ink:#17123A;--soft:#191917;--line-b:#191917;--deep:#191917;
   --frame:#0D0B1A;--frame-2:#1A1730;--frame-text:#ECEAFB;--frame-dim:#8D89AB;
@@ -95,6 +95,11 @@ main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 .side h1{color:#F6F1E8!important}.side h1 em{color:#E4572E!important;font-style:italic}
 .side li svg{color:#E4572E!important}.side ul{color:#C9C2B6!important}
 .main{background:#FFFDF9!important}
+/* moving phones: in the dark panel on wide screens, a short strip above the form on phones */
+.sidewall{flex:1;min-height:240px;max-height:540px;margin:26px -48px 22px;--pw:124px;--gap:12px;--dur:44s;--tilt:-6deg;--cf-frame:#3A3834}
+.mobwall{display:none;height:200px;margin:-6px -20px 22px;--pw:70px;--gap:9px;--dur:36s;--tilt:-5deg}
+@media (max-height:700px){.sidewall{display:none}}
+@media (max-width:860px){.mobwall{display:block}.mobile-logo{margin-bottom:14px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -102,17 +107,19 @@ main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 <aside class="side">
   <a href="/" aria-label="ClipForge home"><img src="/brand/logo-light.svg?v=cf4" alt="ClipForge"></a>
   <div>
-    <h1>Clips from every stream, <em>without watching all of it.</em></h1>
+    <h1>AI clips from every stream, <em>without watching all of it.</em></h1>
     <ul>
-      <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Records live streams and clips them as they happen</span></li>
+      <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>AI records live streams and clips them as they happen</span></li>
       <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Vertical shorts with word-by-word captions and a hook</span></li>
       <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Free previews every day, plans from ₹199 a month</span></li>
     </ul>
   </div>
+  <div class="sidewall" id="phones"></div>
   <small>© <span id="year"></span> ClipForge · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></small>
 </aside>
 <main class="main"><div class="card">
   <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=cf4" alt="ClipForge"></a>
+  <div class="mobwall" id="phones-m"></div>
   <h2 id="h"></h2><p id="p"></p>
   <a class="btn" id="google" href="/auth/google/start" hidden>
     <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.2.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
@@ -128,7 +135,11 @@ main,form,.card{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
   <p class="legal" id="legal">By continuing you agree to our <a href="/terms">Terms</a>, <a href="/refunds">Refund policy</a> and <a href="/privacy">Privacy Policy</a>.</p>
   <p class="swap" id="swap"></p>
 </div></main>
+<script src="/assets/phones.js?v=2"></script>
 <script>
+// only the wall that is on screen is built, so phones and laptops each load one
+if (matchMedia("(max-width: 860px)").matches) PeakPhones(document.getElementById("phones-m"), {cols: 4});
+else if (matchMedia("(min-height: 701px)").matches) PeakPhones(document.getElementById("phones"), {cols: 4});
 document.getElementById("year").textContent = new Date().getFullYear();
 const $ = id => document.getElementById(id), up = location.pathname === "/signup";
 const next = new URLSearchParams(location.search).get("next");

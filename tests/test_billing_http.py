@@ -38,6 +38,9 @@ for path, words in (("/terms", "Your provider charges you directly"), ("/refunds
                     ("/contact", "Grievance officer"), ("/acceptable-use", "Acceptable Use Policy")):
     r = anon.get(path)
     check(f"{path} is public and says what it should", (r.status_code, words in r.text), (200, True))
+home = anon.get("/").text
+check("the front page shows today's plans, built from the plan list", all(x in home for x in ("Pro BYOK", "₹499", "1,000 clips a month", "400 clips a month", "+ GST")), True)
+check("...and nothing from the old plans", any(x in home for x in ("minutes a month", "{{PRICING}}", "Priority in the queue")), False)
 check("the terms list every plan with its price", all(x in anon.get("/terms").text for x in ("Pro BYOK", "₹499", "1,000 clips", "Creator BYOK")), True)
 check("the BYOK plans are marked as running on the user's own key", [p["id"] for p in s["plans"] if p["own_key"]], ["byok", "byok_pro"])
 check("checkout without payments set up is refused cleanly", a.post("/api/billing/checkout", json={"plan": "creator"}, headers=H).status_code, 400)
