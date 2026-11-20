@@ -8,200 +8,279 @@
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg?v=cf4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --brand:#191917;--brand-press:#191917;--brand-ink:#17123A;--brand-soft:#191917;--brand-line:#191917;--brand-deep:#191917;
-  --frame:#0D0B1A;--frame-2:#1A1730;--frame-line:rgba(255,255,255,.08);--frame-text:#ECEAFB;--frame-dim:#8D89AB;
-  --bg:#FFFFFF;--muted:#F5F4FA;--line:#ECEAF4;--line-2:#DEDBEC;
-  --text:#15132A;--dim:#5F5C78;--faint:#9C99B3;
-  --good:#0F8A57;--good-soft:#E6F6EE;--bad:#D3343F;--bad-soft:#FDECEE;
-  --r-lg:16px;--r:12px;--r-sm:8px;
-  color-scheme:light;
-}
+  --bg:#F6F1E8;--panel:#FFFDF9;--sunk:#F1EADF;--line:#E6DDCE;--line-2:#D6CBB8;
+  --text:#1C1B19;--ink:#1C1B19;--dim:#6E6A62;--faint:#A29C91;
+  --accent:#E4572E;--accent-2:#C7431D;--accent-soft:#FBE7DE;--peach:#F7D7C2;--sage:#D8E2CF;--lilac:#E2DCEF;--butter:#F3E3B3;--sky:#D3E3EC;
+  --good:#2F6B3A;--good-soft:#E3EEDB;--warn:#8A6200;--warn-soft:#F8ECCB;--bad:#C2352B;--bad-soft:#FBECEA;
+  --serif:"Instrument Serif",Georgia,serif;--ease:cubic-bezier(.2,.8,.2,1);color-scheme:light}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-html,body{height:100%}
-body{margin:0;background:var(--frame);color:var(--text);font:14px/1.5 "Plus Jakarta Sans","Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
+html,body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 "Inter Tight",Inter,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
 h1,h2,h3,h4,p{margin:0}
-button,input,select,textarea{font:inherit;color:inherit}
-svg{width:18px;height:18px;flex:none;fill:currentColor}
-::selection{background:var(--brand-line)}
-:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#DCD9EA;border-radius:999px;border:3px solid #fff}
-
-.app{display:grid;grid-template-columns:240px minmax(0,1fr);height:100vh}
-.side{background:var(--frame);color:var(--frame-text);display:flex;flex-direction:column;height:100vh;padding:14px 10px 12px;min-width:0}
-.side-head{display:flex;align-items:center;gap:10px;padding:4px 4px 22px 6px}
-.side-head .logo{height:36px;width:auto;display:block}
-.nav{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0}
-.nav h4{font-size:12px;font-weight:500;color:var(--frame-dim);padding:14px 10px 4px}
-.nav-item{display:flex;align-items:center;gap:10px;width:100%;min-height:34px;padding:0 10px;border-radius:7px;border:0;background:transparent;color:var(--frame-text);font-size:14px;font-weight:500;cursor:pointer;text-align:left;text-decoration:none;transition:background-color .15s ease,color .15s ease}
-.nav-item svg{width:17px;height:17px;color:var(--frame-dim)}
-.nav-item:hover{background:var(--frame-2)}
-.nav-item.on{background:var(--brand);color:var(--brand-ink);font-weight:600}
-.nav-item.on svg{color:var(--brand-ink)}
-.nav-item .label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.count{font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.1);color:var(--frame-text)}
-.nav-item.on .count{background:rgba(23,18,58,.14);color:var(--brand-ink)}
-.side-foot{display:flex;flex-direction:column;gap:2px;padding-top:12px;border-top:1px solid var(--frame-line)}
-.who{padding:10px 10px 2px;font-size:12px;color:var(--frame-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.who b{display:block;font-size:13px;color:var(--frame-text);font-weight:600;overflow:hidden;text-overflow:ellipsis}
-
-main{background:var(--bg);margin:8px 8px 8px 0;border-radius:var(--r-lg);height:calc(100vh - 16px);overflow-y:auto;min-width:0;scrollbar-gutter:stable}
-.topbar{position:sticky;top:0;z-index:5;background:var(--bg);display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:10px 28px;min-height:62px;border-bottom:1px solid var(--line)}
-.topbar .titles{flex:1;min-width:0}
-.topbar h1{font-size:19px;font-weight:600;letter-spacing:-.01em;color:var(--brand-ink)}
-.topbar p{font-size:13px;color:var(--dim)}
-.content{padding:22px 28px 60px;max-width:1320px}
-
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 14px;border-radius:var(--r);border:1px solid var(--line-2);background:#fff;color:var(--text);cursor:pointer;text-decoration:none;white-space:nowrap;font-weight:600;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
-.btn:hover{background:var(--muted)}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
-.btn.primary:hover{background:#191917;border-color:#191917}
-.btn.primary:disabled{background:#F3E7DD;border-color:#F3E7DD;color:#A7A3C2;cursor:not-allowed}
-.btn.danger{background:var(--bad-soft);border-color:transparent;color:var(--bad)}
-.btn.danger:hover{background:#FADDE0}
-.btn.sm{height:32px;padding:0 11px;font-size:13px;gap:6px}
-.btn.sm svg{width:16px;height:16px}
-input[type=text],input[type=search],input[type=number],textarea{height:38px;padding:0 12px;border-radius:var(--r);border:1px solid var(--line-2);background:#fff;width:100%;transition:border-color .15s ease}
-input:hover,textarea:hover{border-color:#CFC4BC}
-input:focus,textarea:focus{outline:0;border-color:var(--brand)}
-label.f{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--dim);font-weight:600}
-
-.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:22px;margin-bottom:16px}
-.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
-.card-head h2{font-size:15px;font-weight:600;color:var(--brand-ink)}
-.help,.sub{color:var(--dim);font-size:13px}
-.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--muted);color:var(--dim);white-space:nowrap}
-.pill.ok{color:var(--good);background:var(--good-soft)}
-.pill.bad{color:var(--bad);background:var(--bad-soft)}
-.pill.warn{color:var(--brand-deep);background:var(--brand-soft)}
-.pill.brand{color:var(--brand-ink);background:var(--brand)}
-.empty{border:1px dashed var(--line-2);border-radius:var(--r);padding:40px 20px;text-align:center;color:var(--dim)}
-.empty b{display:block;color:var(--brand-ink);font-size:15px;margin-bottom:2px}
-
-.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:16px}
-.tile{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;min-width:0}
-.tile i{width:32px;height:32px;border-radius:var(--r-sm);background:var(--brand-soft);color:var(--brand-deep);display:grid;place-items:center;margin-bottom:14px}
-.tile b{font-size:26px;font-weight:600;letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--brand-ink);line-height:1.1}
-.tile span{font-size:13px;color:var(--dim);margin-top:2px}
-.tile small{font-size:12px;color:var(--faint);margin-top:8px}
-.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.split>.card{margin-bottom:16px;min-width:0}
-
-.chart{width:100%;height:auto;display:block}
-.chart .gl{stroke:var(--line);stroke-width:1}
-.chart text{font:11px "Plus Jakarta Sans","Geist","Segoe UI",sans-serif;fill:var(--faint)}
-.chart .b1{fill:var(--brand)}
-.chart .none{font-size:13px;fill:var(--dim)}
-.hbar{display:flex;flex-direction:column;gap:12px}
-.hbar-row .top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px}
-.hbar-row .top span:last-child{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
-.hbar-row .track{height:8px;background:var(--muted);border-radius:999px;overflow:hidden}
-.hbar-row .track i{display:block;height:100%;background:var(--brand);border-radius:999px}
-
-.scroll{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:12px;font-weight:500;color:var(--faint);padding:0 10px 10px;white-space:nowrap}
-td{padding:12px 10px;border-top:1px solid var(--line);vertical-align:middle}
-td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-td.acts{text-align:right;white-space:nowrap}
-tr.u{cursor:pointer}
-tr.u:hover>td{background:#FCFAF8}
-td .em{font-size:12px;color:var(--dim);overflow-wrap:anywhere}
-td b{color:var(--brand-ink);font-weight:600}
-.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
-.toolbar input{max-width:340px}
-.seg{display:flex;gap:2px;padding:3px;background:var(--muted);border-radius:11px}
-.seg button{height:32px;padding:0 12px;border:0;border-radius:8px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:background-color .15s ease,color .15s ease}
-.seg button:hover{background:#E8E5F3;color:var(--text)}
-.seg button.on{background:var(--brand);color:var(--brand-ink)}
-
-dialog{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:var(--r-lg);padding:0;max-width:calc(100vw - 32px)}
-dialog::backdrop{background:rgba(14,12,11,.42)}
-.dlg{padding:24px;width:460px;max-width:100%;display:flex;flex-direction:column;gap:14px}
-.dlg.wide{width:720px;max-height:calc(100vh - 48px);overflow:auto}
-.dlg h2{font-size:18px;font-weight:600;color:var(--brand-ink)}
-.dlg h3{font-size:13px;font-weight:600;color:var(--dim);margin-top:6px}
-.dlg-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:4px}
-.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
-.facts div{background:var(--muted);border-radius:var(--r-sm);padding:10px 12px}
-.facts b{display:block;font-size:17px;color:var(--brand-ink);font-variant-numeric:tabular-nums}
-.facts span{font-size:12px;color:var(--dim)}
-.note{background:var(--brand-soft);color:#3B2696;border-radius:var(--r-sm);padding:10px 12px;font-size:13px}
-#toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:50}
-.toast{background:var(--frame);color:var(--frame-text);border:1px solid var(--frame-2);border-radius:var(--r);padding:12px 16px;max-width:380px;display:flex;gap:10px;align-items:center;font-weight:500}
-.toast::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--brand);flex:none}
-.toast.ok::before{background:#3DDC97}.toast.bad::before{background:#FF6B78}
-
-@media (max-width:1100px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}}
-@media (max-width:900px){
-  body{overflow:auto}
-  .app{display:block;height:auto}
-  .side{height:auto;padding:10px 12px}
-  .side-head{padding:2px 2px 10px}
-  .side-head .logo{height:28px}
-  .nav{flex-direction:row;overflow-x:auto;gap:4px;scrollbar-width:none}
-  .nav h4,.who{display:none}
-  .nav-item{width:auto;flex:none}
-  .side-foot{flex-direction:row;border:0;padding-top:6px}
-  main{margin:0 8px 8px;height:auto;overflow:visible}
-  .topbar{padding:10px 16px;position:static}
-  .content{padding:16px 16px 48px}
-  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .tiles{gap:10px}.tile{padding:14px}.tile b{font-size:22px}
-}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-.fbitem{padding:16px 18px}
-.fbtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
-.fbtop b{color:var(--brand-ink)}
-.fbmsg{white-space:pre-wrap;color:var(--text);line-height:1.6;margin:0 0 10px}
-.fbctx{font-size:12px;color:var(--dim);background:var(--muted);border-radius:8px;padding:8px 10px;margin:0 0 12px;overflow-wrap:anywhere}
-
-
-
-/* ClipForge editorial look */
-:root{--brand:#1C1B19;--brand-hi:#3A3834;--ink:#1C1B19;--soft:#FBE7DE;--line-b:#D6CBB8;--deep:#1C1B19;--brand-press:#3A3834;--brand-ink:#1C1B19;--brand-soft:#FBE7DE;--brand-line:#F3C8B6;--brand-deep:#E4572E;
-  --frame:#1C1B19;--frame-2:#2B2A27;--frame-text:#F6F1E8;--frame-dim:#A29C91;--muted:#F1EADF;--line:#E6DDCE;--line-2:#D6CBB8;--text:#1C1B19;--dim:#6E6A62;--faint:#A29C91}
-body{font-family:"Inter Tight",Inter,system-ui,-apple-system,sans-serif!important;background:#F6F1E8!important}
-h1{font-family:"Instrument Serif",Georgia,serif!important;font-weight:400!important;letter-spacing:-.02em!important;font-size:clamp(38px,5vw,52px)!important;line-height:1!important}
-h2{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
-.btn{border-radius:999px!important;transition:transform .2s cubic-bezier(.2,.8,.2,1),background-color .2s}
-.btn:hover{transform:translateY(-1px)}
-.btn.primary{background:#1C1B19!important;border-color:#1C1B19!important;color:#F6F1E8!important;box-shadow:0 10px 22px -14px rgba(28,27,25,.8)!important;filter:none!important}
-.btn.primary:hover{background:#3A3834!important}
-input:not([type=checkbox]),select,textarea{border-radius:12px!important;background:#FFFDF9!important}
-input:focus,select:focus,textarea:focus{border-color:#E4572E!important;box-shadow:0 0 0 4px rgba(228,87,46,.14)!important}
 a{color:inherit}
-main{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
-@keyframes cfrise{from{opacity:0;transform:translateY(12px)}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+button,input,select,textarea{font:inherit;color:inherit}
+svg{width:17px;height:17px;flex:none;fill:currentColor}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
-/* active and selected states: readable on the dark sidebar and the light page */
-.nav-item.on{background:#F6F1E8!important;color:#1C1B19!important;box-shadow:inset 3px 0 0 #E4572E}
-.nav-item.on svg{color:#E4572E!important}
-.nav-item.on .count{background:#E4572E!important;color:#fff!important}
-.seg button.on{background:#1C1B19!important;color:#F6F1E8!important}
-.pill.brand{background:#FBE7DE!important;color:#C7431D!important}
-.hbar-row .track i{background:#E4572E!important}
-.toast::before{background:#E4572E!important}
+/* shell */
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;padding:18px 14px 14px;border-right:1px solid var(--line);background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px 20px}
+.brand img{height:26px;display:block}.brand span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);padding:2px 8px;border-radius:999px}
+.nav{position:relative;display:flex;flex-direction:column;gap:2px}
+.nav h4{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);padding:10px 10px 6px}
+.ni{position:relative;z-index:1;display:flex;align-items:center;gap:11px;height:40px;padding:0 12px;border-radius:12px;text-decoration:none;color:var(--dim);font-weight:600;transition:color .2s,background-color .2s}
+.ni:hover{color:var(--text);background:var(--sunk)}
+.ni.on{color:var(--text)}.ni.on:hover{background:transparent}.ni.on svg{color:var(--accent)}
+.ni .lbl{flex:1}
+.ni .count{font-size:11.5px;font-weight:700;min-width:22px;height:20px;padding:0 7px;border-radius:999px;display:grid;place-items:center;background:var(--sunk);color:var(--dim)}
+.ni .count.hot{background:var(--accent);color:#fff}
+.nind{position:absolute;left:0;right:0;border-radius:12px;background:var(--panel);border:1px solid var(--line);z-index:0;transition:top .45s var(--ease),opacity .2s}
+.svbox{margin-top:auto;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--panel);display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:center}
+.svbox b{display:block;font-size:13px}.svbox small{display:block;font-size:12px;color:var(--dim)}
+.foot{display:flex;flex-direction:column;gap:2px;padding-top:10px}
+.me{display:flex;align-items:center;gap:10px;padding:8px 10px}
+.me b{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.me small{display:block;font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me>div{min-width:0}
+main{min-width:0}
+.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 32px 16px;background:rgba(246,241,232,.9);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid transparent;transition:border-color .25s}
+.top.sc{border-bottom-color:var(--line)}
+.top .titles{flex:1;min-width:220px}
+.top h1{font-family:var(--serif);font-weight:400;font-size:40px;line-height:1.05;letter-spacing:-.02em}
+.top h1 em{font-style:italic;color:var(--accent)}
+.top p{color:var(--dim);font-size:13.5px;margin-top:2px}
+.livepill{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 13px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:12.5px;color:var(--dim)}
+.livepill i{width:8px;height:8px;border-radius:50%;background:#3E9A4E;animation:ping 2s infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(62,154,78,.45)}70%{box-shadow:0 0 0 8px rgba(62,154,78,0)}100%{box-shadow:0 0 0 0 rgba(62,154,78,0)}}
+.content{padding:8px 32px 70px;max-width:1360px}
+
+/* basics */
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grow{flex:1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);color:var(--text);font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .2s,border-color .2s,color .2s}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#F6F1E8}.btn.primary:hover{background:#3A3834}
+.btn.danger{background:var(--bad-soft);border-color:transparent;color:var(--bad)}.btn.danger:hover{background:#F6D9D5}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--dim)}.btn.ghost:hover{background:var(--sunk);color:var(--text)}
+.btn.sm{height:30px;padding:0 12px;font-size:13px}.btn.icon{width:36px;padding:0}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn.spinning svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+input[type=search],input[type=text]{height:38px;padding:0 14px 0 38px;border-radius:999px;border:1px solid var(--line-2);background:var(--panel);width:100%;outline:none;transition:border-color .2s}
+input:focus{border-color:var(--accent)}
+.search{position:relative;flex:1;max-width:340px}.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--faint)}
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--sunk);color:var(--dim);white-space:nowrap}
+.pill.ok{background:var(--good-soft);color:var(--good)}.pill.bad{background:var(--bad-soft);color:var(--bad)}.pill.warn{background:var(--warn-soft);color:var(--warn)}.pill.brand{background:var(--accent-soft);color:var(--accent-2)}
+.pill svg{width:12px;height:12px}
+.seg{display:inline-flex;gap:3px;padding:4px;border-radius:999px;background:var(--sunk)}
+.seg button{height:30px;padding:0 13px;border:0;border-radius:999px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:background-color .2s,color .2s}
+.seg button:hover{color:var(--text)}.seg button.on{background:var(--panel);color:var(--text)}
+.seg button b{font-weight:700;color:var(--accent);margin-left:4px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px;min-width:0}
+.chead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.chead h2{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.1}
+.chead p{color:var(--dim);font-size:13px;margin-top:2px}
+.empty{padding:40px 20px;text-align:center;color:var(--dim)}.empty b{display:block;font-family:var(--serif);font-weight:400;font-size:26px;color:var(--text);margin-bottom:4px}
+.av{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;flex:none;font-weight:700;font-size:14px;color:var(--text)}
+.av.lg{width:64px;height:64px;font-family:var(--serif);font-weight:400;font-size:30px}
+
+/* entrance */
+.anim{animation:rise .55s var(--ease) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}}
+.calm .anim,.calm .anim *{animation:none!important}
+
+/* KPI cards */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px}
+.kpi{position:relative;overflow:hidden;padding:18px 18px 0;display:flex;flex-direction:column;border-radius:20px;border:1px solid var(--line);background:var(--panel)}
+.kpi .k-top{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--dim)}
+.kpi .k-ico{display:grid;place-items:center;width:30px;height:30px;border-radius:10px}
+.kpi .k-ico svg{width:16px;height:16px}
+.kpi .k-num{display:flex;align-items:baseline;gap:10px;margin-top:12px}
+.kpi .k-num b{font-family:var(--serif);font-weight:400;font-size:44px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.delta{display:inline-flex;align-items:center;gap:3px;height:22px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:700}
+.delta.up{background:var(--good-soft);color:var(--good)}.delta.down{background:var(--bad-soft);color:var(--bad)}.delta.flat{background:var(--sunk);color:var(--dim)}
+.kpi small{font-size:12px;color:var(--faint);margin-top:4px}
+.spark{display:block;width:calc(100% + 36px);height:54px;margin:10px -18px 0}
+.spark .ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.3s .2s var(--ease) forwards}
+.spark .ar{opacity:0;animation:fade .9s .6s ease forwards}
+.calm .spark .ln{stroke-dashoffset:0}.calm .spark .ar{opacity:1}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fade{to{opacity:1}}
+
+/* charts */
+.grid2{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
+.grid2.even{grid-template-columns:1fr 1fr}
+.chartwrap{position:relative}
+.chart{display:block;width:100%;height:auto;overflow:visible}
+.chart .gl{stroke:var(--line);stroke-width:1;stroke-dasharray:3 4}
+.chart text{font:11px "Inter Tight",sans-serif;fill:var(--faint)}
+.chart .ln{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.4s var(--ease) forwards}
+.chart .ar{opacity:0;transform-box:fill-box;transform-origin:bottom;animation:areaup 1s .35s var(--ease) forwards}
+@keyframes areaup{from{opacity:0;transform:scaleY(.4)}to{opacity:1;transform:none}}
+.calm .chart .ln{stroke-dashoffset:0}.calm .chart .ar{opacity:1}
+.chart .end{fill:var(--accent);opacity:0;animation:fade .3s 1.3s forwards}
+.chart .endring{fill:none;stroke:var(--accent);opacity:0;transform-box:fill-box;transform-origin:center;animation:pulse 2s 1.4s infinite}
+@keyframes pulse{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(3)}}
+.calm .chart .end{opacity:1}
+.chart .bar{fill:var(--accent);transform-box:fill-box;transform-origin:bottom;animation:barup .7s var(--ease) both}
+.chart .bar.soft{fill:var(--peach)}
+@keyframes barup{from{transform:scaleY(0)}}
+.chart .xh{stroke:var(--line-2);stroke-width:1;stroke-dasharray:3 3}
+.chart .hd{fill:var(--panel);stroke:var(--accent);stroke-width:2.5}
+.chart .hit{fill:transparent;cursor:crosshair}
+.none{font-size:13px!important;fill:var(--dim)!important}
+.tip{position:absolute;z-index:3;pointer-events:none;transform:translate(-50%,-100%);margin-top:-12px;padding:7px 11px;border-radius:12px;background:var(--ink);color:#F6F1E8;font-size:12.5px;white-space:nowrap;transition:left .08s linear,top .08s linear}
+.tip b{display:block;font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.1}
+.tip small{color:#C9C2B5}
+.metric-tabs{margin-bottom:6px}
+.bigstat{display:flex;align-items:baseline;gap:10px;margin:-4px 0 10px}
+.bigstat b{font-family:var(--serif);font-weight:400;font-size:38px;line-height:1}
+.bigstat span{color:var(--dim);font-size:13px}
+
+/* donut */
+.donut{display:grid;grid-template-columns:170px minmax(0,1fr);gap:20px;align-items:center}
+.donut svg{width:170px;height:170px;transform:rotate(-90deg)}
+.donut .seg-d{fill:none;stroke-width:16;animation:sweep 1.1s var(--ease) both}
+@keyframes sweep{from{stroke-dasharray:0 100}}
+.donut .track{fill:none;stroke:var(--sunk);stroke-width:16}
+.dcenter{position:relative}.dcenter .mid{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.dcenter .mid b{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1}.dcenter .mid span{font-size:11.5px;color:var(--dim)}
+.legend{display:flex;flex-direction:column;gap:9px;font-size:13px}
+.legend div{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:9px;align-items:center}
+.legend i{width:12px;height:12px;border-radius:4px}
+.legend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.legend em{font-style:normal;color:var(--dim);font-variant-numeric:tabular-nums}
+
+/* health */
+.gauges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.gauge{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.ring{position:relative;width:86px;height:86px}
+.ring svg{width:86px;height:86px;transform:rotate(-90deg)}
+.ring .tr{fill:none;stroke:var(--sunk);stroke-width:9}
+.ring .vl{fill:none;stroke-width:9;stroke-linecap:round;animation:sweep 1.2s var(--ease) both}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--serif);font-weight:400;font-size:22px}
+.gauge span{font-size:12px;color:var(--dim)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.check{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:12px;background:var(--bg);font-size:13px;font-weight:500}
+.check i{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;flex:none}
+.check i svg{width:12px;height:12px}
+.check.ok i{background:var(--good-soft);color:var(--good)}.check.no i{background:var(--bad-soft);color:var(--bad)}
+.note{margin-top:14px;padding:11px 14px;border-radius:14px;background:var(--accent-soft);color:var(--accent-2);font-size:13px}
+
+/* lists */
+.people{display:flex;flex-direction:column}
+.person{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 6px;border-top:1px solid var(--line);cursor:pointer;border-radius:12px;transition:background-color .2s}
+.person:first-child{border-top-color:transparent}.person:hover{background:var(--bg)}
+.person b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.person small{display:block;font-size:12px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar{display:flex;flex-direction:column;gap:12px}
+.hrow .t{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px}.hrow .t span:last-child{color:var(--dim);font-variant-numeric:tabular-nums}
+.hrow .tr{height:8px;border-radius:8px;background:var(--sunk);overflow:hidden}
+.hrow .tr i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,var(--accent),#F3B79E);transform-origin:left;animation:growx .9s var(--ease) both}
+@keyframes growx{from{transform:scaleX(0)}}
+
+/* users table */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.tablecard{padding:6px 6px 2px}
+.scroll{overflow-x:auto;overflow-y:hidden}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th{text-align:left;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:12px 14px;white-space:nowrap}
+th button{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:4px}th button.on{color:var(--accent)}
+td{padding:12px 14px;border-top:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.u{cursor:pointer;animation:rise .45s var(--ease) both}
+tr.u:hover>td{background:var(--bg)}
+tr.u:hover>td:first-child{border-radius:14px 0 0 14px}tr.u:hover>td:last-child{border-radius:0 14px 14px 0}
+.who{display:flex;align-items:center;gap:12px;min-width:230px}
+.who b{font-weight:600}.who small{display:block;font-size:12px;color:var(--dim);overflow-wrap:anywhere}
+.when{color:var(--dim);font-size:13px;white-space:nowrap}
+.online{display:inline-block;width:7px;height:7px;border-radius:50%;background:#3E9A4E;margin-right:6px;vertical-align:middle}
+.ubar{display:flex;align-items:center;justify-content:flex-end;gap:8px}
+.ubar i{display:block;width:64px;height:6px;border-radius:6px;background:var(--sunk);overflow:hidden}
+.ubar i span{display:block;height:100%;background:var(--accent);border-radius:inherit;transform-origin:left;animation:growx .8s var(--ease) both}
+mark{background:var(--butter);color:inherit;border-radius:3px;padding:0 1px}
+
+/* feedback */
+.fb{position:relative;padding:18px 20px 16px 24px;margin-bottom:12px;overflow:hidden}
+.fb::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--line-2)}
+.fb.bug::before{background:var(--accent)}.fb.idea::before{background:#8B6FD0}.fb.other::before{background:#3E9A4E}
+.fbtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.fbtop b{font-weight:600}.fbtop small{color:var(--dim)}
+.fbmsg{white-space:pre-wrap;line-height:1.6;margin:0 0 10px;font-size:14.5px}
+.fbctx{font-size:12px;color:var(--dim);background:var(--bg);border-radius:10px;padding:8px 10px;margin:0 0 12px;overflow-wrap:anywhere}
+
+/* activity timeline */
+.tl{position:relative;padding-left:28px}
+.tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--line);border-radius:2px}
+.tli{position:relative;padding:4px 0 18px;animation:rise .45s var(--ease) both}
+.tli::before{content:"";position:absolute;left:-24px;top:8px;width:12px;height:12px;border-radius:50%;background:var(--panel);border:3px solid var(--accent)}
+.tli.enable::before{border-color:#3E9A4E}.tli.delete::before{border-color:var(--bad)}.tli.plan::before{border-color:#8B6FD0}
+.tli b{font-weight:600}.tli p{color:var(--dim);font-size:13px}.tli small{color:var(--faint);font-size:12px}
+
+/* dialogs */
+dialog{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:22px;padding:0;max-width:calc(100vw - 32px);animation:pop .25s var(--ease)}
+dialog::backdrop{background:rgba(28,27,25,.38);backdrop-filter:blur(2px)}
+@keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}}
+.dlg{padding:24px;width:460px;max-width:100%;display:flex;flex-direction:column;gap:14px}
+.dlg h2{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.1}
+.dlg p{color:var(--dim)}
+.dlg label{display:flex;flex-direction:column;gap:7px;font-size:13px;color:var(--dim);font-weight:600}
+.dlg input{padding-left:14px}
+.dlg-foot{display:flex;justify-content:flex-end;gap:8px}
+dialog.drawer{margin:0 0 0 auto;width:540px;height:100vh;max-height:100vh;border-radius:26px 0 0 26px;border-right:0;animation:slidein .4s var(--ease)}
+@keyframes slidein{from{transform:translateX(60px);opacity:0}}
+.dw{padding:26px;display:flex;flex-direction:column;gap:18px}
+.dwhead{display:flex;align-items:center;gap:14px}
+.dwhead h2{font-family:var(--serif);font-weight:400;font-size:30px;line-height:1.05;overflow-wrap:anywhere}
+.dwhead p{color:var(--dim);font-size:13px;overflow-wrap:anywhere}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.facts div{background:var(--bg);border-radius:14px;padding:12px;animation:rise .45s var(--ease) both}
+.facts b{display:block;font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.1;font-variant-numeric:tabular-nums}
+.facts span{font-size:11.5px;color:var(--dim)}
+.dw h3{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.calls{display:flex;flex-direction:column}
+.calls div{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+.calls div:first-child{border-top:0}.calls span:last-child{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+#toasts{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:60}
+.toast{display:flex;gap:10px;align-items:center;max-width:380px;padding:11px 16px;border-radius:999px;background:var(--ink);color:#F6F1E8;font-weight:500;animation:pop .3s var(--ease)}
+.toast::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.toast.ok::before{background:#7BD389}.toast.bad{background:var(--bad)}.toast.bad::before{background:#fff}
+
+@media (max-width:1180px){.grid2,.grid2.even{grid-template-columns:1fr}}
+@media (max-width:900px){
+  .app{display:block}
+  .side{position:sticky;z-index:20;height:auto;flex-direction:row;align-items:center;gap:6px;padding:10px 12px;border-right:0;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .brand{padding:0 8px 0 2px}.brand span,.nav h4,.nind,.svbox,.me{display:none}
+  .nav{flex-direction:row}.ni{height:36px;padding:0 11px}.ni .lbl{white-space:nowrap}
+  .foot{flex-direction:row;padding:0;margin-left:auto}.foot .ni .lbl{display:none}
+  .top{position:static;padding:16px 16px 10px}.top h1{font-size:32px}
+  .content{padding:6px 16px 50px}
+  .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .donut{grid-template-columns:1fr;justify-items:center}.legend{width:100%}
+  .gauges{grid-template-columns:repeat(3,minmax(0,1fr))}.checks{grid-template-columns:1fr}
+  dialog.drawer{width:100vw;border-radius:22px 22px 0 0;margin:auto 0 0;height:88vh}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}.chart .ln,.spark .ln{stroke-dashoffset:0}.chart .ar,.spark .ar,.chart .end{opacity:1}}
 </style>
 </head>
 <body>
 <div class="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=cf4" alt="ClipForge"></div>
+    <a class="brand" href="/admin" data-act="tab" data-k="overview"><img src="/brand/logo.svg?v=cf4" alt="ClipForge"><span>Admin</span></a>
     <nav class="nav" id="nav" aria-label="Admin"></nav>
-    <div class="side-foot" id="foot"></div>
+    <div class="svbox" id="svbox" hidden></div>
+    <div class="foot" id="foot"></div>
   </aside>
   <main id="main">
-    <header class="topbar"><div class="titles"><h1 id="title">Admin</h1><p id="subtitle"></p></div><div class="row" id="actions"></div></header>
-    <div class="content" id="view"><div class="empty">Loading…</div></div>
+    <header class="top" id="top"><div class="titles"><h1 id="title">Admin</h1><p id="subtitle"></p></div><div class="row" id="actions"></div></header>
+    <div class="content" id="view"><div class="empty"><b>Loading…</b></div></div>
   </main>
 </div>
 <dialog id="dlg"></dialog>
+<dialog id="drawer" class="drawer"></dialog>
 <div id="toasts" role="status" aria-live="polite"></div>
 
 <script>
@@ -210,26 +289,44 @@ main{animation:cfrise .6s cubic-bezier(.2,.8,.2,1) both}
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const st = d => `<g fill="none" stroke="currentColor" stroke-width="18" stroke-linecap="round" stroke-linejoin="round">${d}</g>`;
 const I = {
- "chat": "<path d=\"M128,24A104,104,0,0,0,36.18,176.88L24.83,210.93a16,16,0,0,0,20.24,20.24l34.05-11.35A104,104,0,1,0,128,24Zm0,192a87.87,87.87,0,0,1-44.06-11.81,8,8,0,0,0-6.54-.67L40,216,52.47,178.6a8,8,0,0,0-.66-6.54A88,88,0,1,1,128,216Zm12-88a12,12,0,1,1-12-12A12,12,0,0,1,140,128Zm-44,0a12,12,0,1,1-12-12A12,12,0,0,1,96,128Zm88,0a12,12,0,1,1-12-12A12,12,0,0,1,184,128Z\"/>",
- "check": "<path d=\"M229.66,77.66l-128,128a8,8,0,0,1-11.32,0l-56-56a8,8,0,0,1,11.32-11.32L96,188.69,218.34,66.34a8,8,0,0,1,11.32,11.32Z\"/>",
- "home": "<path d=\"M219.31,108.68l-80-80a16,16,0,0,0-22.62,0l-80,80A15.87,15.87,0,0,0,32,120v96a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V160h32v56a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8V120A15.87,15.87,0,0,0,219.31,108.68ZM208,208H160V152a8,8,0,0,0-8-8H104a8,8,0,0,0-8,8v56H48V120l80-80,80,80Z\"/>",
- "users": "<path d=\"M117.25,157.92a60,60,0,1,0-66.5,0A95.83,95.83,0,0,0,3.53,195.63a8,8,0,1,0,13.4,8.74,80,80,0,0,1,134.14,0,8,8,0,0,0,13.4-8.74A95.83,95.83,0,0,0,117.25,157.92ZM40,108a44,44,0,1,1,44,44A44.05,44.05,0,0,1,40,108Zm210.14,98.7a8,8,0,0,1-11.07-2.33A79.83,79.83,0,0,0,172,168a8,8,0,0,1,0-16,44,44,0,1,0-16.34-84.87,8,8,0,1,1-5.94-14.85,60,60,0,0,1,55.53,105.64,95.83,95.83,0,0,1,47.22,37.71A8,8,0,0,1,250.14,206.7Z\"/>",
- "clock": "<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z\"/>",
- "chart": "<path d=\"M224,200h-8V40a8,8,0,0,0-8-8H152a8,8,0,0,0-8,8V80H96a8,8,0,0,0-8,8v40H48a8,8,0,0,0-8,8v64H32a8,8,0,0,0,0,16H224a8,8,0,0,0,0-16ZM160,48h40V200H160ZM104,96h40V200H104ZM56,144H88v56H56Z\"/>",
- "signout": "<path d=\"M120,216a8,8,0,0,1-8,8H48a8,8,0,0,1-8-8V40a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H56V208h56A8,8,0,0,1,120,216Zm109.66-93.66-40-40a8,8,0,0,0-11.32,11.32L204.69,120H112a8,8,0,0,0,0,16h92.69l-26.35,26.34a8,8,0,0,0,11.32,11.32l40-40A8,8,0,0,0,229.66,122.34Z\"/>",
- "arrowr": "<path d=\"M221.66,133.66l-72,72a8,8,0,0,1-11.32-11.32L196.69,136H40a8,8,0,0,1,0-16H196.69L138.34,61.66a8,8,0,0,1,11.32-11.32l72,72A8,8,0,0,1,221.66,133.66Z\"/>",
- "bolt": "<path d=\"M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z\"/>",
- "video": "<path d=\"M251.77,73a8,8,0,0,0-8.21.39L208,97.05V72a16,16,0,0,0-16-16H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V159l35.56,23.71A8,8,0,0,0,248,184a8,8,0,0,0,8-8V80A8,8,0,0,0,251.77,73ZM192,184H32V72H192V184Zm48-22.95-32-21.33V116.28L240,95Z\"/>",
- "plus": "<path d=\"M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z\"/>"
+  home: st('<path d="M40 112 128 40l88 72v104H152v-64h-48v64H40Z"/>'),
+  users: st('<circle cx="96" cy="92" r="40"/><path d="M24 208c8-36 38-56 72-56s64 20 72 56"/><path d="M168 56a36 36 0 0 1 0 72M184 160c24 8 40 24 48 48"/>'),
+  chat: st('<path d="M216 48H40v136h48v36l40-36h88Z"/><path d="M84 104h88M84 136h56"/>'),
+  clock: st('<circle cx="128" cy="128" r="92"/><path d="M128 76v52h44"/>'),
+  chart: st('<path d="M40 216h176M64 216v-64M112 216V96M160 216v-88M208 216V56"/>'),
+  bolt: st('<path d="M144 24 48 144h72l-8 88 96-120h-72Z"/>'),
+  video: st('<rect x="24" y="64" width="160" height="128" rx="16"/><path d="m184 112 48-28v88l-48-28"/>'),
+  plus: st('<path d="M128 48v160M48 128h160"/>'),
+  check: st('<path d="m48 132 52 52L208 76"/>'),
+  x: st('<path d="m64 64 128 128M192 64 64 192"/>'),
+  arrowr: st('<path d="M40 128h176M144 56l72 72-72 72"/>'),
+  arrowl: st('<path d="M216 128H40M112 56l-72 72 72 72"/>'),
+  signout: st('<path d="M112 40H48v176h64M168 80l48 48-48 48M88 128h128"/>'),
+  refresh: st('<path d="M208 128a80 80 0 1 1-23.4-56.6"/><path d="M208 40v48h-48"/>'),
+  search: st('<circle cx="112" cy="112" r="68"/><path d="m164 164 52 52"/>'),
+  trash: st('<path d="M40 64h176M96 64V40h64v24M64 64l12 152h104l12-152"/>'),
+  crown: st('<path d="m32 76 48 52 48-80 48 80 48-52-20 124H52Z"/>'),
+  rupee: st('<path d="M64 48h128M64 92h128M64 48h40a46 46 0 0 1 0 92H68l92 76"/>'),
+  mail: st('<rect x="32" y="56" width="192" height="144" rx="16"/><path d="m32 72 96 72 96-72"/>'),
+  server: st('<rect x="40" y="40" width="176" height="72" rx="14"/><rect x="40" y="144" width="176" height="72" rx="14"/><path d="M76 76h8M76 180h8"/>'),
+  up: st('<path d="m64 160 64-64 64 64"/>'), down: st('<path d="m64 96 64 64 64-64"/>'),
 };
 const ic = n => `<svg viewBox="0 0 256 256" aria-hidden="true">${I[n] || ""}</svg>`;
 const num = v => (Number(v) || 0).toLocaleString();
-const kfmt = v => v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(1) + "k" : String(v);
+const kfmt = v => (v = Number(v) || 0) >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? (v / 1e3).toFixed(1) + "k" : String(Math.round(v));
+const inr = paise => "₹" + Math.round((Number(paise) || 0) / 100).toLocaleString("en-IN");
 const when = t => t ? new Date(t * 1000).toLocaleString([], {month:"short", day:"numeric", hour:"2-digit", minute:"2-digit"}) : "Never";
 const day = t => t ? new Date(t * 1000).toLocaleDateString([], {day:"numeric", month:"short", year:"numeric"}) : "Never";
 const ago = t => { if (!t) return "Never"; const s = Date.now() / 1000 - t; return s < 300 ? "Now" : s < 3600 ? Math.floor(s / 60) + " min ago" : s < 86400 ? Math.floor(s / 3600) + " h ago" : s < 30 * 86400 ? Math.floor(s / 86400) + " d ago" : day(t); };
-const ACTION = {disable:"Disabled an account", enable:"Enabled an account", delete:"Deleted an account", "role:admin":"Made an admin", "role:user":"Removed admin"};
+const dlabel = d => new Date(d + "T00:00:00").toLocaleDateString([], {day: "numeric", month: "short"});
+const ACTION = {disable: "Disabled an account", enable: "Enabled an account", delete: "Deleted an account", "role:admin": "Made an admin", "role:user": "Removed admin", plan: "Gave a plan"};
+const PAL = ["#F7D7C2", "#D8E2CF", "#E2DCEF", "#F3E3B3", "#D3E3EC", "#FBE7DE"];
+const DONUT = ["#E4572E", "#F3B79E", "#8B6FD0", "#3E9A4E", "#E0B43A", "#5B8FB0", "#C7431D", "#A29C91"];
+const avColor = id => PAL[[...String(id)].reduce((n, c) => n + c.charCodeAt(0), 0) % PAL.length];
+const avatar = (u, cls = "") => `<span class="av ${cls}" style="background:${avColor(u.id)}">${esc(((u.name || u.email || "?").trim()[0] || "?").toUpperCase())}</span>`;
+const still = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 async function api(path, opt) {
   const r = await fetch(path, opt);
@@ -238,220 +335,323 @@ async function api(path, opt) {
   return r.json();
 }
 const send = (path, body) => api(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(body ?? {})});
-function toast(msg, kind = "") {
-  const t = document.createElement("div"); t.className = "toast " + kind; t.textContent = msg;
-  $("#toasts").append(t); setTimeout(() => t.remove(), kind === "bad" ? 7000 : 3200);
-}
+function toast(msg, kind = "") { const t = document.createElement("div"); t.className = "toast " + kind; t.textContent = msg; $("#toasts").append(t); setTimeout(() => t.remove(), kind === "bad" ? 7000 : 3200); }
 
-const S = {tab:"overview", data:null, me:null, q:"", filter:"all", sort:"created_at", fb:null, fbStatus:"new"};
-const TABS = {overview:["Overview", "home", "Sign-ups, videos and AI use across this ClipForge server."],
-              users:["Users", "users", "Every account. Open one to see how much it uses the AI."],
-              feedback:["Feedback", "chat", "Bug reports, feature ideas and other messages from users."],
-              activity:["Activity", "clock", "Everything admins have done, newest first."]};
+const S = {tab: "overview", data: null, me: null, q: "", filter: "all", sort: "created_at", fb: null, fbStatus: "new", range: 30, metric: "signups", anim: true, at: 0};
+const TABS = {overview: ["Overview", "home", "How this ClipForge server is doing."],
+              users: ["Users", "users", "Every account. Open one to see how much it uses the AI."],
+              feedback: ["Feedback", "chat", "Bug reports, ideas and other messages from users."],
+              activity: ["Activity", "clock", "Everything admins have done, newest first."]};
 const pathFor = t => "/admin" + (t === "overview" ? "" : "/" + t);
 const fromPath = () => { const k = location.pathname.replace(/\/$/, "").split("/")[2]; return TABS[k] ? k : "overview"; };
 
-/* ---------- charts */
-function bars(rows, a, fmt, label) {
-  const W = 640, H = 190, pl = 44, pt = 10, pb = 22, cw = W - pl, ch = H - pt - pb;
-  const max = Math.max(...rows.map(r => r[a] || 0), 0);
-  const top = max || 1, step = cw / rows.length, bw = Math.max(3, step - 4);
-  let g = "";
-  for (let i = 0; i <= 2; i++) { const y = pt + ch - ch * i / 2;
-    g += `<line class="gl" x1="${pl}" x2="${W}" y1="${y}" y2="${y}"/><text x="${pl - 8}" y="${y + 4}" text-anchor="end">${esc(fmt(top * i / 2))}</text>`; }
-  rows.forEach((r, i) => {
-    const x = pl + i * step + (step - bw) / 2, h1 = ch * (r[a] || 0) / top;
-    if (h1 > 0) g += `<rect class="b1" x="${x}" y="${pt + ch - h1}" width="${bw}" height="${h1}" rx="2"><title>${esc(`${r.day}: ${fmt(r[a] || 0)}`)}</title></rect>`;
-    if (i % 5 === 0 || i === rows.length - 1) g += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(r.day.slice(8) + "/" + r.day.slice(5, 7))}</text>`;
+/* ---------- numbers that count up */
+function countUp(root) {
+  $$("[data-count]", root).forEach(el => {
+    const end = Number(el.dataset.count) || 0, f = {k: kfmt, inr: v => inr(v)}[el.dataset.fmt] || (v => Math.round(v).toLocaleString());
+    if (!S.anim || still() || !end) { el.textContent = f(end); return; }
+    const t0 = performance.now(), step = t => { const k = Math.min(1, (t - t0) / 1100); el.textContent = f(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
+    el.textContent = f(0); requestAnimationFrame(step);
   });
-  const none = max ? "" : `<text class="none" x="${(W + pl) / 2}" y="${pt + ch / 2}" text-anchor="middle">Nothing in the last 30 days</text>`;
-  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}${none}</svg>`;
 }
-function hbars(rows, fmt) {
-  const total = rows.reduce((s, r) => s + r[1], 0) || 1;
-  return rows.length ? `<div class="hbar">${rows.map(r => `<div class="hbar-row"><div class="top"><span>${esc(r[0])}</span><span>${esc(fmt(r))}</span></div>
-    <div class="track"><i style="width:${Math.max(2, r[1] / total * 100)}%"></i></div></div>`).join("")}</div>` : `<p class="help">Nothing yet.</p>`;
-}
-const tile = (icon, big, label, small = "") => `<div class="tile"><i>${ic(icon)}</i><b>${esc(big)}</b><span>${esc(label)}</span>${small ? `<small>${esc(small)}</small>` : ""}</div>`;
 
-/* ---------- pages */
+/* ---------- charts: drawn as SVG, animated with CSS, with a hover tooltip */
+const CH = {};
+const niceMax = v => { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), n = v / p; return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p; };
+function smooth(pts) {                       // a soft curve through the points (never overshooting below zero)
+  if (pts.length < 2) return pts.length ? `M${pts[0][0]},${pts[0][1]}` : "";
+  let d = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i - 1] || pts[i], [x1, y1] = pts[i], [x2, y2] = pts[i + 1], [x3, y3] = pts[i + 2] || pts[i + 1];
+    const c1 = [x1 + (x2 - x0) / 6, y1 + (y2 - y0) / 6], c2 = [x2 - (x3 - x1) / 6, y2 - (y3 - y1) / 6];
+    d += ` C${c1[0]},${Math.min(c1[1], Math.max(y1, y2))} ${c2[0]},${Math.min(c2[1], Math.max(y1, y2))} ${x2},${y2}`;
+  }
+  return d;
+}
+function lineChart(id, rows, key, fmt, label) {
+  const W = 760, H = 250, pl = 46, pr = 14, pt = 14, pb = 28, cw = W - pl - pr, ch = H - pt - pb;
+  const vals = rows.map(r => r[key] || 0), top = Math.max(niceMax(Math.max(...vals, 0)), key === "signups" || key === "calls" ? 4 : 0), n = rows.length;
+  const X = i => pl + (n < 2 ? cw / 2 : i * cw / (n - 1)), Y = v => pt + ch - ch * v / top;
+  const pts = vals.map((v, i) => [+X(i).toFixed(1), +Y(v).toFixed(1)]);
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const y = pt + ch - ch * i / 4; g += `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text x="${pl - 10}" y="${y + 4}" text-anchor="end">${esc(fmt(top * i / 4))}</text>`; }
+  const every = Math.max(1, Math.ceil(n / 7));
+  rows.forEach((r, i) => { if (i % every === 0 || i === n - 1) g += `<text x="${X(i)}" y="${H - 6}" text-anchor="middle">${esc(dlabel(r.day))}</text>`; });
+  const line = smooth(pts), area = `${line} L${X(n - 1)},${pt + ch} L${X(0)},${pt + ch} Z`, last = pts[n - 1];
+  const empty = !Math.max(...vals, 0);
+  CH[id] = {rows, key, fmt, pts, pl, W, H, pt, ch};
+  return `<div class="chartwrap" data-chart="${id}"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
+    <defs><linearGradient id="g-${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4572E" stop-opacity=".28"/><stop offset="1" stop-color="#E4572E" stop-opacity="0"/></linearGradient></defs>
+    ${g}${empty ? `<text class="none" x="${(W + pl) / 2}" y="${pt + ch / 2}" text-anchor="middle">Nothing in this period yet</text>` : `<path class="ar" d="${area}" fill="url(#g-${id})"/><path class="ln" d="${line}" pathLength="1"/>
+    <circle class="endring" cx="${last[0]}" cy="${last[1]}" r="5"/><circle class="end" cx="${last[0]}" cy="${last[1]}" r="4.5"/>`}
+    <line class="xh" x1="0" x2="0" y1="${pt}" y2="${pt + ch}" visibility="hidden"/><circle class="hd" r="5.5" cx="0" cy="0" visibility="hidden"/>
+    <rect class="hit" x="${pl}" y="${pt}" width="${cw}" height="${ch}"/></svg><div class="tip" hidden></div></div>`;
+}
+function barChart(id, rows, key, fmt, label) {
+  const W = 760, H = 230, pl = 46, pr = 10, pt = 12, pb = 28, cw = W - pl - pr, ch = H - pt - pb;
+  const vals = rows.map(r => r[key] || 0), top = Math.max(niceMax(Math.max(...vals, 0)), key === "signups" || key === "calls" ? 4 : 0), n = rows.length, step = cw / n, bw = Math.max(4, step * .62);
+  let g = "";
+  for (let i = 0; i <= 4; i++) { const y = pt + ch - ch * i / 4; g += `<line class="gl" x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}"/><text x="${pl - 10}" y="${y + 4}" text-anchor="end">${esc(fmt(top * i / 4))}</text>`; }
+  const hi = Math.max(...vals), every = Math.max(1, Math.ceil(n / 7)), pts = [];
+  rows.forEach((r, i) => { const x = pl + i * step + (step - bw) / 2, h = ch * vals[i] / top; pts.push([x + bw / 2, pt + ch - h]);
+    if (h > 0) g += `<rect class="bar ${vals[i] === hi ? "" : "soft"}" x="${x.toFixed(1)}" y="${(pt + ch - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(6, bw / 2)}" style="animation-delay:${i * 22}ms"/>`;
+    if (i % every === 0 || i === n - 1) g += `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${esc(dlabel(r.day))}</text>`; });
+  CH[id] = {rows, key, fmt, pts, pl, W, H, pt, ch, bars: true};
+  return `<div class="chartwrap" data-chart="${id}"><svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g}
+    ${hi ? "" : `<text class="none" x="${(W + pl) / 2}" y="${pt + ch / 2}" text-anchor="middle">Nothing in this period yet</text>`}
+    <line class="xh" x1="0" x2="0" y1="${pt}" y2="${pt + ch}" visibility="hidden"/><rect class="hit" x="${pl}" y="${pt}" width="${cw}" height="${ch}"/></svg><div class="tip" hidden></div></div>`;
+}
+function spark(rows, key, color) {
+  const W = 240, H = 54, vals = rows.map(r => r[key] || 0), top = Math.max(...vals, 0) || 1, n = vals.length;
+  const pts = vals.map((v, i) => [+(i * W / Math.max(1, n - 1)).toFixed(1), +(H - 4 - (H - 10) * v / top).toFixed(1)]), line = smooth(pts);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="ar" d="${line} L${W},${H} L0,${H} Z" fill="${color}" fill-opacity=".12"/><path class="ln" d="${line}" stroke="${color}" pathLength="1" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function donut(rows, total, centerLabel) {
+  const sum = rows.reduce((s, r) => s + r[1], 0) || 1; let off = 0;
+  const segs = rows.map((r, i) => { const pct = r[1] / sum * 100, gap = rows.length > 1 ? .8 : 0, s = `<circle class="seg-d" cx="60" cy="60" r="48" pathLength="100" stroke="${DONUT[i % DONUT.length]}" stroke-dasharray="${Math.max(.1, pct - gap)} ${100 - Math.max(.1, pct - gap)}" stroke-dashoffset="${-off}" style="animation-delay:${i * 90}ms"/>`; off += pct; return s; }).join("");
+  return `<div class="donut"><div class="dcenter"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="track" cx="60" cy="60" r="48"/>${segs}</svg><div class="mid"><b data-count="${total}" data-fmt="k">0</b><span>${esc(centerLabel)}</span></div></div>
+    <div class="legend">${rows.map((r, i) => `<div><i style="background:${DONUT[i % DONUT.length]}"></i><span title="${esc(r[0])}">${esc(r[0])}</span><em>${Math.round(r[1] / sum * 100)}%</em></div>`).join("")}</div></div>`;
+}
+const ringG = (v, label, sub, color) => `<div class="gauge"><div class="ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="tr" cx="50" cy="50" r="40"/><circle class="vl" cx="50" cy="50" r="40" pathLength="100" stroke="${color}" stroke-dasharray="${Math.max(.5, Math.min(100, v))} 100"/></svg><b>${esc(label)}</b></div><span>${esc(sub)}</span></div>`;
+document.addEventListener("mousemove", e => {
+  const hit = e.target.closest(".hit"); const wraps = hit ? [hit.closest(".chartwrap")] : [];
+  $$(".chartwrap").forEach(w => { if (!wraps.includes(w)) { const t = w.querySelector(".tip"); if (t && !t.hidden) { t.hidden = true; w.querySelector(".xh").setAttribute("visibility", "hidden"); w.querySelector(".hd")?.setAttribute("visibility", "hidden"); } } });
+  if (!hit) return;
+  const w = wraps[0], c = CH[w.dataset.chart], svg = w.querySelector("svg"), r = svg.getBoundingClientRect(), k = c.W / r.width;
+  const x = (e.clientX - r.left) * k, i = Math.max(0, Math.min(c.pts.length - 1, c.bars ? Math.floor((x - c.pl) / ((c.W - c.pl - 10) / c.pts.length)) : Math.round((x - c.pl) / ((c.W - c.pl - 14) / Math.max(1, c.pts.length - 1)))));
+  const [px, py] = c.pts[i], xh = w.querySelector(".xh"), hd = w.querySelector(".hd"), tip = w.querySelector(".tip");
+  xh.setAttribute("x1", px); xh.setAttribute("x2", px); xh.setAttribute("visibility", "visible");
+  if (hd) { hd.setAttribute("cx", px); hd.setAttribute("cy", py); hd.setAttribute("visibility", "visible"); }
+  tip.hidden = false; tip.innerHTML = `<b>${esc(c.fmt(c.rows[i][c.key] || 0))}</b><small>${esc(dlabel(c.rows[i].day))}</small>`;
+  tip.style.left = px / k + "px"; tip.style.top = py / k + "px";
+});
+
+/* ---------- overview */
+const sumOf = (rows, key) => rows.reduce((s, r) => s + (r[key] || 0), 0);
+function delta(rows, key) {
+  const n = S.range; if (n * 2 > rows.length) return "";
+  const now = sumOf(rows.slice(-n), key), before = sumOf(rows.slice(-2 * n, -n), key);
+  if (!before && !now) return `<span class="delta flat">No change</span>`;
+  if (!before) return `<span class="delta up">${ic("up")}New</span>`;
+  const p = Math.round((now - before) / before * 100);
+  return `<span class="delta ${p > 0 ? "up" : p < 0 ? "down" : "flat"}" title="Compared with the ${n} days before">${p ? ic(p > 0 ? "up" : "down") : ""}${Math.abs(p)}%</span>`;
+}
+function kpi(icon, bg, label, value, fmt, small, d, rows, key, color, i) {
+  return `<div class="kpi anim" style="animation-delay:${i * 60}ms"><div class="k-top"><span class="k-ico" style="background:${bg}">${ic(icon)}</span>${esc(label)}</div>
+    <div class="k-num"><b data-count="${value}" ${fmt ? `data-fmt="${fmt}"` : ""}>0</b>${d || ""}</div><small>${small}</small>${rows ? spark(rows, key, color) : `<div style="height:18px"></div>`}</div>`;
+}
+const METRICS = {signups: ["Sign-ups", v => num(Math.round(v)), "new accounts", "line"], calls: ["AI calls", v => num(Math.round(v)), "AI calls", "line"],
+                 tokens: ["AI tokens", v => kfmt(v), "tokens", "bar"], revenue: ["Revenue", v => inr(v), "paid", "line"]};
 function drawOverview(a) {
-  const t = a.totals, sv = a.server, ok = (v, l) => `<span class="pill ${v ? "ok" : "bad"}">${esc(l)}</span>`;
-  const ai = sv.ai_key ? `AI: ${[sv.ai_provider, sv.ai_model].filter(Boolean).join(", ") || "ready"}` : "No AI key";
-  return `<div class="tiles">
-      ${tile("users", num(t.users), "Accounts in total", `${num(t.verified)} confirmed their email, ${num(t.disabled)} disabled`)}
-      ${tile("plus", num(t.signups_7d), "Signed up, last 7 days", `${num(t.signups_today)} today, ${num(t.signups_30d)} in 30 days`)}
-      ${tile("clock", num(t.active_7d), "Active, last 7 days", `${num(t.admins)} admin${t.admins === 1 ? "" : "s"}`)}
-      ${tile("video", num(t.videos), "Videos processed", `${num(t.clips)} clips made`)}
-    </div><div class="tiles">
-      ${tile("bolt", num(t.ai_calls), "AI calls in total", `${num(t.ai_calls_today)} today`)}
-      ${tile("chart", kfmt(t.tokens), "AI tokens used", "Counted on your own AI key")}
-      ${tile("video", num(t.recording), "Recording right now", "Live streams being clipped")}
-      ${tile("clock", num(t.working), "Videos in progress", `${num(sv.running)} running, ${num(sv.waiting)} waiting`)}
-    </div>
-    <div class="split">
-      <div class="card"><div class="card-head"><div><h2>Sign-ups</h2><p class="sub">New accounts per day, last 30 days</p></div></div>${bars(a.daily, "signups", v => String(Math.round(v)), "New accounts per day")}</div>
-      <div class="card"><div class="card-head"><div><h2>AI usage</h2><p class="sub">Tokens used per day, last 30 days</p></div></div>${bars(a.daily, "tokens", v => kfmt(Math.round(v)), "AI tokens used per day")}</div>
-    </div>
-    <div class="split">
-      <div class="card"><div class="card-head"><div><h2>AI calls</h2><p class="sub">Per day, last 30 days</p></div></div>${bars(a.daily, "calls", v => String(Math.round(v)), "AI calls per day")}</div>
-      <div class="card"><div class="card-head"><div><h2>What the AI is used for</h2><p class="sub">All users, all time</p></div></div>${hbars(a.by_purpose, r => `${num(r[1])} call${r[1] === 1 ? "" : "s"} · ${kfmt(r[2])} tokens`)}</div>
-    </div>
-    <div class="card"><div class="card-head"><div><h2>Right now</h2><p class="sub">${num(t.recording)} recording, ${num(t.working)} video${t.working === 1 ? "" : "s"} in progress</p></div>
-      <div class="row">${ok(sv.ai_key, ai)}${ok(sv.speech_model, "Transcription")}${ok(sv.google, "Google sign-in")}${ok(sv.mail, "Email")}<span class="pill">${esc(sv.database)}</span><span class="pill">${esc(sv.free_gb)} GB free</span>${sv.load ? `<span class="pill ${sv.load.busy ? "warn" : "ok"}">${sv.load.busy ? "Near full: new videos are queueing" : "Has room"}</span><span class="pill">Processor ${esc(sv.load.cpu)}%</span><span class="pill">${esc(sv.load.ram_free_gb)} GB memory free</span><span class="pill">${esc(sv.running)} running, ${esc(sv.waiting)} waiting</span>` : ""}</div>
-      ${sv.ai_key ? "" : `<p class="note" style="margin-top:14px">No AI key is set, so clips are picked by loudness only. Add your own key to the .env file on the server (see .env.example) and restart.</p>`}</div>`;
+  const t = a.totals, sv = a.server, rows = a.daily.slice(-S.range), rv = a.revenue, rr = `last ${S.range} days`;
+  if (!rv && S.metric === "revenue") S.metric = "signups";
+  const [mLabel, mFmt, mWord, mKind] = METRICS[S.metric];
+  const k = [kpi("users", "var(--peach)", "Accounts", t.users, "", `${num(t.verified)} confirmed · ${num(t.disabled)} disabled`, "", a.daily.map((r, i, xs) => ({v: t.users - sumOf(xs.slice(i + 1), "signups")})), "v", "#E4572E", 0),
+    kpi("plus", "var(--sage)", "New sign-ups", sumOf(rows, "signups"), "", `${num(t.signups_today)} today · ${rr}`, delta(a.daily, "signups"), rows, "signups", "#3E9A4E", 1),
+    kpi("bolt", "var(--lilac)", "AI calls", sumOf(rows, "calls"), "", `${num(t.ai_calls_today)} today · ${rr}`, delta(a.daily, "calls"), rows, "calls", "#8B6FD0", 2),
+    rv ? kpi("rupee", "var(--butter)", "Revenue", sumOf(rows, "revenue"), "inr", `${inr(rv.total)} in total · ${num(rv.payments)} payments`, delta(a.daily, "revenue"), rows, "revenue", "#E0B43A", 3)
+       : kpi("video", "var(--butter)", "Videos clipped", t.videos, "", `${num(t.clips)} clips made · ${num(t.working)} working now`, "", null, "", "", 3)];
+  const chart = mKind === "bar" ? barChart("main", rows, S.metric, mFmt, mLabel + " per day") : lineChart("main", rows, S.metric, mFmt, mLabel + " per day");
+  const ramT = Number(sv.ram_total_gb) || 0, ramF = sv.load ? Number(sv.load.ram_free_gb) : NaN, diskT = Number(sv.disk_total_gb) || 0;
+  const ramUsed = ramT && ramF <= ramT ? Math.round((1 - ramF / ramT) * 100) : null, diskUsed = diskT ? Math.round((1 - (Number(sv.free_gb) || 0) / diskT) * 100) : null;
+  const cpu = sv.load ? Number(sv.load.cpu) || 0 : 0, newest = [...a.users].sort((x, y) => y.created_at - x.created_at).slice(0, 5);
+  const topAi = [...a.users].filter(u => u.tokens).sort((x, y) => y.tokens - x.tokens).slice(0, 5), maxTok = Math.max(1, ...topAi.map(u => u.tokens));
+  const check = (ok, l) => `<div class="check ${ok ? "ok" : "no"}"><i>${ic(ok ? "check" : "x")}</i>${esc(l)}</div>`;
+  const plans = rv ? Object.entries(rv.active || {}).sort((x, y) => y[1] - x[1]) : [], planTotal = plans.reduce((s, p) => s + p[1], 0) || 1;
+  return `<div class="kpis">${k.join("")}</div>
+    <div class="grid2"><div class="card anim" style="animation-delay:.2s"><div class="chead"><div><h2>Growth</h2><p>${esc(mLabel)} per day, ${rr}</p></div>
+        <div class="seg metric-tabs">${Object.entries(METRICS).filter(([m]) => m !== "revenue" || rv).map(([m, [l]]) => `<button class="${S.metric === m ? "on" : ""}" data-act="metric" data-k="${m}">${l}</button>`).join("")}</div></div>
+        <div class="bigstat"><b data-count="${sumOf(rows, S.metric)}" ${S.metric === "tokens" ? 'data-fmt="k"' : S.metric === "revenue" ? 'data-fmt="inr"' : ""}>0</b><span>${esc(mWord)} in the ${rr}</span></div>${chart}</div>
+      <div class="card anim" style="animation-delay:.28s"><div class="chead"><div><h2>What the AI does</h2><p>All users, all time</p></div></div>
+        ${a.by_purpose.length ? donut(a.by_purpose.slice(0, 7).map(r => [r[0], r[2] || r[1]]), sumOf(a.by_purpose.map(r => ({v: r[2]})), "v"), "tokens") : `<div class="empty"><b>No AI calls yet</b>They show up here once videos are clipped.</div>`}</div></div>
+    <div class="grid2 even">
+      <div class="card anim" style="animation-delay:.34s"><div class="chead"><div><h2>Server health</h2><p>${num(sv.running)} running · ${num(sv.waiting)} waiting · ${num(t.recording)} recording</p></div>${sv.load ? `<span class="pill ${sv.load.busy ? "warn" : "ok"}">${sv.load.busy ? "Near full: new videos queue" : "Has room"}</span>` : ""}</div>
+        <div class="gauges">${ringG(cpu, cpu + "%", "Processor in use", cpu > 85 ? "#C2352B" : cpu > 60 ? "#E0B43A" : "#3E9A4E")}${ramUsed == null ? ringG(0, "–", "Memory: not measured here", "#8B6FD0") : ringG(ramUsed, ramUsed + "%", `Memory in use · ${sv.load.ram_free_gb} GB free`, ramUsed > 90 ? "#C2352B" : "#8B6FD0")}${diskUsed == null ? ringG(0, sv.free_gb + " GB", "Disk free", "#E4572E") : ringG(diskUsed, diskUsed + "%", `Disk in use · ${sv.free_gb} GB free`, Number(sv.free_gb) < 10 ? "#C2352B" : "#E4572E")}</div>
+        <div class="checks">${check(sv.ai_key, sv.ai_key ? `AI: ${[sv.ai_provider, sv.ai_model].filter(Boolean).join(", ") || "ready"}` : "No AI key")}${check(sv.speech_model, "Transcription")}${check(sv.google, "Google sign-in")}${check(sv.mail, "Email")}${check(true, "Database: " + sv.database)}${check(!sv.load?.busy, "Queue")}</div>
+        ${sv.ai_key ? "" : `<p class="note">No AI key is set, so clips are picked by loudness only. Add your own key in the app's Settings, or in the server's .env file, and restart.</p>`}</div>
+      <div class="card anim" style="animation-delay:.4s">${rv && plans.length ? `<div class="chead"><div><h2>On a plan</h2><p>${num(planTotal)} active · ${inr(rv.d30)} in 30 days</p></div></div>
+          <div class="hbar">${plans.map(([l, n], i) => `<div class="hrow"><div class="t"><span>${esc(l)}</span><span>${num(n)}</span></div><div class="tr"><i style="width:${Math.max(3, n / planTotal * 100)}%;animation-delay:${i * 80}ms"></i></div></div>`).join("")}</div><div style="height:18px"></div>` : ""}
+        <div class="chead"><div><h2>Newest accounts</h2><p>${num(t.signups_7d)} in the last 7 days</p></div><button class="btn sm ghost" data-act="tab" data-k="users">All users${ic("arrowr")}</button></div>
+        <div class="people">${newest.map(u => `<div class="person" data-act="user" data-id="${esc(u.id)}">${avatar(u)}<div><b>${esc(u.name || u.email.split("@")[0])}</b><small>${esc(u.email)}</small></div><span class="when">${esc(ago(u.created_at))}</span></div>`).join("") || `<p class="empty">No accounts yet.</p>`}</div>
+        ${topAi.length ? `<div class="chead" style="margin-top:18px"><div><h2>Heaviest AI users</h2><p>By tokens, all time</p></div></div><div class="hbar">${topAi.map((u, i) => `<div class="hrow"><div class="t"><span>${esc(u.name || u.email)}</span><span>${esc(kfmt(u.tokens))}</span></div><div class="tr"><i style="width:${Math.max(3, u.tokens / maxTok * 100)}%;animation-delay:${i * 80}ms"></i></div></div>`).join("")}</div>` : ""}</div>
+    </div>`;
 }
 
+/* ---------- users */
 function userRows(a) {
   const q = S.q.trim().toLowerCase();
   let rows = a.users.filter(u => !q || u.email.toLowerCase().includes(q) || (u.name || "").toLowerCase().includes(q));
   if (S.filter === "unconfirmed") rows = rows.filter(u => !u.verified);
   if (S.filter === "disabled") rows = rows.filter(u => u.disabled);
   if (S.filter === "admins") rows = rows.filter(u => u.role === "admin");
+  if (S.filter === "paying") rows = rows.filter(u => u.plan);
   return rows.sort((x, y) => (y[S.sort] || 0) - (x[S.sort] || 0));
 }
+const hl = s => { const q = S.q.trim(); s = String(s ?? ""); const i = q ? s.toLowerCase().indexOf(q.toLowerCase()) : -1;   // match the plain text, then escape each piece
+  return i < 0 ? esc(s) : esc(s.slice(0, i)) + "<mark>" + esc(s.slice(i, i + q.length)) + "</mark>" + esc(s.slice(i + q.length)); };
 function drawUsers(a) {
-  const seg = (k, l) => `<button class="${S.filter === k ? "on" : ""}" data-act="filter" data-k="${k}">${l}</button>`;
-  const th = (k, l) => `<th class="num"><button data-act="sort" data-k="${k}" style="all:unset;cursor:pointer;color:${S.sort === k ? "var(--brand-deep)" : "inherit"}">${l}</button></th>`;
-  const rows = userRows(a);
-  return `<div class="toolbar"><input type="search" id="q" placeholder="Search by name or email" value="${esc(S.q)}" aria-label="Search accounts">
-      <div class="seg">${seg("all", "All")}${seg("unconfirmed", "Email not confirmed")}${seg("disabled", "Disabled")}${seg("admins", "Admins")}</div>
-      <span class="sub">${num(rows.length)} of ${num(a.users.length)}</span></div>
-    <div class="card"><div class="scroll"><table><tr><th>Account</th><th><button data-act="sort" data-k="created_at" style="all:unset;cursor:pointer;color:${S.sort === "created_at" ? "var(--brand-deep)" : "inherit"}">Joined</button></th>
-      <th><button data-act="sort" data-k="last_seen" style="all:unset;cursor:pointer;color:${S.sort === "last_seen" ? "var(--brand-deep)" : "inherit"}">Last active</button></th>
-      ${th("ai_calls", "AI calls")}${th("tokens", "AI tokens")}${th("videos", "Videos")}${th("clips", "Clips")}</tr>
-      ${rows.map(u => `<tr class="u" data-act="user" data-id="${esc(u.id)}"><td><b>${esc(u.name || u.email.split("@")[0])}</b>
-          ${u.role === "admin" ? ` <span class="pill brand">Admin</span>` : ""}${u.disabled ? ` <span class="pill bad">Disabled</span>` : ""}${u.verified ? "" : ` <span class="pill warn">Email not confirmed</span>`}
-          <div class="em">${esc(u.email)}</div></td>
-        <td class="sub">${esc(day(u.created_at))}</td><td class="sub">${esc(ago(u.last_seen))}</td>
-        <td class="num">${num(u.ai_calls)}</td><td class="num">${esc(kfmt(u.tokens || 0))}</td>
-        <td class="num">${num(u.videos)}</td><td class="num">${num(u.clips)}</td></tr>`).join("")
-        || `<tr><td colspan="7"><div class="empty"><b>No accounts match</b>Try another search or filter.</div></td></tr>`}</table></div></div>`;
+  const rows = userRows(a), maxTok = Math.max(1, ...a.users.map(u => u.tokens || 0)), n = k => a.users.filter(k).length;
+  const seg = (k, l, c) => `<button class="${S.filter === k ? "on" : ""}" data-act="filter" data-k="${k}">${l}${c ? `<b>${num(c)}</b>` : ""}</button>`;
+  const th = (k, l, cls = "") => `<th class="${cls}"><button class="${S.sort === k ? "on" : ""}" data-act="sort" data-k="${k}">${l}${S.sort === k ? ic("down") : ""}</button></th>`;
+  return `<div class="toolbar"><label class="search">${ic("search")}<input type="search" id="q" placeholder="Search by name or email" value="${esc(S.q)}" aria-label="Search accounts"></label>
+      <div class="seg">${seg("all", "All")}${a.revenue ? seg("paying", "On a plan", n(u => u.plan)) : ""}${seg("unconfirmed", "Not confirmed", n(u => !u.verified))}${seg("disabled", "Disabled", n(u => u.disabled))}${seg("admins", "Admins")}</div>
+      <span class="grow"></span><span class="when">${num(rows.length)} of ${num(a.users.length)}</span></div>
+    <div class="card tablecard"><div class="scroll"><table><thead><tr><th>Account</th>${th("created_at", "Joined")}${th("last_seen", "Last active")}${th("tokens", "AI use", "num")}${th("videos", "Videos", "num")}${th("clips", "Clips", "num")}</tr></thead><tbody>
+      ${rows.map((u, i) => `<tr class="u" data-act="user" data-id="${esc(u.id)}" style="animation-delay:${Math.min(i, 14) * 25}ms"><td><div class="who">${avatar(u)}<div><b>${hl(u.name || u.email.split("@")[0])}</b>
+          ${u.role === "admin" ? ` <span class="pill brand">Admin</span>` : ""}${u.plan ? ` <span class="pill ok">${esc(u.plan)}</span>` : ""}${u.disabled ? ` <span class="pill bad">Disabled</span>` : ""}${u.verified ? "" : ` <span class="pill warn">Not confirmed</span>`}
+          <small>${hl(u.email)}</small></div></div></td>
+        <td class="when">${esc(day(u.created_at))}</td><td class="when">${Date.now() / 1000 - (u.last_seen || 0) < 300 ? `<span class="online"></span>` : ""}${esc(ago(u.last_seen))}</td>
+        <td class="num"><div class="ubar">${esc(kfmt(u.tokens || 0))}<i><span style="width:${(u.tokens || 0) / maxTok * 100}%"></span></i></div></td><td class="num">${num(u.videos)}</td><td class="num">${num(u.clips)}</td></tr>`).join("")
+        || `<tr><td colspan="6"><div class="empty"><b>No accounts match</b>Try another search or filter.</div></td></tr>`}</tbody></table></div></div>`;
 }
 
+/* ---------- activity */
 function drawActivity(a) {
-  return `<div class="card"><div class="card-head"><div><h2>Admin activity</h2><p class="sub">A permanent record. Entries cannot be edited or removed from here.</p></div></div>
-    ${a.log.length ? `<div class="scroll"><table><tr><th>When</th><th>Admin</th><th>Action</th><th>Account</th><th>Details</th></tr>
-      ${a.log.map(l => `<tr><td class="sub">${esc(when(l.t))}</td><td>${esc(l.admin || "Removed admin")}</td><td>${esc(ACTION[l.action] || l.action)}</td>
-        <td>${esc(l.target || "")}</td><td class="sub">${esc(l.detail)}</td></tr>`).join("")}</table></div>`
+  return `<div class="card anim"><div class="chead"><div><h2>Admin activity</h2><p>A permanent record. Entries can't be edited or removed from here.</p></div></div>
+    ${a.log.length ? `<div class="tl">${a.log.map((l, i) => `<div class="tli ${esc(String(l.action).split(":")[0])}" style="animation-delay:${Math.min(i, 12) * 40}ms"><b>${esc(ACTION[l.action] || l.action)}</b>${l.target ? ` <span>· ${esc(l.target)}</span>` : ""}
+        <p>${esc(l.admin || "Removed admin")}${l.detail ? " · " + esc(l.detail) : ""}</p><small>${esc(when(l.t))}</small></div>`).join("")}</div>`
       : `<div class="empty"><b>Nothing yet</b>Account changes made by admins are recorded here.</div>`}</div>`;
 }
 
-const FBK = {bug: ["Bug", "bad"], idea: ["Idea", "brand"], other: ["Message", ""]};
+/* ---------- feedback */
+const FBK = {bug: ["Bug", "bad"], idea: ["Idea", "brand"], other: ["Message", "ok"]};
 function drawFeedback() {
   const f = S.fb;
   if (!f) return `<div class="empty"><b>Loading…</b></div>`;
-  const seg = (k, l) => `<button class="${S.fbStatus === k ? "on" : ""}" data-act="fbfilter" data-k="${k}">${l}${k && f.counts[k] ? ` · ${num(f.counts[k])}` : ""}</button>`;
+  const seg = (k, l) => `<button class="${S.fbStatus === k ? "on" : ""}" data-act="fbfilter" data-k="${k}">${l}${k && f.counts[k] ? `<b>${num(f.counts[k])}</b>` : ""}</button>`;
   return `<div class="toolbar"><div class="seg">${seg("new", "New")}${seg("seen", "Seen")}${seg("done", "Done")}${seg("", "All")}</div></div>
-    ${f.items.length ? f.items.map(x => `<div class="card fbitem"><div class="fbtop"><span class="pill ${FBK[x.kind]?.[1] || ""}">${esc(FBK[x.kind]?.[0] || x.kind)}</span>
-        <b>${esc(x.name || x.email || "Deleted account")}</b><span class="sub">${esc(x.email)} · ${esc(when(x.t))}${x.page ? " · " + esc(x.page) : ""}</span>
+    ${f.items.length ? f.items.map((x, i) => `<div class="card fb ${esc(x.kind)} anim" style="animation-delay:${Math.min(i, 10) * 40}ms"><div class="fbtop"><span class="pill ${FBK[x.kind]?.[1] || ""}">${esc(FBK[x.kind]?.[0] || x.kind)}</span>
+        <b>${esc(x.name || x.email || "Deleted account")}</b><small>${esc(x.email)} · ${esc(when(x.t))}${x.page ? " · " + esc(x.page) : ""}</small>
         <span class="pill ${x.status === "done" ? "ok" : x.status === "new" ? "warn" : ""}" style="margin-left:auto">${esc(x.status === "new" ? "New" : x.status === "seen" ? "Seen" : "Done")}</span></div>
       <p class="fbmsg">${esc(x.message)}</p>${x.context ? `<p class="fbctx">${esc(x.context)}</p>` : ""}
-      <div class="row">${x.status !== "seen" ? `<button class="btn sm" data-act="fbset" data-id="${x.id}" data-s="seen">Mark seen</button>` : ""}
-        ${x.status !== "done" ? `<button class="btn sm" data-act="fbset" data-id="${x.id}" data-s="done">${ic("check")}Done</button>` : `<button class="btn sm" data-act="fbset" data-id="${x.id}" data-s="new">Reopen</button>`}
-        ${x.email ? `<a class="btn sm" href="mailto:${esc(x.email)}?subject=${encodeURIComponent("About your ClipForge feedback")}">Reply by email</a>` : ""}</div></div>`).join("")
+      <div class="row">${x.status !== "seen" && x.status !== "done" ? `<button class="btn sm" data-act="fbset" data-id="${x.id}" data-s="seen">Mark seen</button>` : ""}
+        ${x.status !== "done" ? `<button class="btn sm primary" data-act="fbset" data-id="${x.id}" data-s="done">${ic("check")}Done</button>` : `<button class="btn sm" data-act="fbset" data-id="${x.id}" data-s="new">Reopen</button>`}
+        ${x.email ? `<a class="btn sm ghost" href="mailto:${esc(x.email)}?subject=${encodeURIComponent("About your ClipForge feedback")}">${ic("mail")}Reply by email</a>` : ""}</div></div>`).join("")
       : `<div class="card"><div class="empty"><b>Nothing here</b>${S.fbStatus === "new" ? "No new messages. Everything has been looked at." : "Messages appear here as users send them."}</div></div>`}`;
 }
 async function loadFeedback() {
   try { S.fb = await api("/api/admin/feedback" + (S.fbStatus ? "?status=" + S.fbStatus : "")); } catch (e) { toast(e.message, "bad"); }
-  if (S.tab === "feedback") draw();
+  if (S.tab === "feedback") draw(); else drawNav();
 }
+
+/* ---------- the frame around every page */
+function drawNav() {
+  const a = S.data;
+  $("#nav").innerHTML = `<h4>Admin</h4><span class="nind" style="opacity:0"></span>` + Object.entries(TABS).map(([k, [l, i]]) =>
+    `<a class="ni ${S.tab === k ? "on" : ""}" href="${pathFor(k)}" data-act="tab" data-k="${k}">${ic(i)}<span class="lbl">${l}</span>${k === "users" && a ? `<span class="count">${num(a.totals.users)}</span>` : ""}${k === "feedback" && S.fb?.counts.new ? `<span class="count hot">${num(S.fb.counts.new)}</span>` : ""}</a>`).join("");
+  requestAnimationFrame(() => { const on = $("#nav .ni.on"), ind = $("#nav .nind"); if (!on || !ind) return;
+    Object.assign(ind.style, {top: (S.indTop ?? on.offsetTop) + "px", height: on.offsetHeight + "px", opacity: 1});
+    requestAnimationFrame(() => { ind.style.top = on.offsetTop + "px"; S.indTop = on.offsetTop; }); });
+  const sv = a?.server;
+  if (sv) { const cpu = sv.load ? Number(sv.load.cpu) || 0 : 0; $("#svbox").hidden = false;
+    $("#svbox").innerHTML = `<div class="ring" style="width:48px;height:48px"><svg viewBox="0 0 100 100" style="width:48px;height:48px" aria-hidden="true"><circle class="tr" cx="50" cy="50" r="40"/><circle class="vl" cx="50" cy="50" r="40" pathLength="100" stroke="${cpu > 85 ? "#C2352B" : "#3E9A4E"}" stroke-dasharray="${Math.max(.5, cpu)} 100"/></svg><b style="font-size:13px;font-family:inherit;font-weight:700">${cpu}%</b></div>
+      <div><b>${sv.load?.busy ? "Server is busy" : "Server is healthy"}</b><small>${num(sv.running)} running · ${num(sv.waiting)} waiting</small></div>`; }
+  $("#foot").innerHTML = (S.me ? `<div class="me">${avatar(S.me)}<div><b>${esc(S.me.name)}</b><small>${esc(S.me.email)}</small></div></div>` : "")
+    + `<a class="ni" href="/app">${ic("arrowl")}<span class="lbl">Back to the app</span></a><button class="ni" style="border:0;background:none;cursor:pointer;width:100%;text-align:left" data-act="logout">${ic("signout")}<span class="lbl">Sign out</span></button>`;
+}
+function hello() { const h = new Date().getHours(), n = /^(you|owner|me)$/i.test((S.me?.name || "").trim()) ? "" : (S.me?.name || "").split(" ")[0]; return `${h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening"}${n ? ", <em>" + esc(n) + "</em>" : ""}`; }
 function draw() {
   const a = S.data, [title, , sub] = TABS[S.tab];
-  $("#nav").innerHTML = `<h4>Admin</h4>` + Object.entries(TABS).map(([k, [l, i]]) =>
-    `<a class="nav-item ${S.tab === k ? "on" : ""}" href="${pathFor(k)}" data-act="tab" data-k="${k}">${ic(i)}<span class="label">${l}</span>${k === "users" && a ? `<span class="count">${num(a.totals.users)}</span>` : ""}${k === "feedback" && S.fb?.counts.new ? `<span class="count">${num(S.fb.counts.new)}</span>` : ""}</a>`).join("");
-  $("#foot").innerHTML = (S.me ? `<div class="who"><b>${esc(S.me.name)}</b>${esc(S.me.email)}</div>` : "") +
-    `<a class="nav-item" href="/app">${ic("arrowr")}<span class="label">Back to the app</span></a>
-     <button class="nav-item" data-act="logout">${ic("signout")}<span class="label">Sign out</span></button>`;
-  $("#title").textContent = title; $("#subtitle").textContent = sub;
-  $("#actions").innerHTML = `<button class="btn sm" data-act="refresh">Refresh</button>`;
-  if (S.tab === "feedback") { if (!S.fb && !S.fbLoading) { S.fbLoading = true; loadFeedback().finally(() => S.fbLoading = false); } $("#view").innerHTML = drawFeedback(); return; }
+  drawNav();
+  $("#title").innerHTML = S.tab === "overview" ? hello() : esc(title);
+  $("#subtitle").textContent = sub;
+  $("#actions").innerHTML = (S.tab === "overview" ? `<div class="seg">${[7, 14, 30].map(n => `<button class="${S.range === n ? "on" : ""}" data-act="range" data-k="${n}">${n} days</button>`).join("")}</div>` : "")
+    + `<span class="livepill" title="Refreshes by itself every 30 seconds"><i></i><span id="age">Live</span></span><button class="btn icon" data-act="refresh" title="Refresh now" aria-label="Refresh now">${ic("refresh")}</button>`;
+  tickAge();
+  const view = $("#view");
+  view.classList.toggle("calm", !S.anim);
+  if (S.tab === "feedback") { if (!S.fb && !S.fbLoading) { S.fbLoading = true; loadFeedback().finally(() => S.fbLoading = false); } view.innerHTML = drawFeedback(); S.anim = false; return; }
   if (!a) return;
   const keep = document.activeElement?.id === "q" ? $("#q").selectionStart : null;
-  $("#view").innerHTML = {overview: drawOverview, users: drawUsers, activity: drawActivity}[S.tab](a);
+  view.innerHTML = {overview: drawOverview, users: drawUsers, activity: drawActivity}[S.tab](a);
+  countUp(view);
   if (keep !== null) { $("#q").focus(); $("#q").setSelectionRange(keep, keep); }
+  S.anim = false;                                    // the 30-second refresh redraws quietly
 }
+function tickAge() { const el = $("#age"); if (!el || !S.at) return; const s = Math.round((Date.now() - S.at) / 1000); el.textContent = s < 10 ? "Live · just now" : s < 60 ? `Live · ${s}s ago` : `Live · ${Math.floor(s / 60)} min ago`; }
+setInterval(tickAge, 5000);
 async function load() {
-  try { S.data = await api("/api/admin/overview"); draw(); }
+  try { S.data = await api("/api/admin/overview"); S.at = Date.now(); draw(); }
   catch (e) { if (e.message !== "Not available") $("#view").innerHTML = `<div class="empty"><b>Couldn't load</b>${esc(e.message)}</div>`; }
 }
 function go(tab, push = true) {
-  S.tab = tab; if (push && location.pathname !== pathFor(tab)) history.pushState(null, "", pathFor(tab));
+  S.tab = tab; S.anim = true; if (push && location.pathname !== pathFor(tab)) history.pushState(null, "", pathFor(tab));
   if (tab === "feedback") loadFeedback();
-  draw(); $("#main").scrollTo(0, 0);
+  draw(); scrollTo(0, 0);
 }
 addEventListener("popstate", () => go(fromPath(), false));
+addEventListener("scroll", () => $("#top").classList.toggle("sc", scrollY > 4), {passive: true});
 
-/* ---------- account dialogs */
-async function userDialog(id) {
-  const d = $("#dlg");
-  d.innerHTML = `<div class="dlg wide"><p class="help">Loading…</p></div>`; d.showModal();
+/* ---------- one account, in a panel that slides in */
+async function userDrawer(id) {
+  const d = $("#drawer");
+  d.innerHTML = `<div class="dw"><div class="empty"><b>Loading…</b></div></div>`; if (!d.open) d.showModal();
   let u; try { u = await api(`/api/admin/users/${encodeURIComponent(id)}`); } catch (e) { d.close(); return toast(e.message, "bad"); }
-  const row = S.data.users.find(x => x.id === id) || {};
-  d.innerHTML = `<div class="dlg wide"><div class="card-head" style="margin:0"><div><h2>${esc(u.name || u.email.split("@")[0])}
-      ${u.role === "admin" ? ` <span class="pill brand">Admin</span>` : ""}${u.disabled ? ` <span class="pill bad">Disabled</span>` : ""}</h2><p class="sub">${esc(u.email)}</p></div>
-      <div class="row">
-        ${u.role === "admin" ? "" : `<button class="btn sm ${u.disabled ? "" : "danger"}" data-act="disable" data-id="${esc(u.id)}" data-off="${u.disabled ? "0" : "1"}">${u.disabled ? "Enable account" : "Disable account"}</button>`}
-        ${u.role === "admin" ? "" : `<button class="btn sm danger" data-act="deluser" data-id="${esc(u.id)}">Delete account</button>`}
-        <button class="btn sm" data-act="closedlg">Close</button></div></div>
-    <div class="facts"><div><b>${num(row.ai_calls)}</b><span>AI calls</span></div><div><b>${esc(kfmt(row.tokens || 0))}</b><span>AI tokens</span></div>
-      <div><b>${num(row.videos)}</b><span>Videos</span></div><div><b>${num(row.clips)}</b><span>Clips</span></div>
-      <div><b>${esc(day(u.created_at))}</b><span>Joined</span></div><div><b>${esc(ago(u.last_seen))}</b><span>Last active</span></div>
-      <div><b>${num(u.signed_in_devices)}</b><span>Signed-in devices</span></div><div><b>${row.verified === false ? "No" : "Yes"}</b><span>Email confirmed</span></div></div>
-    <p class="note">You can see how much this account uses the AI. Their videos, clips and connected accounts stay private to them.</p>
-    <h3>What they use the AI for</h3>${hbars(u.by_purpose, r => `${kfmt(r[1])} tokens · ${num(r[2])} call${r[2] === 1 ? "" : "s"}`)}
-    <h3>Latest AI calls</h3>
-    ${u.recent.length ? `<div class="scroll"><table><tr><th>When</th><th>What</th><th class="num">Tokens</th></tr>
-      ${u.recent.map(r => `<tr><td class="sub">${esc(when(r.t))}</td><td>${esc(r.purpose)}</td><td class="num">${num(r.tokens)}</td></tr>`).join("")}</table></div>` : `<p class="help">No AI calls yet.</p>`}</div>`;
+  const row = S.data.users.find(x => x.id === id) || {}, total = u.by_purpose.reduce((s, r) => s + r[1], 0);
+  const fact = (v, l, fmt, i) => `<div style="animation-delay:${i * 40}ms"><b ${fmt === "raw" ? "" : `data-count="${v}" ${fmt ? `data-fmt="${fmt}"` : ""}`}>${fmt === "raw" ? esc(v) : "0"}</b><span>${esc(l)}</span></div>`;
+  d.innerHTML = `<div class="dw"><div class="row"><span class="grow"></span><button class="btn icon ghost" data-act="closedrawer" aria-label="Close">${ic("x")}</button></div>
+    <div class="dwhead">${avatar(u, "lg")}<div style="min-width:0"><h2>${esc(u.name || u.email.split("@")[0])}</h2><p>${esc(u.email)}</p>
+      <div class="row" style="margin-top:6px">${u.role === "admin" ? `<span class="pill brand">Admin</span>` : ""}${row.plan ? `<span class="pill ok">${esc(row.plan)}</span>` : ""}${u.disabled ? `<span class="pill bad">Disabled</span>` : ""}${row.verified === false ? `<span class="pill warn">Email not confirmed</span>` : ""}${row.google ? `<span class="pill">Google sign-in</span>` : ""}</div></div></div>
+    <div class="facts">${fact(row.ai_calls || 0, "AI calls", "", 0)}${fact(row.tokens || 0, "AI tokens", "k", 1)}${fact(row.videos || 0, "Videos", "", 2)}${fact(row.clips || 0, "Clips", "", 3)}
+      ${fact(day(u.created_at), "Joined", "raw", 4)}${fact(ago(u.last_seen), "Last active", "raw", 5)}${fact(u.signed_in_devices || 0, "Signed-in devices", "", 6)}${fact(row.verified === false ? "No" : "Yes", "Email confirmed", "raw", 7)}</div>
+    <p class="note" style="margin:0">You can see how much this account uses the AI. Their videos, clips and connected accounts stay private to them.</p>
+    <h3>What they use the AI for</h3>${u.by_purpose.length ? donut(u.by_purpose.slice(0, 6).map(r => [r[0], r[1]]), total, "tokens") : `<p class="when">No AI calls yet.</p>`}
+    <h3>Latest AI calls</h3>${u.recent.length ? `<div class="calls">${u.recent.slice(0, 15).map(r => `<div><span>${esc(r.purpose)} <span class="when">· ${esc(when(r.t))}</span></span><span>${num(r.tokens)} tokens</span></div>`).join("")}</div>` : `<p class="when">Nothing yet.</p>`}
+    ${u.role === "admin" ? "" : `<h3>Account</h3><div class="row"><button class="btn ${u.disabled ? "" : "danger"}" data-act="disable" data-id="${esc(u.id)}" data-off="${u.disabled ? "0" : "1"}">${u.disabled ? "Enable account" : "Disable account"}</button><button class="btn danger" data-act="deluser" data-id="${esc(u.id)}">${ic("trash")}Delete account</button></div>`}</div>`;
+  S.anim = true; countUp(d); S.anim = false;
 }
-function confirmDialog(title, text, okLabel, danger) {
+function confirmDialog(title, text, okLabel, danger, typeToConfirm) {
   return new Promise(res => {
     const d = $("#dlg");
-    d.innerHTML = `<form method="dialog" class="dlg"><h2>${esc(title)}</h2><p class="help">${esc(text)}</p>
-      <div class="dlg-foot"><button class="btn" value="no">Cancel</button><button class="btn ${danger ? "danger" : "primary"}" value="yes" autofocus>${esc(okLabel)}</button></div></form>`;
-    d.onclose = () => { d.onclose = null; res(d.returnValue === "yes"); }; d.returnValue = "no"; if (!d.open) d.showModal();
+    d.innerHTML = `<form method="dialog" class="dlg"><h2>${esc(title)}</h2><p>${esc(text)}</p>${typeToConfirm ? `<label>Type <b style="color:var(--text)">${esc(typeToConfirm)}</b> to confirm<input type="text" id="typed" autocomplete="off" spellcheck="false"></label>` : ""}
+      <div class="dlg-foot"><button class="btn" value="no">Cancel</button><button class="btn ${danger ? "danger" : "primary"}" value="yes" id="okbtn" ${typeToConfirm ? "disabled" : "autofocus"}>${esc(okLabel)}</button></div></form>`;
+    if (typeToConfirm) $("#typed").oninput = e => { $("#okbtn").disabled = e.target.value.trim().toLowerCase() !== typeToConfirm.toLowerCase(); };
+    d.onclose = () => { d.onclose = null; res(d.returnValue === "yes" ? ($("#typed")?.value.trim() || true) : false); }; d.returnValue = "no"; if (!d.open) d.showModal();
   });
 }
 
 document.addEventListener("input", e => { if (e.target.id === "q") { S.q = e.target.value; draw(); } });
 document.addEventListener("click", async e => {
+  if (e.target === $("#drawer")) return $("#drawer").close();          // a click on the dimmed backdrop
   const b = e.target.closest("[data-act]"); if (!b) return;
   const a = b.dataset.act, d = b.dataset;
   try {
-    if (a === "tab") { e.preventDefault(); return go(d.k); }
-    if (a === "refresh") { await load(); await loadFeedback(); return toast("Up to date", "ok"); }
-    if (a === "fbfilter") { S.fbStatus = d.k; return loadFeedback(); }
+    if (a === "tab") { e.preventDefault(); if ($("#drawer").open) $("#drawer").close(); return go(d.k); }
+    if (a === "refresh") { b.classList.add("spinning"); try { await load(); await loadFeedback(); } finally { b.classList.remove("spinning"); } return toast("Up to date", "ok"); }
+    if (a === "range") { S.range = Number(d.k); S.anim = true; return draw(); }
+    if (a === "metric") { S.metric = d.k; S.anim = true; return draw(); }
+    if (a === "fbfilter") { S.fbStatus = d.k; S.anim = true; return loadFeedback(); }
     if (a === "fbset") { await send(`/api/admin/feedback/${d.id}`, {status: d.s}); toast(d.s === "done" ? "Marked done" : d.s === "seen" ? "Marked seen" : "Reopened", "ok"); return loadFeedback(); }
-    if (a === "filter") { S.filter = d.k; return draw(); }
-    if (a === "sort") { e.stopPropagation(); S.sort = d.k; return draw(); }
-    if (a === "closedlg") return $("#dlg").close();
-    if (a === "user") return userDialog(d.id);
+    if (a === "filter") { S.filter = d.k; S.anim = true; return draw(); }
+    if (a === "sort") { S.sort = d.k; return draw(); }
+    if (a === "closedrawer") return $("#drawer").close();
+    if (a === "user") return userDrawer(d.id);
     if (a === "disable") {
       const off = d.off === "1", u = S.data.users.find(x => x.id === d.id); if (!u) return;
-      $("#dlg").close();
+      $("#drawer").close();
       if (!await confirmDialog(off ? "Disable this account?" : "Enable this account?",
-        off ? `${u.email} is signed out everywhere and cannot sign in until you enable the account again. Their data is kept.` : `${u.email} will be able to sign in again.`,
+        off ? `${u.email} is signed out everywhere and can't sign in until you enable the account again. Their data is kept.` : `${u.email} will be able to sign in again.`,
         off ? "Disable account" : "Enable account", off)) return;
-      await send(`/api/admin/users/${encodeURIComponent(d.id)}/disabled`, {disabled:off});
+      await send(`/api/admin/users/${encodeURIComponent(d.id)}/disabled`, {disabled: off});
       toast(off ? "Account disabled" : "Account enabled", "ok"); return load();
     }
     if (a === "deluser") {
       const u = S.data.users.find(x => x.id === d.id); if (!u) return;
-      $("#dlg").close();
-      const typed = prompt(`Delete ${u.email} and everything in the account for good?\n\nCreators, recordings, videos and clips are all removed. This cannot be undone.\n\nType the email address to confirm:`);
+      $("#drawer").close();
+      const typed = await confirmDialog("Delete this account for good?", "Creators, recordings, videos and clips are all removed. This can't be undone.", "Delete account", true, u.email);
       if (!typed) return;
       await send(`/api/admin/users/${encodeURIComponent(d.id)}/delete`, {confirm: typed});
       toast("Account deleted", "ok"); return load();
     }
-    if (a === "logout") { await fetch("/api/auth/logout", {method:"POST"}); location.href = "/"; return; }
+    if (a === "logout") { await fetch("/api/auth/logout", {method: "POST"}); location.href = "/"; return; }
   } catch (err) { toast(err.message, "bad"); }
 });
 
 (async () => {
   S.tab = fromPath(); draw();
   try { S.me = (await api("/api/auth/me")).user; } catch {}
-  await load();
-  setInterval(() => { if (!$("#dlg").open && document.visibilityState === "visible") load(); }, 30000);
+  await Promise.all([load(), loadFeedback()]);
+  setInterval(() => { if (!$("#dlg").open && !$("#drawer").open && document.visibilityState === "visible") load(); }, 30000);
 })();
 </script>
 </body>

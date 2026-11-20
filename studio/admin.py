@@ -50,7 +50,7 @@ def overview() -> dict:
         calls_today = c.execute(sa.select(sa.func.count()).select_from(db.usage).where(g.t >= midnight)).scalar()
 
         days = [_day(now - 86400 * i) for i in range(29, -1, -1)]
-        daily = {d: {"day": d, "signups": 0, "tokens": 0, "calls": 0} for d in days}
+        daily = {d: {"day": d, "signups": 0, "tokens": 0, "calls": 0, "revenue": 0} for d in days}
         for (created,) in c.execute(sa.select(u.created_at).where(u.created_at >= now - 31 * 86400)):
             if _day(created) in daily:
                 daily[_day(created)]["signups"] += 1
@@ -64,6 +64,7 @@ def overview() -> dict:
         log = [{"t": r._mapping["t"], "admin": emails.get(r.admin_id, ""), "action": r.action, "target": emails.get(r.target_id, ""),
                 "detail": r.detail} for r in c.execute(sa.select(db.admin_log).order_by(db.admin_log.c.t.desc()).limit(40))]
 
+    revenue, on_plan = _money(now, daily)
     all_jobs = jobs.all_jobs()
     vids, clips = defaultdict(int), defaultdict(int)
     for j in all_jobs:
@@ -74,7 +75,7 @@ def overview() -> dict:
               "verified": (not verify_on) or r.id in verified, "google": bool(r.google_sub),
               "created_at": r.created_at, "last_seen": r.last_seen,
               "ai_calls": used.get(r.id, (0, 0))[0], "tokens": used.get(r.id, (0, 0))[1],
-              "videos": vids[r.id], "clips": clips[r.id]} for r in rows]
+              "videos": vids[r.id], "clips": clips[r.id], "plan": on_plan.get(r.id, "")} for r in rows]
     return {
         "totals": {"users": int(n_users), "verified": sum(1 for x in users if x["verified"]),
                    "disabled": sum(1 for x in users if x["disabled"]), "admins": sum(1 for x in users if x["role"] == "admin"),
@@ -86,12 +87,35 @@ def overview() -> dict:
                    "tokens": sum(v[1] for v in used.values()),
                    "videos": len(all_jobs), "clips": sum(clips.values()), "recording": len(live.active()),
                    "working": sum(1 for j in all_jobs if j["status"] in ("queued", "running"))},
-        "daily": list(daily.values()), "by_purpose": by_purpose, "users": users, "log": log,
+        "daily": list(daily.values()), "by_purpose": by_purpose, "users": users, "log": log, "revenue": revenue,
         "server": {"speech_model": transcribe.model_ready(), "ai_key": ai.ready(), "ai_provider": ai.label(),
                    "ai_model": (ai.models() or [""])[0], "google": auth.google_ready(), "mail": mailer.ready(),
                    "free_gb": round(shutil.disk_usage(config.DATA_DIR).free / 1e9, 1),
+                   "disk_total_gb": round(shutil.disk_usage(config.DATA_DIR).total / 1e9, 1), "ram_total_gb": round(load.ram_total_gb(), 1),
                    "load": load.state(), "running": jobs.running_now(), "waiting": jobs.waiting_total(),
                    "database": config.DATABASE_URL.split(":", 1)[0].split("+")[0]}}
+
+
+def _money(now: float, daily: dict):
+    """Paid plans: money in (in paise) overall, in 30 days and per day, and which plan each person is on.
+    Nothing when payments are switched off."""
+    from . import billing
+    if not billing.on():
+        return None, {}
+    p, pl = billing.payments.c, billing.plans.c
+    with db.engine.connect() as c:
+        paid = c.execute(sa.select(p.amount, p.paid_at).where(p.status == "paid")).all()
+        live = c.execute(sa.select(pl.user_id, pl.plan).where(pl.status == "active", pl.ends_at > now)
+                         .order_by(pl.created_at)).all()
+    for amount, t in paid:
+        if t and _day(t) in daily:
+            daily[_day(t)]["revenue"] += int(amount)
+    on_plan = {uid: plan for uid, plan in live}
+    counts = defaultdict(int)
+    for plan in on_plan.values():
+        counts[billing.PLANS.get(plan, {}).get("label", plan)] += 1
+    return {"total": sum(int(a) for a, _ in paid), "d30": sum(int(a) for a, t in paid if t and t >= now - 30 * 86400),
+            "payments": len(paid), "active": dict(counts)}, {u: billing.PLANS.get(x, {}).get("label", x) for u, x in on_plan.items()}
 
 
 def user_detail(uid: str) -> dict:

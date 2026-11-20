@@ -69,6 +69,31 @@ def _ram_free_gb() -> float:
     return 99.0
 
 
+_total = {}
+
+
+def ram_total_gb() -> float:
+    """All the memory this machine has, for the admin page. 0 when it can't be read here."""
+    if "ram" not in _total:
+        try:
+            if os.name == "nt":
+                import ctypes
+
+                class M(ctypes.Structure):
+                    _fields_ = [("dwLength", ctypes.c_ulong), ("dwMemoryLoad", ctypes.c_ulong)] + [
+                        (n, ctypes.c_ulonglong) for n in ("total", "avail", "tpf", "apf", "tv", "av", "aev")]
+                m = M()
+                m.dwLength = ctypes.sizeof(M)
+                ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
+                _total["ram"] = m.total / 1e9
+            else:
+                with open("/proc/meminfo", encoding="ascii") as f:
+                    _total["ram"] = next((int(l.split()[1]) / 1e6 for l in f if l.startswith("MemTotal:")), 0.0)
+        except Exception:  # noqa: BLE001 - not measurable on this system
+            _total["ram"] = 0.0
+    return _total["ram"]
+
+
 def _watch():
     try:
         last = _cpu_times()

@@ -1,5 +1,5 @@
 """Secrets kept in the data folder, encrypted: the server's AI key, the tokens of connected YouTube, Instagram and
-TikTok accounts, and the platforms' app secrets. Same Fernet key as users' own AI keys (studio/keystore.py, from
+Instagram accounts, and the platforms' app secrets. Same Fernet key as users' own AI keys (studio/keystore.py, from
 CLIPFORGE_SECRET_KEY), so a copy of the data folder alone cannot read any of them.
 
 Values written by older versions in plain text are still read, and are encrypted the next time they are saved."""

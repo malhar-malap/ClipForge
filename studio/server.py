@@ -629,6 +629,20 @@ def change_password(request: Request, body: dict = Body(...)):
     return {"ok": True}
 
 
+@app.put("/api/me")
+def update_me(request: Request, body: dict = Body(...)):
+    """Change your own name. Who is asking comes from the session, never from the body."""
+    if not _me(request):
+        raise HTTPException(401, "Please sign in.")
+    try:
+        auth.throttle("name:" + _me(request).id, 20, 600)
+        auth.set_name(_me(request).id, body.get("name"))
+    except auth.AuthError as e:
+        raise HTTPException(400, str(e))
+    ctx.bump()
+    return {"user": auth.public(auth.get_user(_me(request).id))}
+
+
 @app.get("/auth/google/start")
 def google_start(next: str = "/app"):
     if not auth.google_ready():
@@ -1456,6 +1470,16 @@ def billing_get():
     return billing.summary(ctx.uid())
 
 
+@app.get("/api/billing/history")
+def billing_history():
+    """Your plans, newest first, for the Plan and billing page."""
+    if not billing.on():
+        return {"items": []}
+    keep = ("plan", "label", "status", "created_at", "ends_at", "clips", "used", "left")
+    return {"items": [{**{k: r[k] for k in keep}, "source": "grant" if str(r.get("payment_id") or "").startswith("grant") else "paid"}
+                      for r in billing.history(ctx.uid())]}
+
+
 @app.post("/api/billing/checkout")
 def billing_checkout(body: dict = Body(...)):
     _throttle("checkout:" + ctx.uid(), 10, 600)
@@ -1568,7 +1592,7 @@ def remove_account(aid: str):
     return {"ok": True}
 
 
-# ---------------------------------------------------------------- connecting YouTube, Instagram and TikTok
+# ---------------------------------------------------------------- connecting YouTube and Instagram
 # Connect sends the browser to the platform's own sign-in page; the platform sends it back here, and the person lands
 # on Settings, Connected apps, with the account added (or a message saying what went wrong).
 def _back(**q):

@@ -17,7 +17,7 @@ and adds captions that pop. Built for gaming streams and Indian languages.</p>
 | **Any language** | English with Parakeet; Hindi, Tamil, Telugu, Spanish and ~100 more with Whisper. YouTube's own captions are used when they exist (never a translated or dubbed track). |
 | **Live clipping** | Records a Twitch, Kick or YouTube stream and clips it while it is still live. |
 | **Plans and payments** | Free previews in the browser, downloads with a plan (Trial, Creator, Creator BYOK, Pro) through Razorpay, clips per plan, and users' own AI keys stored encrypted. |
-| **Posting** | Connect YouTube, Instagram and TikTok and post clips straight from a project. |
+| **Posting** | Connect YouTube and Instagram and post clips straight from a project. |
 
 ## Quick start (your own computer)
 

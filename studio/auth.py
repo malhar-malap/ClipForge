@@ -314,6 +314,17 @@ def user_for(token: str, fresh: bool = False):
     return row
 
 
+def set_name(uid: str, name) -> str:
+    """The name shown in the app and in emails. Spaces are tidied; it can't be empty."""
+    name = " ".join(str(name or "").split())[:80]
+    if not name:
+        raise AuthError("Type the name you'd like to use.")
+    with db.engine.begin() as c:
+        c.execute(db.users.update().where(db.users.c.id == uid).values(name=name))
+    forget(uid)
+    return name
+
+
 def forget(uid: str):
     """This account's sessions changed (signed out, disabled, new password): stop trusting what is remembered."""
     for k in [k for k, v in list(_sess.items()) if v[1].id == uid]:
