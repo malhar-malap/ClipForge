@@ -49,12 +49,12 @@ with ctx.as_user(a):
 check("an unknown plan cannot be granted", bool(raises(lambda: billing.grant(a, "gold"), billing.BillingError)))
 check("granting Creator starts it", billing.grant(a, "creator", "test"), "active")
 check("now clips can be downloaded", billing.can_download(a)[0], True)
-check("Creator has 300 clips and reads up to 1 hour of a video", (billing.current(a)["clips"], billing.part_minutes(a)), (300, 60))
+check("Creator has 400 clips and reads up to 1 hour of a video", (billing.current(a)["clips"], billing.part_minutes(a)), (400, 60))
 billing.use_clip(a, "a 90 second clip")
 billing.use_clip(a, "a 20 second clip")
-check("each clip counts as one, whatever its length", billing.current(a)["left"], 298)
+check("each clip counts as one, whatever its length", billing.current(a)["left"], 398)
 with db.engine.begin() as c:
-    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=297))
+    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=397))
 with ctx.as_user(a):
     check("asking for more clips than are left is refused before the video starts",
           bool(raises(lambda: jobs.create({"type": "url", "url": "https://youtu.be/q", "name": "q"}, {"max_clips": 6}, enqueue=False), billing.BillingError)))
@@ -69,7 +69,7 @@ with ctx.as_user(a):
     jobs._preview_length_ok(part, 3 * 3600)
     check("a chosen part inside the limit is kept as chosen", (part["options"]["range_start"], part["options"]["range_end"], "part_note" in part), (4000, 6000, False))
 with db.engine.begin() as c:
-    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=300))
+    c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(used=400))
 check("a clip with nothing left is refused", bool(raises(lambda: billing.use_clip(a, "one more"), billing.BillingError)))
 with db.engine.begin() as c:
     c.execute(billing.plans.update().where(billing.plans.c.user_id == a).values(ends_at=time.time() - 1))
@@ -81,6 +81,9 @@ billing.grant(b, "trial", "test")
 check("the trial is once per account", bool(raises(lambda: billing.create_order(b, "trial"), billing.BillingError)))
 check("the trial gives 20 clips for 7 days", (billing.current(b)["clips"], round((billing.current(b)["ends_at"] - time.time()) / 86400)), (20, 7))
 check("GST is added on top of the price", (billing.total("pro"), billing.gst("pro")), (117882, 17982))
+check("Pro has 1,000 clips; Pro BYOK has the same at ₹499 on the user's own key",
+      (billing.PLANS["pro"]["clips"], billing.PLANS["byok_pro"]["clips"], billing.PLANS["byok_pro"]["price"], billing.PLANS["byok_pro"]["ai"]), (1000, 1000, 49900, "own"))
+check("Pro BYOK waits for a tested key too", billing.grant(k, "byok_pro", "test"), "waiting_key")
 
 # ---- Creator BYOK
 check("BYOK waits for a tested key", billing.grant(k, "byok", "test"), "waiting_key")

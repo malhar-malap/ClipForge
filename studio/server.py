@@ -40,7 +40,8 @@ app = FastAPI(title="ClipForge", docs_url=None, redoc_url=None, openapi_url=None
 WEB = config.ROOT / "web"
 OPEN = ("/api/billing/webhook", "/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
-         "/privacy": "legal.html", "/terms": "legal.html", "/acceptable-use": "legal.html"}
+         "/privacy": "legal.html", "/terms": "legal.html", "/acceptable-use": "legal.html", "/refunds": "legal.html",
+         "/contact": "legal.html"}
 VIDEO_TYPES = {".mp4", ".mov", ".mkv", ".webm", ".m4v", ".ts", ".flv"}
 CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
        "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self' https://lumberjack.razorpay.com; "
@@ -382,7 +383,8 @@ def robots():
 def sitemap():
     day = time.strftime("%Y-%m-%d")
     pages = [("/", "1.0", "weekly"), ("/signup", "0.8", "monthly"), ("/login", "0.4", "monthly"), ("/terms", "0.3", "yearly"),
-             ("/privacy", "0.3", "yearly"), ("/acceptable-use", "0.2", "yearly")]
+             ("/privacy", "0.3", "yearly"), ("/acceptable-use", "0.2", "yearly"), ("/refunds", "0.3", "yearly"),
+             ("/contact", "0.3", "yearly")]
     body = "".join(f"<url><loc>{config.PUBLIC_URL}{u}</loc><lastmod>{day}</lastmod><changefreq>{c}</changefreq>"
                    f"<priority>{p}</priority></url>" for u, p, c in pages)
     return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -404,12 +406,16 @@ LEGAL = {
     "privacy": ("Privacy Policy", "How ClipForge collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
     "terms": ("Terms of Service", "The terms for using ClipForge, the AI clipping tool for streams and videos: accounts, availability and liability."),
     "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with ClipForge, the AI stream clipping tool."),
+    "refunds": ("Refund and Cancellation Policy", "How cancellations and refunds work for ClipForge plans, including BYOK plans."),
+    "contact": ("Contact and Grievances", "How to reach ClipForge: support, copyright complaints and the grievance officer."),
 }
 
 
 @app.get("/privacy")
 @app.get("/terms")
 @app.get("/acceptable-use")
+@app.get("/refunds")
+@app.get("/contact")
 def legal_page(request: Request):
     """Public, so Google's app review (and anyone) can read them. Business name, law and contact come from settings."""
     import html as _h
@@ -419,11 +425,18 @@ def legal_page(request: Request):
     who = (f'<a href="mailto:{_h.escape(contact)}">{_h.escape(contact)}</a>' if contact
            else "the contact details on our website")
     name = _h.escape(config.LEGAL_NAME or "ClipForge")
-    law = (f"the laws of {_h.escape(config.LEGAL_COUNTRY)}" if config.LEGAL_COUNTRY
-           else "the laws of the country where ClipForge's operator is established")
+    law = (f"the laws of {_h.escape(config.LEGAL_COUNTRY)}" if config.LEGAL_COUNTRY else "the laws of India")
+    city = _h.escape(config.LEGAL_CITY) if config.LEGAL_CITY else "the city where ClipForge's operator is registered"
+    address = _h.escape(config.LEGAL_ADDRESS) if config.LEGAL_ADDRESS else "Address available on request at the email above."
+    officer = _h.escape(config.GRIEVANCE_NAME) if config.GRIEVANCE_NAME else "The ClipForge grievance officer"
+    from . import billing as _b
+    plans = "".join(f"<tr><td>{_h.escape(v['label'])}</td><td>₹{v['price'] / 100:,.0f}{' once' if v['days'] == 7 else ' / month'} + GST</td>"
+                    f"<td>{v['clips']:,} clips</td><td>{'Your own AI key' if v['ai'] == 'own' else 'Included'}</td></tr>"
+                    for v in _b.PLANS.values())
     out = (_LEGAL_HTML or (WEB / "legal.html").read_text(encoding="utf-8"))
     for k, v in {"{{CONTACT}}": who, "{{PAGE}}": page, "{{PAGE_PATH}}": page, "{{SITE}}": _h.escape(config.PUBLIC_URL),
-                 "{{NAME}}": name, "{{LAW}}": law, "{{TITLE}}": title, "{{DESC}}": desc}.items():
+                 "{{NAME}}": name, "{{LAW}}": law, "{{TITLE}}": title, "{{DESC}}": desc, "{{CITY}}": city,
+                 "{{ADDRESS}}": address, "{{OFFICER}}": officer, "{{PLANS}}": plans}.items():
         out = out.replace(k, v)
     return HTMLResponse(out, headers={"Cache-Control": "public, max-age=3600"})
 

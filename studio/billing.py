@@ -12,7 +12,8 @@ Rules:
   ask for a plan by name, never set a price.
 - A payment counts only after Razorpay's signature on it checks out (the browser's callback or the webhook).
   Activating is idempotent: the same payment can arrive twice and is counted once.
-- Creator BYOK waits for a working AI key ("waiting_key") and turns active when the key passes a test call.
+- The BYOK plans (Creator BYOK, Pro BYOK) wait for a working AI key ("waiting_key") and turn active when the key
+  passes a test call.
 - The trial is once per account.
 """
 import hashlib
@@ -32,9 +33,11 @@ GST_PERCENT = 18
 # days, and whose AI key is used
 PLANS = {
     "trial":   {"label": "Trial week",    "price": 4900,  "clips": 20,   "part_minutes": 60, "days": 7,  "ai": "ours", "once": True},
-    "creator": {"label": "Creator",       "price": 39900, "clips": 300,  "part_minutes": 60, "days": 30, "ai": "ours"},
-    "byok":    {"label": "Creator BYOK",  "price": 19900, "clips": 300,  "part_minutes": 60, "days": 30, "ai": "own"},
-    "pro":     {"label": "Pro",           "price": 99900, "clips": 2000, "part_minutes": 90, "days": 30, "ai": "ours"},
+    "creator": {"label": "Creator",       "price": 39900, "clips": 400,  "part_minutes": 60, "days": 30, "ai": "ours"},
+    "pro":     {"label": "Pro",           "price": 99900, "clips": 1000, "part_minutes": 90, "days": 30, "ai": "ours"},
+    # Bring your own key: the AI runs on the customer's own key (they pay their AI service directly), so these cost less
+    "byok":    {"label": "Creator BYOK",  "price": 19900, "clips": 400,  "part_minutes": 60, "days": 30, "ai": "own"},
+    "byok_pro": {"label": "Pro BYOK",     "price": 49900, "clips": 1000, "part_minutes": 90, "days": 30, "ai": "own"},
 }
 
 
@@ -147,7 +150,7 @@ def can_download(uid) -> tuple:
     if not p:
         return False, "Choose a plan to download clips. Previews stay free."
     if p["status"] == "waiting_key":
-        return False, "Your Creator BYOK plan starts when your AI key passes its test. Add it under Settings, AI."
+        return False, "Your BYOK plan starts when your own AI key passes its test. Add it on the Plans page."
     if p["left"] <= 0:
         return False, "Your plan has no clips left. Upgrade or wait for it to renew."
     return True, ""

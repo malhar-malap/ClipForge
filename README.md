@@ -96,14 +96,16 @@ python -m studio.admin grant you@example.com
 
 ## Plans
 
-| Plan | Price (+ 18% GST) | Clips | Longest part of a video | Notes |
+| Plan | Price (+ 18% GST) | Clips | Longest part of a video | AI |
 |---|---|---|---|---|
 | Free previews | ₹0 | – | 1 hour | Best 3 clips of up to 2 videos a day, played in the browser |
-| Trial | ₹49 once | 20 | 1 hour | 7 days, once per account |
-| Creator | ₹399 / month | 300 | 1 hour | |
-| Creator BYOK | ₹199 / month | 300 | 1 hour | Runs on the user's own AI key; starts when the key passes a test |
-| Pro | ₹999 / month | 2,000 | 1.5 hours | Priority queue, live clipping |
+| Trial | ₹49 once | 20 | 1 hour | Included; 7 days, once per account |
+| Creator | ₹399 / month | 400 | 1 hour | Included |
+| Pro | ₹999 / month | 1,000 | 1.5 hours | Included |
+| Creator BYOK | ₹199 / month | 400 | 1 hour | The user's own key; their AI provider bills them |
+| Pro BYOK | ₹499 / month | 1,000 | 1.5 hours | The user's own key; their AI provider bills them |
 
+BYOK plans start once the user's key passes a test and pause if it stops working.
 Every clip made counts as one, whatever its length; failed clips and re-makes are free. A longer video is clipped from
 the part chosen on the timeline.
 

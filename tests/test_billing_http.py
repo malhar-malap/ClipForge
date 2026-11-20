@@ -33,7 +33,13 @@ check("checkout needs sign-in", anon.post("/api/billing/checkout", json={"plan":
 # ---- signed in, no plan
 s = a.get("/api/billing").json()
 check("the page learns there is no plan and 2 previews left", (s["billing"], s["plan"], s["previews_left"]), (True, None, 2))
-check("prices come from the server", [p["price"] for p in s["plans"]], [49.0, 399.0, 199.0, 999.0])
+check("prices come from the server", [p["price"] for p in s["plans"]], [49.0, 399.0, 999.0, 199.0, 499.0])
+for path, words in (("/terms", "Your provider charges you directly"), ("/refunds", "Within 7 days of paying"), ("/privacy", "Digital Personal Data Protection Act"),
+                    ("/contact", "Grievance officer"), ("/acceptable-use", "Acceptable Use Policy")):
+    r = anon.get(path)
+    check(f"{path} is public and says what it should", (r.status_code, words in r.text), (200, True))
+check("the terms list every plan with its price", all(x in anon.get("/terms").text for x in ("Pro BYOK", "₹499", "1,000 clips", "Creator BYOK")), True)
+check("the BYOK plans are marked as running on the user's own key", [p["id"] for p in s["plans"] if p["own_key"]], ["byok", "byok_pro"])
 check("checkout without payments set up is refused cleanly", a.post("/api/billing/checkout", json={"plan": "creator"}, headers=H).status_code, 400)
 check("a made-up plan is refused", a.post("/api/billing/checkout", json={"plan": "free-forever"}, headers=H).status_code, 400)
 check("a checkout from another website is refused", a.post("/api/billing/checkout", json={"plan": "creator"}, headers={"Origin": "https://evil.example"}).status_code, 403)

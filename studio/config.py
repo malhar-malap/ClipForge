@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def _load_dotenv():
     f = ROOT / ".env"
-    if not f.exists():
+    if not f.exists() or os.environ.get("CLIPFORGE_NO_DOTENV") == "1":   # the tests run on defaults, whatever .env says
         return
     for line in f.read_text(encoding="utf-8").splitlines():
         line = line.strip()
@@ -228,6 +228,9 @@ MAIL_FROM = env("PEAKCUT_MAIL_FROM", "")
 CONTACT_EMAIL = env("PEAKCUT_CONTACT_EMAIL", "")
 LEGAL_NAME = env("PEAKCUT_LEGAL_NAME", "")            # the business that runs ClipForge, for the legal pages
 LEGAL_COUNTRY = env("PEAKCUT_LEGAL_COUNTRY", "")      # whose law applies, for the terms
+LEGAL_CITY = env("PEAKCUT_LEGAL_CITY", "")            # whose courts hear disputes (for example Mumbai)
+LEGAL_ADDRESS = env("PEAKCUT_LEGAL_ADDRESS", "")      # the business address shown on the contact page
+GRIEVANCE_NAME = env("PEAKCUT_GRIEVANCE_NAME", "")    # the grievance officer named on the contact page (Indian rules)
 # Set to 1 on a public site with email set up: password sign-ups must then confirm their address before clipping.
 VERIFY_EMAIL = env("PEAKCUT_VERIFY_EMAIL", "0") == "1"
 

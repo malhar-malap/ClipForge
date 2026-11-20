@@ -6,7 +6,7 @@ change it, and no email address is special in the code. It is set by hand, on th
     python -m studio.admin list
     python -m studio.admin grant someone@example.com
     python -m studio.admin revoke someone@example.com
-    python -m studio.admin plan someone@example.com creator     (trial, creator, byok, pro: no payment needed)
+    python -m studio.admin plan someone@example.com creator     (trial, creator, pro, byok, byok_pro: no payment needed)
 
 Admins see accounts and AI use. They do not see anyone's videos, clips or connected accounts."""
 import shutil

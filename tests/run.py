@@ -18,6 +18,9 @@ PORT = int(os.environ.get("PEAKCUT_TEST_PORT", "8799"))
 BASE = f"http://127.0.0.1:{PORT}"
 
 
+os.environ["CLIPFORGE_NO_DOTENV"] = "1"     # every test runs on the defaults, never on a local .env
+
+
 def main() -> int:
     data = Path(tempfile.mkdtemp(prefix="peakcut-test-"))
     env = {**os.environ, "PEAKCUT_DATA": str(data), "PEAKCUT_PORT": str(PORT), "PEAKCUT_PUBLIC_URL": BASE,

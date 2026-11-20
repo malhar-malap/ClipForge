@@ -86,6 +86,11 @@ main{max-width:1240px;margin:0 auto;padding:28px 20px 80px}
 .thumb{position:relative}.thumb .tick{position:absolute;left:6px;top:6px;width:22px;height:22px;border-radius:7px;border:2px solid #fff;background:rgba(28,27,25,.35);display:grid;place-items:center;z-index:1}
 .thumb .tick.on{background:var(--accent);border-color:var(--accent)}.thumb .tick svg{width:14px;height:14px;fill:#fff}
 .btn.dangertext,.btn.ghost.dangertext{color:var(--bad)}.btn.dangertext:hover{color:var(--bad);background:var(--bad-soft)}
+.plans-h{font-family:var(--serif);font-weight:400;font-size:30px;margin:34px 0 4px;display:flex;align-items:center;gap:10px}.plans-h em{color:var(--accent)}
+.plans-sub{margin:0 0 14px}.plans.two{grid-template-columns:repeat(2,minmax(0,1fr));max-width:760px}
+.byok-note{border:1.5px solid var(--accent);background:var(--accent-soft);border-radius:16px;padding:16px 20px;margin:0 0 16px;max-width:900px}
+.byok-note h3{margin:0 0 8px;font-size:15px}.byok-note ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--text)}
+@media (max-width:760px){.plans.two{grid-template-columns:1fr}}
 .useline{margin-top:8px}.useline:empty{display:none}
 .tl{margin-top:14px}.tl-head{display:flex;justify-content:space-between;gap:12px;font-size:13px;margin-bottom:8px}.tl-head span{color:var(--dim)}
 .tl-track{position:relative;height:40px;border-radius:10px;background:repeating-linear-gradient(90deg,var(--sunk) 0 6px,var(--line) 6px 7px);cursor:pointer;touch-action:none}
@@ -477,7 +482,7 @@ function drawNotices() {
   if (me.verified === false) out.push(["", `Confirm your email to start clipping. We sent a link to <b>${esc(me.email)}</b>.`, `<button class="btn sm" data-act="resend">Send again</button>`]);
   if (st.youtube_hd === false && me.is_admin) out.push(["warn", esc(st.youtube_help || "YouTube downloads are limited to 360p on this machine."), ""]);
   if (st.ai && st.ai.ready === false && me.is_admin) out.push(["warn", "No AI key is set, so clips are picked by loudness only.", `<a class="btn sm" href="/app/settings/ai" data-go="/app/settings/ai">Add AI key</a>`]);
-  if (billingOn() && B().plan?.status === "waiting_key") out.push(["", "Your Creator BYOK plan is paid. It starts when your AI key passes its test.", `<a class="btn sm" href="/app/plans" data-go="/app/plans">Add key</a>`]);
+  if (billingOn() && B().plan?.status === "waiting_key") out.push(["", "Your BYOK plan is paid. It starts when your AI key passes its test.", `<a class="btn sm" href="/app/plans" data-go="/app/plans">Add key</a>`]);
   $("#notices").innerHTML = out.map(([k, t, a]) => `<div class="notice ${k}">${ic(k === "warn" ? "warn" : "bolt")}<span>${t}</span>${a}</div>`).join("");
 }
 
@@ -1008,10 +1013,24 @@ function newChannelDialog() {
 const hrs = m => m % 60 ? `${(m / 60).toLocaleString()} hours` : `${m / 60} hour${m === 60 ? "" : "s"}`;
 const PLAN_INFO = {
   trial: {tag: "Try everything for a week.", feats: ["Every layout and caption style", "1080p, no watermark"]},
-  creator: {tag: "For creators posting every week.", feats: ["Facecam and gaming layouts", "Titles and hashtags"]},
-  byok: {tag: "Your own AI key, half the price.", feats: ["Everything in Creator", "Runs on your own Claude, OpenAI or Gemini key"]},
-  pro: {tag: "For streamers and teams.", feats: ["Everything in Creator", "Priority in the queue", "Live stream clipping"]},
+  creator: {tag: "For creators posting every week.", feats: ["Facecam, gaming and podcast layouts", "Hooks, titles and hashtags", "Live stream clipping"]},
+  pro: {tag: "For streamers and teams posting every day.", feats: ["Everything in Creator", "Longer videos at a time"]},
+  byok: {tag: "Creator, with the AI on your own key.", feats: ["Everything in Creator", "AI usage billed to you by your AI provider"]},
+  byok_pro: {tag: "Pro, with the AI on your own key.", feats: ["Everything in Pro", "AI usage billed to you by your AI provider"]},
 };
+const BYOK_NOTE = `<div class="byok-note"><h3>How BYOK works</h3><ol>
+  <li><b>You bring your own AI key</b> from Claude (Anthropic), OpenAI, Google Gemini, Groq, OpenRouter or xAI.</li>
+  <li><b>The AI work for your clips runs on your key</b>: finding the moments, framing, hooks and caption fixes. <b>Your AI provider bills you directly for that usage, on top of the ClipForge price.</b> On a small, fast model this is usually a few rupees per hour of video; set a spending limit with your provider.</li>
+  <li><b>The plan starts only when your key passes a test.</b> If the key later stops working (expired, out of credit, removed), your plan pauses until a working key is added. Its 30 days keep running meanwhile.</li>
+  <li><b>Your key is encrypted,</b> used only for your own videos, and never shown again. Remove it any time.</li>
+  <li><b>We are not responsible for your provider's charges, limits or outages.</b> Their terms apply to your key.</li></ol></div>`;
+function planCard(x) {
+  const b = S.status.billing || {}, p = b.plan, info = PLAN_INFO[x.id] || {feats: []}, mine = p?.plan === x.id;
+  return `<div class="panel plan ${mine ? "mine" : ""}"><div class="row"><b>${esc(x.label)}</b><span class="grow"></span>${mine ? `<span class="badge good">Current</span>` : x.id === "creator" ? `<span class="badge">Popular</span>` : ""}</div>
+    <div class="pr">₹${x.price.toLocaleString("en-IN")}<small>${x.days === 7 ? "once" : "/ month"} + GST</small></div><p class="small faint" style="margin-top:-4px">₹${x.total.toLocaleString("en-IN", {minimumFractionDigits: 2})} with GST${x.own_key ? " · plus your AI provider's charges" : ""}</p><p class="small muted">${esc(info.tag)}</p>
+    <ul>${planFeats(x).map(f => `<li>${ic("check")}<span>${esc(f)}</span></li>`).join("")}</ul>
+    ${mine ? `<button class="btn" disabled>Active</button>` : `<button class="btn ${x.id === "creator" ? "primary" : ""}" data-act="buy" data-plan="${esc(x.id)}">${p ? "Switch" : "Choose"}</button>`}</div>`;
+}
 const planFeats = x => [`${x.clips.toLocaleString("en-IN")} clips ${x.days === 7 ? "in 7 days" : "a month"}`, `Clips from up to ${hrs(x.part_minutes)} of any video`, ...(PLAN_INFO[x.id]?.feats || [])];
 async function drawPlans() {
   $("#view").innerHTML = `<div class="crumb">${backBtn("/app")}</div><div class="ph"><div><h1>Plans</h1><p>Prices in rupees, plus GST. No auto-renewal.</p></div></div><div class="muted">Loading…</div>`;
@@ -1026,20 +1045,21 @@ async function drawPlans() {
       <p class="muted">${p ? (p.status === "waiting_key" ? "Paid. Starts when your AI key passes its test below." : "Active until " + esc(when(p.ends_at)) + ".") : `Preview the best ${b.preview_clips || 3} clips of up to ${b.previews_left ?? 0} more videos today.`}</p>
       ${p ? `<div class="bar"><i style="width:${pct}%"></i></div><span class="small muted">${Math.round(p.used).toLocaleString()} clips made · clips from up to ${hrs(p.part_minutes)} of a video</span>` : ""}</div>
       <div class="big">${p ? Math.round(p.left).toLocaleString() : b.previews_left ?? 0}<span>${p ? `of ${p.clips.toLocaleString()} clips left` : "previews left today"}</span></div></section>
-    ${needKey && own ? `<section class="panel sect"><h2>Your AI key</h2><p>Creator BYOK runs the AI on your own key. We test it with one tiny request, store it encrypted, and never show it again. ${own.saved ? (own.tested ? `<span class="badge good">Working · ends in ${esc(own.key_hint)}</span>` : `<span class="badge warn">Not tested</span>`) : ""}</p>
+    ${needKey && own ? `<section class="panel sect"><h2>Your AI key</h2><p>Your BYOK plan runs the AI on your own key, and your AI provider bills you for that usage. We test it with one tiny request, store it encrypted, and never show it again. ${own.saved ? (own.tested ? `<span class="badge good">Working · ends in ${esc(own.key_hint)}</span>` : `<span class="badge warn">Not tested</span>`) : ""}</p>
       <div class="formgrid"><label class="f">AI service<select id="own_provider">${own.providers.map(x => `<option value="${esc(x)}" ${x === (own.provider || "anthropic") ? "selected" : ""}>${esc({anthropic: "Claude (Anthropic)", openai: "OpenAI", gemini: "Google Gemini", openrouter: "OpenRouter", groq: "Groq", xai: "Grok (xAI)"}[x] || x)}</option>`).join("")}</select></label>
         <label class="f">Model<input id="own_model" placeholder="e.g. claude-haiku-5-5" value="${esc((own.models || []).join(", "))}"></label>
         <label class="f">Key<input id="own_key" type="password" autocomplete="off" placeholder="${own.saved ? "Paste a new key to replace it" : "Paste your key"}"></label></div>
       <div class="row" style="margin-top:12px"><button class="btn primary" data-act="saveownkey">Test and save</button>${own.saved ? `<button class="btn ghost" data-act="delownkey">Remove key</button>` : ""}</div></section>` : ""}
-    <div class="plans stagger">${b.plans.filter(x => !(x.id === "trial" && b.trial_used && p?.plan !== "trial")).map(x => { const info = PLAN_INFO[x.id] || {feats: []}, mine = p?.plan === x.id;
-      return `<div class="panel plan ${mine ? "mine" : ""}"><div class="row"><b>${esc(x.label)}</b><span class="grow"></span>${mine ? `<span class="badge good">Current</span>` : x.id === "creator" ? `<span class="badge">Popular</span>` : ""}</div>
-        <div class="pr">₹${x.price.toLocaleString("en-IN")}<small>${x.days === 7 ? "once" : "/ month"} + GST</small></div><p class="small faint" style="margin-top:-4px">₹${x.total.toLocaleString("en-IN", {minimumFractionDigits: 2})} with GST</p><p class="small muted">${esc(info.tag)}</p>
-        <ul>${planFeats(x).map(f => `<li>${ic("check")}<span>${esc(f)}</span></li>`).join("")}</ul>
-        ${mine ? `<button class="btn" disabled>Active</button>` : `<button class="btn ${x.id === "creator" ? "primary" : ""}" data-act="buy" data-plan="${esc(x.id)}">${p ? "Switch" : "Choose"}</button>`}</div>`; }).join("")}</div>
+    <h2 class="plans-h">Plans: <em>we run the AI</em></h2><p class="muted plans-sub">Everything included. Our AI does the work and there is nothing else to pay.</p>
+    <div class="plans stagger">${b.plans.filter(x => !x.own_key && !(x.id === "trial" && b.trial_used && p?.plan !== "trial")).map(planCard).join("")}</div>
+    <h2 class="plans-h" id="byok">Bring your own <em>AI key</em> <span class="badge">BYOK</span></h2><p class="muted plans-sub">A lower price, because the AI runs on your own key and your AI provider bills you for it.</p>
+    ${BYOK_NOTE}
+    <div class="plans two stagger">${b.plans.filter(x => x.own_key).map(planCard).join("")}</div>
+    <p class="small faint" style="margin-top:14px">Buying a plan means you agree to our <a href="/terms">Terms</a>, <a href="/refunds">Refund policy</a> and <a href="/privacy">Privacy policy</a>.</p>
     <div class="faq"><div><b>What counts as a clip?</b><p>Each clip made in full quality counts as one, whether it is 20 seconds or a minute. Clips that fail are not counted, and finding moments and previewing are free.</p></div>
       <div><b>What if my video is longer than my plan's limit?</b><p>Choose the part you want on the timeline when you start. Each plan reads up to its limit of one video at a time.</p></div>
       <div><b>What is a free preview?</b><p>The best ${b.preview_clips || 3} clips of a video, played in your browser with a watermark.</p></div>
-      <div><b>How does Creator BYOK work?</b><p>Add your own AI key; we test it, store it encrypted, and you pay the AI service directly.</p></div>
+      <div><b>BYOK or a normal plan?</b><p>Normal plans include the AI. BYOK plans cost less but need your own AI key, and your AI provider bills you for the AI work on top.</p></div>
       <div><b>Can I re-edit a clip?</b><p>Yes, changing a clip you already got is free.</p></div></div>`;
 }
 let rzp = null;
